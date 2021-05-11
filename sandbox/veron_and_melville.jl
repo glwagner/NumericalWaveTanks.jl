@@ -34,10 +34,11 @@ u_drag(x, y, t, u, v, w, cᵈ) = - cᵈ * u * sqrt(u^2 + v^2 + w^2)
 v_drag(x, y, t, u, v, w, cᵈ) = - cᵈ * v * sqrt(u^2 + v^2 + w^2)
 w_drag(x, y, t, u, v, w, cᵈ) = - cᵈ * w * sqrt(u^2 + v^2 + w^2)
 
-τ₀ = 1e-4
+τ₀ = 1e-3
 t₀ = 60
+α = τ₀^2 / t₀
 u_wind(x, y, t, α) = - sqrt(α * t)
-u_wind_bc = FluxBoundaryCondition(u_wind, parameters = τ₀^2 / t₀)
+u_wind_bc = FluxBoundaryCondition(u_wind, parameters=α)
 
 u_drag_bc = FluxBoundaryCondition(u_drag, field_dependencies=(:u, :v, :w), parameters = cᵈ)
 v_drag_bc = FluxBoundaryCondition(v_drag, field_dependencies=(:u, :v, :w), parameters = cᵈ)
@@ -103,3 +104,10 @@ simulation.output_writers[:xz] = JLD2OutputWriter(model, model.velocities,
 @info "Running..."
 
 run!(simulation)
+
+@info "Simulation complete: $simulation. Output:"
+
+for (name, writer) in simulation.output_writers
+    absfilepath = abspath(writer.filepath)
+    @info "OutputWriter $name, $absfilepath: $writer"
+end
