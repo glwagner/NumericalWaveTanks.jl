@@ -4,6 +4,8 @@
 #####
 
 using Oceananigans
+using Oceananigans.Units
+using Printf
 
 #####
 ##### Domain
@@ -13,9 +15,9 @@ using Oceananigans
 
 N = 128
 
-grid = RegularRectilinearGrid(size = (4N, N, N), halo = (3, 3, 3), 
-                              x = (0, 1.2),  # four times longer than width, 
-                              y = (0, 0.3),  # wide enough to avoid finite-width effects
+grid = RegularRectilinearGrid(size = (2N, N, N), halo = (3, 3, 3), 
+                              x = (0, 0.6),  # longer in streamwise direction
+                              y = (0, 0.3),  # wide enough to avoid finite-width effects?
                               z = (-0.3, 0), # not full depth, but deep enough?
                               topology = (Periodic, Bounded, Bounded))
 
@@ -34,11 +36,9 @@ u_drag(x, y, t, u, v, w, cᵈ) = - cᵈ * u * sqrt(u^2 + v^2 + w^2)
 v_drag(x, y, t, u, v, w, cᵈ) = - cᵈ * v * sqrt(u^2 + v^2 + w^2)
 w_drag(x, y, t, u, v, w, cᵈ) = - cᵈ * w * sqrt(u^2 + v^2 + w^2)
 
-τ₀ = 1e-3
-t₀ = 60
-α = τ₀^2 / t₀
-u_wind(x, y, t, α) = - sqrt(α * t)
-u_wind_bc = FluxBoundaryCondition(u_wind, parameters=α)
+β = 1e-6
+@inline u_wind(x, y, t, β) = - β * sqrt(t)
+u_wind_bc = FluxBoundaryCondition(u_wind, parameters=β)
 
 u_drag_bc = FluxBoundaryCondition(u_drag, field_dependencies=(:u, :v, :w), parameters = cᵈ)
 v_drag_bc = FluxBoundaryCondition(v_drag, field_dependencies=(:u, :v, :w), parameters = cᵈ)
@@ -53,23 +53,29 @@ u_bcs_no_slip = UVelocityBoundaryConditions(grid, top = u_wind_bc, bottom = no_s
 v_bcs_no_slip = VVelocityBoundaryConditions(grid, bottom = no_slip_bc)
 w_bcs_no_slip = WVelocityBoundaryConditions(grid, north = no_slip_bc, south = no_slip_bc)
 
+u_bcs_free_slip = UVelocityBoundaryConditions(grid, top = u_wind_bc)
+v_bcs_free_slip = VVelocityBoundaryConditions(grid)
+w_bcs_free_slip = WVelocityBoundaryConditions(grid)
+
 @info "Modeling..."
 
 model = IncompressibleModel(architecture = GPU(),
                             advection = WENO5(),
                             timestepper = :RungeKutta3,
                             grid = grid,
+                            boundary_conditions = (u = u_bcs_free_slip, v = v_bcs_free_slip, w = w_bcs_free_slip),
+                            closure = IsotropicDiffusivity(ν=2e-6),
+
+                            #boundary_conditions = (u = u_bcs_no_slip, v = v_bcs_no_slip, w = w_bcs_no_slip),
+                            #closure = AnisotropicMinimumDissipation(),
+                            
                             coriolis = nothing,
                             tracers = nothing,
-                            buoyancy = nothing,
-                            boundary_conditions = (u = u_bcs_no_slip, v = v_bcs_no_slip, w = w_bcs_no_slip),
-                            closure = IsotropicDiffusivity(ν=1e-6)) #AnisotropicMinimumDissipation())
+                            buoyancy = nothing)
 
-@show model
+u₀ = sqrt(β * sqrt(60))
 
-u₀ = sqrt(τ₀)
-
-set!(model, w = (x, y, z) -> 1e-6 * u₀ * exp(z / 0.02) * rand())
+set!(model, w = (x, y, z) -> 1e0 * u₀ * exp(z / (5 * grid.Δz)) * rand())
 
 @info "Revvving up a simulation..."
 
@@ -77,10 +83,23 @@ import Oceananigans.Utils: prettytime
 prettytime(s::Simulation) = prettytime(s.model.clock.time)
 iteration(s::Simulation) = s.model.clock.iteration
 
-progress(s) = @info "Time: $(prettytime(s)), iteration: $(iteration(s))"
+function progress(s)
+
+    ν = s.model.closure.ν
+    wmax = maximum(abs, s.model.velocities.w)
+    umax = maximum(abs, s.model.velocities.u)
+    t = s.model.clock.time
+    h = √(ν * t)
+    Re = umax * h / ν
+
+    @info @sprintf("Time: %s, iteration: %d, next Δt: %s, max|w|: %.2e m s⁻¹, max|u|: %.2e m s⁻¹, Re: %.2e",
+                   prettytime(s), iteration(s), prettytime(s.Δt.Δt), wmax, umax, Re)
+
+    return nothing
+end
                                     
-wizard = TimeStepWizard(cfl=0.5, Δt=0.01) 
-simulation = Simulation(model, Δt=wizard, stop_time=20, progress=progress, iteration_interval=10)
+wizard = TimeStepWizard(cfl=0.5, Δt=0.01, max_Δt=0.1)
+simulation = Simulation(model, Δt=wizard, stop_time=10minutes, progress=progress, iteration_interval=10)
 
 @show simulation
 
@@ -88,7 +107,7 @@ simulation = Simulation(model, Δt=wizard, stop_time=20, progress=progress, iter
 ##### Set up output
 #####
 
-prefix = "veron_and_melville_Nz$N"
+prefix = @sprintf("veron_and_melville_Nz%d_β%.1e", grid.Nz, β)
 simulation.output_writers[:yz] = JLD2OutputWriter(model, model.velocities,
                                                   schedule = TimeInterval(0.1),
                                                   prefix = prefix * "_yz",
@@ -103,11 +122,11 @@ simulation.output_writers[:xz] = JLD2OutputWriter(model, model.velocities,
 
 @info "Running..."
 
-run!(simulation)
+@time run!(simulation)
 
 @info "Simulation complete: $simulation. Output:"
 
 for (name, writer) in simulation.output_writers
     absfilepath = abspath(writer.filepath)
-    @info "OutputWriter $name, $absfilepath: $writer"
+    @info "OutputWriter $name, $absfilepath:\n $writer"
 end

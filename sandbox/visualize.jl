@@ -1,5 +1,7 @@
 using JLD2, Plots, Printf, Oceananigans
 
+ENV["GKSwstype"] = "100"
+
 filename = "veron_and_melville_Nz128_yz.jld2"
 yz_file = jldopen(filename)
 
