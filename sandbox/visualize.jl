@@ -3,7 +3,7 @@ using JLD2, Plots, Printf, Oceananigans
 ENV["GKSwstype"] = "100"
 
 #name = "veron_and_melville_Nz128_β1.0e-04"
-name = "veron_and_melville_Nz128_β1.0e-06_waves"
+name = "veron_and_melville_Nz128_β1.0e-05_waves"
 
 yz_file = jldopen(name * "_yz.jld2")
 xz_file = jldopen(name * "_xz.jld2")
@@ -24,6 +24,7 @@ grid = RegularRectilinearGrid(size = (Nx, Ny, Nz), halo = (3, 3, 3),
 
 xw, yw, zw = nodes((Center, Center, Face), grid)
 xu, yu, zu = nodes((Face, Center, Center), grid)
+xc, yc, zc = nodes((Center, Center, Center), grid)
 
 iterations = parse.(Int, keys(yz_file["timeseries/t"]))
 
@@ -31,6 +32,7 @@ anim = @animate for (i, iter) in enumerate(iterations)
     wyz = yz_file["timeseries/w/$iter"][1, :, :]
     uyz = yz_file["timeseries/u/$iter"][1, :, :]
     uxz = xz_file["timeseries/u/$iter"][:, 1, :]
+    cxz = xz_file["timeseries/c/$iter"][:, 1, :]
 
     t = yz_file["timeseries/t/$iter"]
 
@@ -44,10 +46,17 @@ anim = @animate for (i, iter) in enumerate(iterations)
     ulevels = range(-ulim, stop=ulim, length=30)
     ulim < umax && (ulevels = vcat([-umax], ulevels, [umax]))
 
-    w_title = @sprintf("w(y, z, t) (m s⁻¹) at t = %s ", prettytime(t))
-    u_title = @sprintf("u(y, z, t) (m s⁻¹) at t = %s ", prettytime(t))
+    cmax = maximum(abs, cxz)
+    clim = cmax * 0.8
+    clevels = range(0, stop=clim, length=32)
+    clim < cmax && (clevels = vcat([-clevels[2]], clevels, [cmax]))
 
-    @show w_title
+    u_title = @sprintf("u(x, z, t) (m s⁻¹) at t = %s ", prettytime(t))
+    wyz_title = "w(y, z, t) (m s⁻¹)"
+    uyz_title = "u(y, z, t) (m s⁻¹)"
+    cxz_title = "c(x, z, t)"
+
+    @show u_title
 
     uxzplot = contourf(xu, zu, uxz';
                        linewidth = 0,
@@ -57,6 +66,15 @@ anim = @animate for (i, iter) in enumerate(iterations)
                        color = :balance,
                        levels = ulevels,
                        clims = (-ulim, ulim))
+
+    cxzplot = contourf(xc, zc, cxz';
+                       linewidth = 0,
+                       aspectratio = :equal,
+                       xlims = (0, grid.Lx),
+                       ylims = (-grid.Lz, 0),
+                       color = :thermal,
+                       levels = clevels,
+                       clims = (0, clim))
 
     wyzplot = contourf(yw, zw, wyz';
                        linewidth = 0,
@@ -78,16 +96,17 @@ anim = @animate for (i, iter) in enumerate(iterations)
 
     layout = @layout [
         a
+        b
         Plots.grid(1, 2)
     ]
 
-    plot(uxzplot, wyzplot, uyzplot,
+    plot(uxzplot, cxzplot, wyzplot, uyzplot,
          layout = layout,
          size = (1200, 1200),
-         title = [u_title w_title u_title])
+         title = [u_title cxz_title wyz_title uyz_title])
 end
 
 close(yz_file)
 close(xz_file)
 
-gif(anim, name * ".gif", fps=8)
+mp4(anim, name * ".mp4", fps=8)
