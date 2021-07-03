@@ -14,7 +14,7 @@ using CUDA
 
 @info "Building a grid..." 
 
-N = 128
+N = 256
 
 grid = RegularRectilinearGrid(size = (2N, N, N), halo = (3, 3, 3), 
                               x = (0, 0.6),  # longer in streamwise direction
@@ -103,20 +103,19 @@ w_bcs_free_slip = WVelocityBoundaryConditions(grid)
 
 @info "Modeling..."
 
-
 model = IncompressibleModel(architecture = GPU(),
                             advection = WENO5(),
                             timestepper = :RungeKutta3,
                             grid = grid,
                             tracers = :c,
-                            boundary_conditions = (u = u_bcs_no_slip, v = v_bcs_no_slip, w = w_bcs_no_slip),
                             # boundary_conditions = (u = u_bcs_no_slip, v = v_bcs_no_slip, w = w_bcs_no_slip),
+                            boundary_conditions = (u = u_bcs_free_slip, v = v_bcs_free_slip, w = w_bcs_free_slip),
                             closure = IsotropicDiffusivity(ν=1.05e-6, κ=1.0e-6),
                             stokes_drift = UniformStokesDrift(∂z_uˢ=∂z_uˢ, ∂t_uˢ=∂t_uˢ),
                             coriolis = nothing,
                             buoyancy = nothing)
 
-u₀ = 1e-2 * sqrt(β * sqrt(60))
+u₀ = 1e-1 * sqrt(β * sqrt(60))
 
 set!(model,
      w = (x, y, z) -> u₀ * exp(z / (5 * grid.Δz)) * rand(),
@@ -148,8 +147,8 @@ function progress(s)
     return nothing
 end
                                     
-wizard = TimeStepWizard(cfl=0.5, Δt=0.01, max_Δt=0.1)
-simulation = Simulation(model, Δt=wizard, stop_time=2minutes, progress=progress, iteration_interval=10)
+wizard = TimeStepWizard(cfl=0.7, Δt=0.01, max_Δt=1.0)
+simulation = Simulation(model, Δt=wizard, stop_time=1minutes, progress=progress, iteration_interval=10)
 
 @show simulation
 
@@ -157,36 +156,36 @@ simulation = Simulation(model, Δt=wizard, stop_time=2minutes, progress=progress
 ##### Set up output
 #####
 
-prefix = @sprintf("veron_and_melville_Nz%d_β%.1e_unsteady_waves", grid.Nz, β)
+prefix = @sprintf("veron_and_melville_Nz%d_Ly%.1f_β%.1e_unsteady_waves", grid.Nz, grid.Ly, β)
 
 outputs = merge(model.velocities, model.tracers)
 
-simulation.output_writers[:yz] = JLD2OutputWriter(model, outputs,
-                                                  schedule = TimeInterval(0.1),
-                                                  prefix = prefix * "_yz",
-                                                  field_slicer = FieldSlicer(i = round(Int, grid.Nx/2)),
-                                                  force = true)
+simulation.output_writers[:yz] = NetCDFOutputWriter(model, outputs,
+                                                    schedule = TimeInterval(0.1),
+                                                    mode = "c",
+                                                    filepath = prefix * "_yz.nc",
+                                                    field_slicer = FieldSlicer(i = round(Int, grid.Nx/2)))
 
-simulation.output_writers[:xz] = JLD2OutputWriter(model, outputs,
-                                                  schedule = TimeInterval(0.1),
-                                                  field_slicer = FieldSlicer(j = round(Int, grid.Ny/2)),
-                                                  prefix = prefix * "_xz",
-                                                  force = true)
+simulation.output_writers[:xz] = NetCDFOutputWriter(model, outputs,
+                                                    schedule = TimeInterval(0.1),
+                                                    mode = "c",
+                                                    field_slicer = FieldSlicer(j = round(Int, grid.Ny/2)),
+                                                    filepath = prefix * "_xz.nc")
 
-simulation.output_writers[:z] = JLD2OutputWriter(model, outputs,
-                                                 schedule = TimeInterval(0.01),
-                                                 field_slicer = FieldSlicer(i = round(Int, grid.Nx/2),
-                                                                            j = round(Int, grid.Ny/2)),
-                                                 prefix = prefix * "_z",
-                                                 force = true)
+simulation.output_writers[:z] = NetCDFOutputWriter(model, outputs,
+                                                   schedule = TimeInterval(0.01),
+                                                   mode = "c",
+                                                   field_slicer = FieldSlicer(i = round(Int, grid.Nx/2),
+                                                                              j = round(Int, grid.Ny/2)),
+                                                   filepath = prefix * "_z.nc")
 
 C = AveragedField(model.tracers.c, dims=(1, 2))
 U = AveragedField(model.velocities.u, dims=(1, 2))
 
-simulation.output_writers[:averages] = JLD2OutputWriter(model, (c=C, u=U),
-                                                        schedule = TimeInterval(0.1),
-                                                        prefix = prefix * "_averages",
-                                                        force = true)
+simulation.output_writers[:averages] = NetCDFOutputWriter(model, (c=C, u=U),
+                                                          schedule = TimeInterval(0.1),
+                                                          mode = "c",
+                                                          filepath = prefix * "_averages.nc")
 
 @info "Running..."
 

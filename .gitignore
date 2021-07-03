@@ -1,4 +1,6 @@
 *.swp
 *.DS_Store
 *.jld2
+*.nc
 *.gif
+*.mp4
