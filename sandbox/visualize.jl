@@ -3,7 +3,7 @@ using JLD2, Plots, Printf, Oceananigans
 ENV["GKSwstype"] = "100"
 
 #name = "veron_and_melville_Nz128_β1.0e-04"
-name = "veron_and_melville_Nz128_β1.0e-05_waves"
+name = "veron_and_melville_Nz128_Ly0.3_β1.0e-05_unsteady_waves"
 
 yz_file = jldopen(name * "_yz.jld2")
 xz_file = jldopen(name * "_xz.jld2")
