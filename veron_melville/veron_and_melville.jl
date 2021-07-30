@@ -18,7 +18,7 @@ Ly = 0.3
 
 Nz = Ny # number of points in the vertical direction
 Lz = Ly # domain depth
-refinement = 1.2 # controls spacing near surface (higher means finer spaced)
+refinement = 1.5 # controls spacing near surface (higher means finer spaced)
 stretching = 8   # controls rate of stretching at bottom
 
 ## Normalized height ranging from 0 to 1
@@ -58,11 +58,6 @@ grid = RegularRectilinearGrid(size = (2Ny, Ny, Nz), halo = (3, 3, 3),
 
 @info "Defining boundary conditions..."
 
-# Simple model for momenum fluxes at solid walls
-cᵈ = 2e-3
-u_drag(x, y, t, u, v, w, cᵈ) = - cᵈ * u * sqrt(u^2 + v^2 + w^2)
-v_drag(x, y, t, u, v, w, cᵈ) = - cᵈ * v * sqrt(u^2 + v^2 + w^2)
-w_drag(x, y, t, u, v, w, cᵈ) = - cᵈ * w * sqrt(u^2 + v^2 + w^2)
 
 #####
 ##### Stokes drift
@@ -102,7 +97,20 @@ const ωᵣ = sqrt(g * kᵣ + T * kᵣ^3) # gravity wave frequency with surface 
 const β = 1e-5 # m² s^(-5/2), from Fabrice Veron (June 30 2021 and May 11 2021)
 u_wind_bc = FluxBoundaryCondition((x, y, t) -> - β * sqrt(t) + ∫ᶻ_∂t_uˢ(t))
 
+u_bcs_free_slip = UVelocityBoundaryConditions(grid, top = u_wind_bc)
+boundary_conditions = (u = u_bcs_free_slip,)
+
 #=
+# Here's a few other boundary conditions one might consider:
+#   * quadratic drag (for LES)
+#   * no-slip (for resolved LES or DNS)
+#
+# Quadratic drag model for momenum fluxes at solid walls
+cᵈ = 2e-3
+u_drag(x, y, t, u, v, w, cᵈ) = - cᵈ * u * sqrt(u^2 + v^2 + w^2)
+v_drag(x, y, t, u, v, w, cᵈ) = - cᵈ * v * sqrt(u^2 + v^2 + w^2)
+w_drag(x, y, t, u, v, w, cᵈ) = - cᵈ * w * sqrt(u^2 + v^2 + w^2)
+
 u_drag_bc = FluxBoundaryCondition(u_drag, field_dependencies=(:u, :v, :w), parameters = cᵈ)
 v_drag_bc = FluxBoundaryCondition(v_drag, field_dependencies=(:u, :v, :w), parameters = cᵈ)
 w_drag_bc = FluxBoundaryCondition(w_drag, field_dependencies=(:u, :v, :w), parameters = cᵈ)
@@ -110,14 +118,14 @@ w_drag_bc = FluxBoundaryCondition(w_drag, field_dependencies=(:u, :v, :w), param
 u_bcs_drag = UVelocityBoundaryConditions(grid, top = u_wind_bc, bottom = u_drag_bc, south = u_drag_bc, north = u_drag_bc)
 v_bcs_drag = VVelocityBoundaryConditions(grid, bottom = v_drag_bc)
 w_bcs_drag = WVelocityBoundaryConditions(grid, north = w_drag_bc, south = w_drag_bc)
-=#
+boundary_conditions = (u = u_bcs_drag, v = v_bcs_drag, w = w_bcs_drag)
 
 no_slip_bc = ValueBoundaryCondition(0)
 u_bcs_no_slip = UVelocityBoundaryConditions(grid, top = u_wind_bc, bottom = no_slip_bc, south = no_slip_bc, north = no_slip_bc)
 v_bcs_no_slip = VVelocityBoundaryConditions(grid, bottom = no_slip_bc)
 w_bcs_no_slip = WVelocityBoundaryConditions(grid, north = no_slip_bc, south = no_slip_bc)
-
-u_bcs_free_slip = UVelocityBoundaryConditions(grid, top = u_wind_bc)
+boundary_conditions = (u = u_bcs_no_slip, v = v_bcs_no_slip, w = w_bcs_no_slip)
+=#
 
 @info "Modeling..."
 
@@ -128,16 +136,14 @@ model = IncompressibleModel(architecture = GPU(),
                             timestepper = :RungeKutta3,
                             grid = grid,
                             tracers = :c,
-                            boundary_conditions = (u = u_bcs_free_slip,),
-                            #boundary_conditions = (u = u_bcs_no_slip, v = v_bcs_no_slip, w = w_bcs_no_slip),
+                            boundary_conditions = boundary_conditions,
                             closure = IsotropicDiffusivity(ν=1.05e-6, κ=1.0e-6),
                             stokes_drift = UniformStokesDrift(∂z_uˢ=∂z_uˢ, ∂t_uˢ=∂t_uˢ),
                             coriolis = nothing,
                             buoyancy = nothing)
 
-using Oceananigans.Operators: Δzᵃᵃᶜ
-#@show Δz = minimum(parent(grid.Δzᵃᵃᶜ))
-@show Δz = grid.Δz
+@show Δz = minimum(parent(grid.Δzᵃᵃᶜ)) # for a stretched grid
+# @show Δz = grid.Δz # for a regular grid
 uᵢ = 1e-1 * sqrt(β * sqrt(20))
 wᵢ(x, y, z) = uᵢ * exp(z / (5 * Δz)) * rand()
 
@@ -181,7 +187,7 @@ simulation = Simulation(model, Δt=wizard, stop_time=1minutes, progress=progress
 ##### Set up output
 #####
 
-prefix = @sprintf("veron_and_melville_Nz%d_Ly%.1f_β%.1e_unsteady_waves", grid.Nz, grid.Ly, β)
+prefix = @sprintf("veron_and_melville_Nz%d_Ly%.1f_β%.1e_a%.1e", grid.Nz, grid.Ly, β, aᵣ)
 
 outputs = merge(model.velocities, model.tracers)
 
