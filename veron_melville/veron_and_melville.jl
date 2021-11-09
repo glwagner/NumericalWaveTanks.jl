@@ -74,6 +74,9 @@ const kᵣ = 2π / 0.02 # m⁻¹, constant wavenumber
 const ω′ = sqrt(g * kᵣ) # gravity frequency without surface tension effects
 const ωᵣ = sqrt(g * kᵣ + T * kᵣ^3) # gravity wave frequency with surface tension
 
+@show ϵ = aᵣ * kᵣ
+
+#=
 @show 1 / kᵣ # surface wave decay scale
 @show ωᵣ ω′
 
@@ -98,7 +101,7 @@ const β = 1e-5 # m² s^(-5/2), from Fabrice Veron (June 30 2021 and May 11 2021
 u_wind_bc = FluxBoundaryCondition((x, y, t) -> - β * sqrt(t) + ∫ᶻ_∂t_uˢ(t))
 
 u_bcs_free_slip = UVelocityBoundaryConditions(grid, top = u_wind_bc)
-boundary_conditions = (u = u_bcs_free_slip,)
+boundary_conditions = (; u = u_bcs_free_slip)
 
 #=
 # Here's a few other boundary conditions one might consider:
@@ -234,3 +237,4 @@ for (name, writer) in simulation.output_writers
     absfilepath = abspath(writer.filepath)
     @info "OutputWriter $name, $absfilepath:\n $writer"
 end
+=#

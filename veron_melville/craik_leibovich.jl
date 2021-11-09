@@ -63,9 +63,12 @@ const U₀ = ν * Re / h # Re = U L / ν
 @show Sh = surface_∂z_uˢ / (U₀ / h)
 @show Re h hν U₀
 
-#@inline shear_flow(x, y, z, t) = U₀ * erfc(z / h)
-@inline shear_flow(x, y, z, t) = uˢ(z, t)
-U = BackgroundField(shear_flow)
+@inline η(z, t) = - z / 2sqrt(ν * t)
+
+@inline paolucci(x, y, z, t) = uˢ(z, t) + 
+    2 * √(ν * t / π) * (exp(-η(z, t)^2) - √π * η(z, t) * erfc(η(z, t)))
+
+U = BackgroundField(paolucci)
 
 model = NonhydrostaticModel(architecture = CPU(),
                             advection = CenteredSecondOrder(),
@@ -78,7 +81,7 @@ model = NonhydrostaticModel(architecture = CPU(),
                             tracers = nothing,
                             buoyancy = nothing)
 
-@show Δt = 5e-1 * grid.Δy / surface_uˢ
+@show Δt = 1e-2 * grid.Δy / surface_uˢ
 
 u, v, w = model.velocities
 ξ = ComputedField(∂z(v) - ∂y(w))
@@ -96,12 +99,17 @@ function progress(sim)
     return nothing
 end
 
-simulation = Simulation(model, Δt=Δt, stop_time=10/surface_∂z_uˢ, iteration_interval=10, progress=progress)
+simulation = Simulation(model,
+                        Δt = Δt,
+                        #stop_time = 10/surface_∂z_uˢ,
+                        stop_iteration = 100,
+                        iteration_interval = 10,
+                        progress = progress)
 
 function grow_instability!(simulation, energy)
     ## Initialize
     simulation.model.clock.iteration = 0
-    t₀ = simulation.model.clock.time = 0
+    t₀ = simulation.model.clock.time = 20seconds
     compute!(energy)
     energy₀ = energy[1, 1, 1]
 
