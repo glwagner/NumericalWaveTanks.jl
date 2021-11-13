@@ -1,15 +1,6 @@
-#####
-##### An attempt to simulate a scenario similar to that reported by
-##### Veron and Melville, JFM (2001)
-#####
-
 using Oceananigans
 using Oceananigans.Units
 using Printf
-
-#####
-##### Domain
-#####
 
 @info "Building a grid..." 
 
@@ -30,7 +21,6 @@ h(k) = (k - 1) / Nz
 
 arch = GPU()
 
-#=
 grid = VerticallyStretchedRectilinearGrid(architecture = arch,
                                           size = (Nx, Ny, Nz),
                                           halo = (3, 3, 3),
@@ -38,103 +28,65 @@ grid = VerticallyStretchedRectilinearGrid(architecture = arch,
                                           y = (0, Ly),
                                           z_faces = k -> Lz * (ζ₀(k) * Σ(k) - 1),
                                           topology = (Periodic, Bounded, Bounded))
-=#
-
+#=
 grid = RegularRectilinearGrid(size = (Nx, Ny, Nz),
                               halo = (3, 3, 3), 
                               x = (0, Lx),  # longer in streamwise direction
                               y = (0, Ly),  # wide enough to avoid finite-width effects?
                               z = (-Lz, 0), # not full depth, but deep enough?
                               topology = (Periodic, Bounded, Bounded))
+=#
 
 @show grid
 
 #####
-##### Boundary conditions
-##### We define two options: one using drag model, one no-slip
+##### Parameters
 #####
 
-@info "Defining boundary conditions..."
+a = 0.000      # m, reference wave amplitude at t ≈ τᵃ
+τ = 1e-4       # m² s⁻², surface stress
+k = 2π / 0.02  # m⁻¹, constant wavenumber
+ν = 1.05e-6    # m² s⁻¹, kinematic viscosity
+κ = 1e-6       # tracer diffusivity
 
-#####
-##### Stokes drift
-#####
+struct ConstantStokesShear{T}
+    a :: T
+    k :: T
+    ω :: T
+end
 
-# Physical parameters
-const g = 9.81 # gravitational acceleration
-const T = 7.2e-5 # (kinematic) surface tension, m³ s⁻²
+ConstantStokesShear(a, k; g = 9.81, T = 7.2e-5) =
+    ConstantStokesShear{Float64}(a, k, sqrt(g * k + T * k^3))
 
-# Surface wave parameters
-#const aᵣ = 0.002 # m, reference wave amplitude at t ≈ τᵃ
-const aᵣ = 0.000 # m, reference wave amplitude at t ≈ τᵃ
-const τᵃ = 20 # s, time-scale over which surface wave amplitude increases
-const kᵣ = 2π / 0.02 # m⁻¹, constant wavenumber
-const ω′ = sqrt(g * kᵣ) # gravity frequency without surface tension effects
-const ωᵣ = sqrt(g * kᵣ + T * kᵣ^3) # gravity wave frequency with surface tension
+(sh::ConstantStokesShear)(z, t) = 2 * sh.a^2 * sh.k^2 * sh.ω * exp(2 * sh.k * z) 
 
-@show ϵ = aᵣ * kᵣ
+∂z_uˢ = ConstantStokesShear(a, k)
 
-@show 1 / kᵣ # surface wave decay scale
-@show ωᵣ ω′
+# Calculations
+ω = ∂z_uˢ.ω
+ϵ = a * k
+u★ = sqrt(abs(τ))
+La = k * ν^(3/2) / (a * u★ * √(ω))
 
-#@inline a(t) = aᵣ * tanh(t / τᵃ)
-#@inline ∂t_a(t) = aᵣ / τᵃ * sech(t / τᵃ) * sech(t / τᵃ)
+@info """
 
-@inline a(t) = aᵣ
-@inline ∂t_a(t) = 0.0
+    Wave parameters | Values
+    =============== | ======
+                  a | $a
+                  k | $k
+             2π / k | $(2π / k)
+                  ϵ | $ϵ
+                 La | $La
+               La⁻¹ | $(1 / La)
+"""
 
-@inline    uˢ(z, t) = a(t) * a(t) * kᵣ * ωᵣ * exp(2kᵣ * z) # constant k
-@inline ∂t_uˢ(z, t) = 2 * ∂t_a(t) * a(t) * kᵣ * ωᵣ * exp(2kᵣ * z)
-@inline ∂z_uˢ(z, t) = 2kᵣ * uˢ(z, t)
 
-# ∫ᶻ_∂t_uˢ(t) = 2 * ∂t_a(t) * a(t) * kᵣ * ωᵣ * ∫ᶻ exp(2kᵣ * z) dz = ∂t_a(t) * a(t) * ωᵣ
-@inline ∫ᶻ_∂t_uˢ(t) = a(t) * ∂t_a(t) * ωᵣ
-
-# From Veron and Melville 2001: β = α / ρ
-#
-# α = 10⁻² => β ≈ 10⁻⁵
-#
-# As a sanity check: estimate τ_dynamic ≈ ρ_air * Cᴰ * u_air²
-# Then with ρ_air ≈ 1.2, Cᴰ ≈ 10⁻³, u_air = 10 => τ_dynamic ≈ 0.12
-
-const β = 1e-5 # m² s^(-5/2), from Fabrice Veron (June 30 2021 and May 11 2021)
-
-# u_wind_bc = FluxBoundaryCondition((x, y, t) -> - β * sqrt(t) + ∫ᶻ_∂t_uˢ(t))
-u_wind_bc = FluxBoundaryCondition(-1e-4)
-
-u_bcs_free_slip = FieldBoundaryConditions(top = u_wind_bc)
-boundary_conditions = (; u = u_bcs_free_slip)
-
-#=
-# Here's a few other boundary conditions one might consider:
-#   * quadratic drag (for LES)
-#   * no-slip (for resolved LES or DNS)
-#
-# Quadratic drag model for momenum fluxes at solid walls
-cᵈ = 2e-3
-u_drag(x, y, t, u, v, w, cᵈ) = - cᵈ * u * sqrt(u^2 + v^2 + w^2)
-v_drag(x, y, t, u, v, w, cᵈ) = - cᵈ * v * sqrt(u^2 + v^2 + w^2)
-w_drag(x, y, t, u, v, w, cᵈ) = - cᵈ * w * sqrt(u^2 + v^2 + w^2)
-
-u_drag_bc = FluxBoundaryCondition(u_drag, field_dependencies=(:u, :v, :w), parameters = cᵈ)
-v_drag_bc = FluxBoundaryCondition(v_drag, field_dependencies=(:u, :v, :w), parameters = cᵈ)
-w_drag_bc = FluxBoundaryCondition(w_drag, field_dependencies=(:u, :v, :w), parameters = cᵈ)
-
-u_bcs_drag = UVelocityBoundaryConditions(grid, top = u_wind_bc, bottom = u_drag_bc, south = u_drag_bc, north = u_drag_bc)
-v_bcs_drag = VVelocityBoundaryConditions(grid, bottom = v_drag_bc)
-w_bcs_drag = WVelocityBoundaryConditions(grid, north = w_drag_bc, south = w_drag_bc)
-boundary_conditions = (u = u_bcs_drag, v = v_bcs_drag, w = w_bcs_drag)
-
-no_slip_bc = ValueBoundaryCondition(0)
-u_bcs_no_slip = UVelocityBoundaryConditions(grid, top = u_wind_bc, bottom = no_slip_bc, south = no_slip_bc, north = no_slip_bc)
-v_bcs_no_slip = VVelocityBoundaryConditions(grid, bottom = no_slip_bc)
-w_bcs_no_slip = WVelocityBoundaryConditions(grid, north = no_slip_bc, south = no_slip_bc)
-boundary_conditions = (u = u_bcs_no_slip, v = v_bcs_no_slip, w = w_bcs_no_slip)
-=#
+#u_top_bc = FluxBoundaryCondition((x, y, t) -> - 1e-5 * sqrt(t))
+u_top_bc = FluxBoundaryCondition(-τ)
+u_bcs = FieldBoundaryConditions(top = u_top_bc)
+boundary_conditions = (; u = u_bcs)
 
 @info "Modeling..."
-
-addzero(args...) = 0
 
 model = NonhydrostaticModel(architecture = arch,
                             advection = WENO5(),
@@ -142,47 +94,46 @@ model = NonhydrostaticModel(architecture = arch,
                             grid = grid,
                             tracers = :c,
                             boundary_conditions = boundary_conditions,
-                            closure = IsotropicDiffusivity(ν=1.05e-6, κ=1.0e-6),
-                            #stokes_drift = UniformStokesDrift(∂z_uˢ=∂z_uˢ, ∂t_uˢ=∂t_uˢ),
+                            closure = IsotropicDiffusivity(ν=ν, κ=κ),
+                            stokes_drift = UniformStokesDrift(∂z_uˢ=∂z_uˢ),
                             coriolis = nothing,
                             buoyancy = nothing)
 
-#@show Δz = minimum(parent(grid.Δzᵃᵃᶜ)) # for a stretched grid
-@show Δz = grid.Δz # for a regular grid
-@show uᵢ = 1e-15
-#wᵢ(x, y, z) = uᵢ * exp(z / (5 * Δz)) * randn()
-wᵢ(x, y, z) = uᵢ * randn()
+Δz = try
+    grid.Δz # for a regular grid
+catch 
+    minimum(parent(grid.Δzᵃᵃᶜ)) # for a stretched grid
+end
 
-set!(model, w = wᵢ)
+uᵢ(x, y, z) = 1e-9 * randn()
+set!(model, u=uᵢ, v=uᵢ, w=uᵢ)
 
 c = model.tracers.c
-interior(c)[:, :, grid.Nz] .= 1
+view(interior(c), :, :, grid.Nz) .= 1
 
 @info "Revvving up a simulation..."
                                     
 simulation = Simulation(model, Δt=0.01, stop_time=1minutes)
 
-wizard = TimeStepWizard(cfl=0.8, max_Δt=1.0)
+wizard = TimeStepWizard(cfl=0.5, max_Δt=1.0)
 simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(10))
 
-function progress(s)
+function progress(sim)
 
-    ν = s.model.closure.ν
+    umax = maximum(abs, sim.model.velocities.u)
+    vmax = maximum(abs, sim.model.velocities.v)
+    wmax = maximum(abs, sim.model.velocities.w)
 
-    umax = maximum(abs, s.model.velocities.u)
-    vmax = maximum(abs, s.model.velocities.v)
-    wmax = maximum(abs, s.model.velocities.w)
-
-    t = s.model.clock.time
+    t = time(sim)
     h = √(ν * t)
     Re = umax * h / ν
 
     @info @sprintf("Time: %s, iteration: %d, next Δt: %s, max|U|: (%.2e, %.2e, %.2e)  m s⁻¹, hk: %.2f, Re: %.1f",
-                   prettytime(s),
-                   iteration(s),
-                   prettytime(s.Δt),
+                   prettytime(t),
+                   iteration(sim),
+                   prettytime(sim.Δt),
                    umax, vmax, wmax,
-                   h * kᵣ,
+                   h * k,
                    Re)
 
     return nothing
@@ -190,13 +141,11 @@ end
 
 simulation.callbacks[:progress] = Callback(progress, IterationInterval(10))
 
-@show simulation
-
 #####
 ##### Set up output
 #####
 
-prefix = @sprintf("veron_and_melville_Nz%d_Ly%.1f_β%.1e_a%.1e", grid.Nz, grid.Ly, β, aᵣ)
+prefix = @sprintf("simple_instability_%d_%d_%d_τ%.1e_a%.1e", grid.Nx, grid.Ny, grid.Nz, τ, a)
 
 outputs = merge(model.velocities, model.tracers)
 
@@ -232,8 +181,6 @@ simulation.output_writers[:averages] = NetCDFOutputWriter(model, (c=C, u=U),
                                                           schedule = TimeInterval(0.1),
                                                           mode = "c",
                                                           filepath = prefix * "_averages.nc")
-
-@info "Running..."
 
 @time run!(simulation)
 
