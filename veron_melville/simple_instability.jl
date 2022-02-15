@@ -36,7 +36,7 @@ h(k) = (k - 1) / Nz
 
 arch = GPU()
 
-grid = RectilinearGrid(architecture = arch,
+grid = RectilinearGrid(arch,
                        size = (Nx, Ny, Nz),
                        halo = (3, 3, 3),
                        x = (0, Lx),
@@ -74,8 +74,8 @@ surface_stokes_drift(sh) = sh.a^2 * sh.k * sh.ω
 #####
 
 u_top_bc = name == "increasing_wind" ?
-    FluxBoundaryCondition(-1e-4) :
-    FluxBoundaryCondition((x, y, t) -> - 1e-5 * sqrt(t))
+    FluxBoundaryCondition((x, y, t) -> - 1e-5 * sqrt(t)) :
+    FluxBoundaryCondition(-1e-4)
 
 u_bcs = FieldBoundaryConditions(top = u_top_bc)
 boundary_conditions = (; u = u_bcs)
@@ -87,7 +87,7 @@ boundary_conditions = (; u = u_bcs)
 @inline ν_∂z²_uˢ(x, y, z, t, sh) = - 4 * ν * sh.a^2 * sh.k^3 * sh.ω * exp(2 * sh.k * z)
 u_forcing = Forcing(ν_∂z²_uˢ, parameters=ConstantStokesShear(0.0, 0.0))
 
-model = NonhydrostaticModel(architecture = arch,
+model = NonhydrostaticModel(arch,
                             advection = WENO5(),
                             timestepper = :RungeKutta3,
                             grid = grid,
@@ -102,9 +102,9 @@ model = NonhydrostaticModel(architecture = arch,
 u, v, w = model.velocities
 η² = (∂z(v) - ∂y(w))^2
 
-C = AveragedField(model.tracers.c, dims=(1, 2))
-U = AveragedField(model.velocities.u, dims=(1, 2))
-E² = AveragedField(η², dims=(1, 2))
+C = Field(Average(model.tracers.c, dims=(1, 2)))
+U = Field(Average(model.velocities.u, dims=(1, 2)))
+E² = Field(Average(η², dims=(1, 2)))
 
 function run_numerical_wave_tank!(model; ϵ=0.0, k=2π/0.03, max_velocity=Dict())
     a = ϵ / k
@@ -199,23 +199,41 @@ function run_numerical_wave_tank!(model; ϵ=0.0, k=2π/0.03, max_velocity=Dict()
 
     save_interval = 0.02
 
-    simulation.output_writers[:yz] = JLD2OutputWriter(model, outputs,
-                                                      schedule = TimeInterval(save_interval),
-                                                      force = true,
-                                                      prefix = prefix * "_yz",
-                                                      field_slicer = FieldSlicer(i = 1))
+    simulation.output_writers[:yz_left] = JLD2OutputWriter(model, outputs,
+                                                           schedule = TimeInterval(save_interval),
+                                                           force = true,
+                                                           prefix = prefix * "_yz_left",
+                                                           field_slicer = FieldSlicer(i = 1))
 
-    simulation.output_writers[:xz] = JLD2OutputWriter(model, outputs,
-                                                      schedule = TimeInterval(save_interval),
-                                                      force = true,
-                                                      prefix = prefix * "_xz",
-                                                      field_slicer = FieldSlicer(j = 1))
+    simulation.output_writers[:xz_left] = JLD2OutputWriter(model, outputs,
+                                                           schedule = TimeInterval(save_interval),
+                                                           force = true,
+                                                           prefix = prefix * "_xz_left",
+                                                           field_slicer = FieldSlicer(j = 1))
 
-    simulation.output_writers[:xy] = JLD2OutputWriter(model, outputs,
-                                                      schedule = TimeInterval(save_interval),
-                                                      force = true,
-                                                      prefix = prefix * "_xy",
-                                                      field_slicer = FieldSlicer(k = grid.Nz))
+    simulation.output_writers[:xy_bottom] = JLD2OutputWriter(model, outputs,
+                                                             schedule = TimeInterval(save_interval),
+                                                             force = true,
+                                                             prefix = prefix * "_xy_bottom",
+                                                             field_slicer = FieldSlicer(k = 1))
+
+    simulation.output_writers[:yz_right] = JLD2OutputWriter(model, outputs,
+                                                            schedule = TimeInterval(save_interval),
+                                                            force = true,
+                                                            prefix = prefix * "_yz_right",
+                                                            field_slicer = FieldSlicer(i = grid.Nx))
+
+    simulation.output_writers[:xz_right] = JLD2OutputWriter(model, outputs,
+                                                            schedule = TimeInterval(save_interval),
+                                                            force = true,
+                                                            prefix = prefix * "_xz_right",
+                                                            field_slicer = FieldSlicer(j = grid.Ny))
+
+    simulation.output_writers[:xy_top] = JLD2OutputWriter(model, outputs,
+                                                          schedule = TimeInterval(save_interval),
+                                                          force = true,
+                                                          prefix = prefix * "_xy_top",
+                                                          field_slicer = FieldSlicer(k = grid.Nz))
 
     simulation.output_writers[:averages] = JLD2OutputWriter(model, (c=C, u=U, η²=E²),
                                                             schedule = TimeInterval(save_interval),
@@ -240,7 +258,7 @@ function run_numerical_wave_tank!(model; ϵ=0.0, k=2π/0.03, max_velocity=Dict()
 end
 
 max_velocity = Dict()
-epsilons = [1e-1, 2e-1, 3e-1]
+epsilons = [3e-1, 2e-1, 1e-1]
 wavenumbers = [2π / 0.02, 2π / 0.03]
 
 #####
