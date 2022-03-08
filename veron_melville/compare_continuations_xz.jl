@@ -4,20 +4,11 @@ using GLMakie
 using Printf
 using Statistics
 
+no_waves_filename  = "continued_increasing_wind_256_256_256_k2.1e+02_ep0.0e+00_xz.jld2"
+med_waves_filename = "continued_increasing_wind_256_256_256_k2.1e+02_ep1.0e-01_xz.jld2"
+str_waves_filename = "continued_increasing_wind_256_256_256_k2.1e+02_ep3.0e-01_xz.jld2"
+
 Nx = Ny = Nz = 256
-k = 2.1e2
-ϵ = 0.3
-
-#prefix = @sprintf("%s_%d_%d_%d_k%.1e_ep%.1e", "increasing_wind", Nx, Ny, Nz, k, ϵ)
-#dir = "increasing_wind"
-
-prefix = @sprintf("%s_%d_%d_%d_k%.1e_ep%.1e", "continued_increasing_wind", Nx, Ny, Nz, k, ϵ)
-dir = ""
-
-xy_filepath = joinpath(dir, prefix * "_xy.jld2")
-yz_filepath = joinpath(dir, prefix * "_yz.jld2")
-xz_filepath = joinpath(dir, prefix * "_xz.jld2")
-
 Lx = Ly = 0.2
 Lz = Ly/2
 
@@ -33,13 +24,9 @@ grid = RectilinearGrid(CPU(),
                        z = k -> Lz * (ζ₀(k) * Σ(k) - 1), # (-Lz, 0)
                        topology = (Periodic, Periodic, Bounded))
 
-xy_file = jldopen(xy_filepath)
-iterations = parse.(Int, keys(xy_file["timeseries/t"]))
-t = [xy_file["timeseries/t/$i"] for i in iterations]
-close(xy_file)
-
-function extract_slices(filepath; dims, name)
+function extract_slices(filepath; dims=2, name)
     file = jldopen(filepath)
+    iterations = 
     slices = [dropdims(file["timeseries/$name/$i"]; dims) for i in iterations]
     close(file)
     return slices

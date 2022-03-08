@@ -4,20 +4,11 @@ using GLMakie
 using Printf
 using Statistics
 
+no_waves_filename = "continued_increasing_wind_256_256_256_k2.1e+02_ep0.0e+00_averages.jld2"
+med_waves_filename = "continued_increasing_wind_256_256_256_k2.1e+02_ep1.0e-01_averages.jld2"
+str_waves_filename = "continued_increasing_wind_256_256_256_k2.1e+02_ep3.0e-01_averages.jld2"
+
 Nx = Ny = Nz = 256
-k = 2.1e2
-ϵ = 0.3
-
-#prefix = @sprintf("%s_%d_%d_%d_k%.1e_ep%.1e", "increasing_wind", Nx, Ny, Nz, k, ϵ)
-#dir = "increasing_wind"
-
-prefix = @sprintf("%s_%d_%d_%d_k%.1e_ep%.1e", "continued_increasing_wind", Nx, Ny, Nz, k, ϵ)
-dir = ""
-
-xy_filepath = joinpath(dir, prefix * "_xy.jld2")
-yz_filepath = joinpath(dir, prefix * "_yz.jld2")
-xz_filepath = joinpath(dir, prefix * "_xz.jld2")
-
 Lx = Ly = 0.2
 Lz = Ly/2
 
@@ -33,28 +24,33 @@ grid = RectilinearGrid(CPU(),
                        z = k -> Lz * (ζ₀(k) * Σ(k) - 1), # (-Lz, 0)
                        topology = (Periodic, Periodic, Bounded))
 
-xy_file = jldopen(xy_filepath)
-iterations = parse.(Int, keys(xy_file["timeseries/t"]))
-t = [xy_file["timeseries/t/$i"] for i in iterations]
-close(xy_file)
-
-function extract_slices(filepath; dims, name)
+function hovmoller(filepath; name, dims=(1, 2))
     file = jldopen(filepath)
+    iterations = parse.(Int, keys(file["timeseries/t"]))
     slices = [dropdims(file["timeseries/$name/$i"]; dims) for i in iterations]
+    hov = hcat(slices...)
+    times = [file["timeseries/t/$i"] for i in iterations]
     close(file)
-    return slices
+    return permutedims(hov, (2, 1)), times
 end
-    
-u_yz_series = extract_slices(yz_filepath, name="u", dims=1)
-u_xz_series = extract_slices(xz_filepath, name="u", dims=2)
-u_xy_series = extract_slices(xy_filepath, name="u", dims=3)
 
-c_yz_series = extract_slices(yz_filepath, name="c", dims=1)
-c_xz_series = extract_slices(xz_filepath, name="c", dims=2)
-c_xy_series = extract_slices(xy_filepath, name="c", dims=3)
-
+c_no_waves, t = hovmoller(no_waves_filename, name="c")
+c_med_waves, t = hovmoller(med_waves_filename, name="c")
+c_str_waves, t = hovmoller(str_waves_filename, name="c")
+   
 x, y, z = nodes((Face, Center, Center), grid)
 
+fig = Figure(resolution=(1400, 800))
+
+ax1 = Axis(fig[1, 1])
+heatmap!(ax1, z, t, c_no_waves)
+
+ax2 = Axis(fig[2, 1])
+heatmap!(ax2, z, t, c_no_waves .- c_str_waves)
+
+display(fig)
+
+#=
 # Convert to cm
 x = 1e2 .* x
 y = 1e2 .* y
@@ -138,3 +134,4 @@ display(fig)
 #    slider.value[] = nn
 #end
 
+=#
