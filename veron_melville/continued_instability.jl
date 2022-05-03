@@ -5,12 +5,11 @@ using Statistics
 using OrderedCollections
 using JLD2
 using Oceananigans
+using Oceananigans.Architectures: architecture, arch_array
 using Oceananigans: fields
 using Oceananigans.Forcings: regularize_forcing
 using Oceananigans.Units
 using Printf
-
-@info "Building a grid..." 
 
 Ny = 256
 Ly = 0.2
@@ -186,7 +185,6 @@ function build_numerical_wave_tank(model; ϵ=0.0, k=2π/0.03, stop_time=60.0, pr
 
     save_interval = 0.02
 
-    #=
     simulation.output_writers[:yz] = JLD2OutputWriter(model, outputs,
                                                       schedule = TimeInterval(save_interval),
                                                       force = true,
@@ -214,19 +212,51 @@ function build_numerical_wave_tank(model; ϵ=0.0, k=2π/0.03, stop_time=60.0, pr
                                                               schedule = TimeInterval(save_interval),
                                                               force = true,
                                                               prefix = file_prefix * "_statistics")
-    =#
 
+    #=
     simulation.output_writers[:fields] = JLD2OutputWriter(model, fields(model),
                                                           schedule = SpecifiedTimes(20:30...),
                                                           force = true,
+                                                          field_slicer = nothing,
                                                           prefix = file_prefix * "_fields")
+    =#
 
 
     return simulation
 end
 
-function run_numerical_wave_tank!(model; ϵ=0.0, k=2π/0.03, stop_time=60.0, prefix="")
+filename = "transition_spin_upincreasing_wind_256_256_256_k2.1e+02_ep1.0e-01_fields.jld2"
+start_iter = 7828 # t ≈ 27
+
+function run_numerical_wave_tank!(model; ϵ=0.0, k=2π/0.03, stop_time=60.0, prefix="continued_")
     simulation = build_numerical_wave_tank(model; ϵ, k, stop_time, prefix)
+
+    arch = architecture(model.grid)
+
+    file = jldopen(filename)
+    uᵢ = arch_array(arch, file["timeseries/u/$start_iter"])
+    vᵢ = arch_array(arch, file["timeseries/v/$start_iter"])
+    wᵢ = arch_array(arch, file["timeseries/w/$start_iter"])
+    cᵢ = arch_array(arch, file["timeseries/c/$start_iter"])
+    tᵢ = file["timeseries/t/$start_iter"]
+    close(file)
+
+    @show tᵢ
+    @show size(uᵢ)
+    @show size(vᵢ)
+    @show size(wᵢ)
+    @show size(cᵢ)
+    @show size(model.velocities.u)
+    @show size(model.velocities.v)
+    @show size(model.velocities.w)
+    @show size(model.tracers.c)
+
+    model.velocities.u .= uᵢ
+    model.velocities.v .= vᵢ
+    model.velocities.w .= wᵢ
+    model.tracers.c .= cᵢ
+    model.clock.time = tᵢ 
+
     run!(simulation)
 
     @info "Simulation complete: $simulation. Output:"
@@ -239,19 +269,7 @@ function run_numerical_wave_tank!(model; ϵ=0.0, k=2π/0.03, stop_time=60.0, pre
     return nothing
 end
 
-run_numerical_wave_tank!(model, ϵ=1e-1, k=2π/0.03, stop_time=31, prefix="transition_spin_up")
+run_numerical_wave_tank!(model, ϵ=0.0, k=2π/0.03, stop_time=60, prefix="continued_")
+run_numerical_wave_tank!(model, ϵ=3e-1, k=2π/0.03, stop_time=60, prefix="continued_")
+run_numerical_wave_tank!(model, ϵ=1e-1, k=2π/0.03, stop_time=60, prefix="continued_")
 
-#####
-##### Run experiments
-#####
-
-#=
-epsilons = [1e-1, 2e-1, 3e-1]
-wavenumbers = [2π / 0.02, 2π / 0.03]
-
-run_numerical_wave_tank!(model)
-
-for ϵ in epsilons, k in wavenumbers
-    run_numerical_wave_tank!(model; ϵ, k)
-end
-=#
