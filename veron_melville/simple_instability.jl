@@ -187,23 +187,41 @@ function build_numerical_wave_tank(model; ϵ=0.0, k=2π/0.03, stop_time=60.0, pr
     save_interval = 0.02
 
     #=
-    simulation.output_writers[:yz] = JLD2OutputWriter(model, outputs,
-                                                      schedule = TimeInterval(save_interval),
-                                                      force = true,
-                                                      prefix = file_prefix * "_yz",
-                                                      field_slicer = FieldSlicer(i = 1))
+    simulation.output_writers[:yz_left] = JLD2OutputWriter(model, outputs,
+                                                           schedule = TimeInterval(save_interval),
+                                                           force = true,
+                                                           prefix = prefix * "_yz_left",
+                                                           field_slicer = FieldSlicer(i = 1))
 
-    simulation.output_writers[:xz] = JLD2OutputWriter(model, outputs,
-                                                      schedule = TimeInterval(save_interval),
-                                                      force = true,
-                                                      prefix = file_prefix * "_xz",
-                                                      field_slicer = FieldSlicer(j = 1))
+    simulation.output_writers[:xz_left] = JLD2OutputWriter(model, outputs,
+                                                           schedule = TimeInterval(save_interval),
+                                                           force = true,
+                                                           prefix = prefix * "_xz_left",
+                                                           field_slicer = FieldSlicer(j = 1))
 
-    simulation.output_writers[:xy] = JLD2OutputWriter(model, outputs,
-                                                      schedule = TimeInterval(save_interval),
-                                                      force = true,
-                                                      prefix = file_prefix * "_xy",
-                                                      field_slicer = FieldSlicer(k = grid.Nz))
+    simulation.output_writers[:xy_bottom] = JLD2OutputWriter(model, outputs,
+                                                             schedule = TimeInterval(save_interval),
+                                                             force = true,
+                                                             prefix = prefix * "_xy_bottom",
+                                                             field_slicer = FieldSlicer(k = 1))
+
+    simulation.output_writers[:yz_right] = JLD2OutputWriter(model, outputs,
+                                                            schedule = TimeInterval(save_interval),
+                                                            force = true,
+                                                            prefix = prefix * "_yz_right",
+                                                            field_slicer = FieldSlicer(i = grid.Nx))
+
+    simulation.output_writers[:xz_right] = JLD2OutputWriter(model, outputs,
+                                                            schedule = TimeInterval(save_interval),
+                                                            force = true,
+                                                            prefix = prefix * "_xz_right",
+                                                            field_slicer = FieldSlicer(j = grid.Ny))
+
+    simulation.output_writers[:xy_top] = JLD2OutputWriter(model, outputs,
+                                                          schedule = TimeInterval(save_interval),
+                                                          force = true,
+                                                          prefix = prefix * "_xy_top",
+                                                          field_slicer = FieldSlicer(k = grid.Nz))
 
     simulation.output_writers[:averages] = JLD2OutputWriter(model, (c=C, u=U, η²=E²),
                                                             schedule = TimeInterval(save_interval),
@@ -239,13 +257,17 @@ function run_numerical_wave_tank!(model; ϵ=0.0, k=2π/0.03, stop_time=60.0, pre
     return nothing
 end
 
-run_numerical_wave_tank!(model, ϵ=1e-1, k=2π/0.03, stop_time=31, prefix="transition_spin_up")
+#run_numerical_wave_tank!(model, ϵ=1e-1, k=2π/0.03, stop_time=31, prefix="transition_spin_up")
+run_numerical_wave_tank!(model, ϵ=1e-1, k=2π/0.03)
+max_velocity = Dict()
 
 #####
 ##### Run experiments
 #####
 
 #=
+epsilons = [3e-1, 2e-1, 1e-1]
+wavenumbers = [2π / 0.02, 2π / 0.03]
 epsilons = [1e-1, 2e-1, 3e-1]
 wavenumbers = [2π / 0.02, 2π / 0.03]
 
