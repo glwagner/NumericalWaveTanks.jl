@@ -43,8 +43,7 @@ grid = RectilinearGrid(arch,
 ##### Parameters
 #####
 
-name = "increasing_wind"
-dir = "/nobackup/users/glwagner/"
+nobackup_dir = "/nobackup/users/glwagner/"
 
 κ = 1e-6 # tracer diffusivity
 const ν = 1.05e-6    # m² s⁻¹, kinematic viscosity
@@ -66,29 +65,30 @@ surface_stokes_drift(sh) = sh.a^2 * sh.k * sh.ω
 ##### Surface stress
 #####
 
-u_top_bc = name == "increasing_wind" ?
-    FluxBoundaryCondition((x, y, t) -> - 1e-5 * sqrt(t)) :
-    FluxBoundaryCondition(-1e-4)
-
+@inline τʷ(x, y, t) = - 1e-5 * sqrt(t)
+u_top_bc = FluxBoundaryCondition(τʷ)
+    
 u_bcs = FieldBoundaryConditions(top = u_top_bc)
 boundary_conditions = (; u = u_bcs)
 
 #####
-##### Stokes streaming
+##### Stokes streaming term with a forcing function
 #####
 
 @inline ν_∂z²_uˢ(x, y, z, t, sh) = - 4 * ν * sh.a^2 * sh.k^3 * sh.ω * exp(2 * sh.k * z)
 u_forcing = Forcing(ν_∂z²_uˢ, parameters=ConstantStokesShear(0.0, 0.0))
 
+#####
+##### The model
+#####
+
 model = NonhydrostaticModel(; grid, boundary_conditions,
                             advection = WENO5(),
                             timestepper = :RungeKutta3,
                             tracers = :c,
-                            closure = IsotropicDiffusivity(ν=ν, κ=κ),
+                            closure = ScalarDiffusivity(ν=ν, κ=κ),
                             stokes_drift = UniformStokesDrift(∂z_uˢ=ConstantStokesShear(0.0, 0.0)),
-                            forcing = (; u = u_forcing),
-                            coriolis = nothing,
-                            buoyancy = nothing)
+                            forcing = (; u = u_forcing))
 
 u, v, w = model.velocities
 η² = (∂z(v) - ∂y(w))^2
@@ -97,7 +97,7 @@ C = Field(Average(model.tracers.c, dims=(1, 2)))
 U = Field(Average(model.velocities.u, dims=(1, 2)))
 E² = Field(Average(η², dims=(1, 2)))
 
-function build_numerical_wave_tank(model; ϵ=0.0, k=2π/0.03, stop_time=60.0, prefix="")
+function build_numerical_wave_tank(model; ϵ=0.0, k=2π/0.03, stop_time=60.0, prefix="increasing_wind")
     a = ϵ / k
     ∂z_uˢ = ConstantStokesShear(a, k)
 
@@ -126,8 +126,6 @@ function build_numerical_wave_tank(model; ϵ=0.0, k=2π/0.03, stop_time=60.0, pr
                  2π / k | $(2π / k)
                       ϵ | $ϵ
     """
-    #                 La | $La
-    #               La⁻¹ | $(1 / La)
 
     model.clock.time = 0
     model.clock.iteration = 0
@@ -146,6 +144,8 @@ function build_numerical_wave_tank(model; ϵ=0.0, k=2π/0.03, stop_time=60.0, pr
     wizard = TimeStepWizard(cfl=0.5, max_Δt=1.0)
     simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(10))
 
+    wall_clock = Ref(time_ns())
+
     function progress(sim)
 
         umax = maximum(abs, sim.model.velocities.u)
@@ -155,14 +155,17 @@ function build_numerical_wave_tank(model; ϵ=0.0, k=2π/0.03, stop_time=60.0, pr
         t = time(sim)
         h = √(ν * t)
         Re = umax * h / ν
+        elapsed = 1e-9 * (time_ns() - wall_clock[])
 
-        @info @sprintf("Time: %s, iteration: %d, next Δt: %s, max|U|: (%.2e, %.2e, %.2e)  m s⁻¹, hk: %.2f, Re: %.1f",
+        @info @sprintf("Time: %s, iter: %d, Δt: %s, wall time: %s, max|U|: (%.2e, %.2e, %.2e)  m s⁻¹, Re: %.1f",
                        prettytime(t),
                        iteration(sim),
                        prettytime(sim.Δt),
+                       prettytime(elapsed),
                        umax, vmax, wmax,
-                       h * k,
                        Re)
+
+        wall_clock[] = time_ns()
 
         return nothing
     end
@@ -173,7 +176,12 @@ function build_numerical_wave_tank(model; ϵ=0.0, k=2π/0.03, stop_time=60.0, pr
     ##### Set up output
     #####
 
-    file_filename = @sprintf("%s%s_%d_%d_%d_k%.1e_ep%.1e", prefix, name, grid.Nx, grid.Ny, grid.Nz, k, ϵ)
+    prefix = @sprintf("%s_ep%d_k%d_Nx%d_Nz%d_Lz%d",
+                      prefix, 100ϵ, 100k, model.grid.Nx, model.grid.Nz, 10 * model.grid.Lz)
+
+    dir = joinpath(nobackup_dir, prefix)
+
+    @info "Saving data to $prefix"
 
     outputs = merge(model.velocities, model.tracers)
 
@@ -186,51 +194,52 @@ function build_numerical_wave_tank(model; ϵ=0.0, k=2π/0.03, stop_time=60.0, pr
 
     save_interval = 0.02
 
-    simulation.output_writers[:yz_left] = JLD2OutputWriter(model, outputs,
+    simulation.output_writers[:yz_left] = JLD2OutputWriter(model, outputs; dir,
                                                            schedule = TimeInterval(save_interval),
                                                            overwrite_existing = true,
                                                            filename = prefix * "_yz_left",
+                                                           
                                                            indices = (1, :, :))
 
-    simulation.output_writers[:xz_left] = JLD2OutputWriter(model, outputs,
+    simulation.output_writers[:xz_left] = JLD2OutputWriter(model, outputs; dir,
                                                            schedule = TimeInterval(save_interval),
                                                            overwrite_existing = true,
                                                            filename = prefix * "_xz_left",
                                                            indices = (:, 1, :))
 
-    simulation.output_writers[:xy_bottom] = JLD2OutputWriter(model, outputs,
+    simulation.output_writers[:xy_bottom] = JLD2OutputWriter(model, outputs; dir,
                                                              schedule = TimeInterval(save_interval),
                                                              overwrite_existing = true,
                                                              filename = prefix * "_xy_bottom",
                                                              indices = (:, :, 1))
 
-    simulation.output_writers[:yz_right] = JLD2OutputWriter(model, outputs,
+    simulation.output_writers[:yz_right] = JLD2OutputWriter(model, outputs; dir,
                                                             schedule = TimeInterval(save_interval),
                                                             overwrite_existing = true,
                                                             filename = prefix * "_yz_right",
                                                             indices = (grid.Nx, :, :))
 
-    simulation.output_writers[:xz_right] = JLD2OutputWriter(model, outputs,
+    simulation.output_writers[:xz_right] = JLD2OutputWriter(model, outputs; dir,
                                                             schedule = TimeInterval(save_interval),
                                                             overwrite_existing = true,
                                                             filename = prefix * "_xz_right",
                                                             indices = (:, grid.Ny, :))
 
-    simulation.output_writers[:xy_top] = JLD2OutputWriter(model, outputs,
+    simulation.output_writers[:xy_top] = JLD2OutputWriter(model, outputs; dir,
                                                           schedule = TimeInterval(save_interval),
                                                           overwrite_existing = true,
                                                           filename = prefix * "_xy_top",
                                                           indices = (:, :, grid.Nz))
 
-    simulation.output_writers[:averages] = JLD2OutputWriter(model, (c=C, u=U, η²=E²),
+    simulation.output_writers[:averages] = JLD2OutputWriter(model, (c=C, u=U, η²=E²); dir,
                                                             schedule = TimeInterval(save_interval),
                                                             overwrite_existing = true,
-                                                            filename = file_prefix * "_averages")
+                                                            filename = prefix * "_averages")
 
-    simulation.output_writers[:statistics] = JLD2OutputWriter(model, statistics,
+    simulation.output_writers[:statistics] = JLD2OutputWriter(model, statistics; dir,
                                                               schedule = TimeInterval(save_interval),
                                                               overwrite_existing = true,
-                                                              filename = file_prefix * "_statistics")
+                                                              filename = prefix * "_statistics")
 
     #=
     simulation.output_writers[:fields] = JLD2OutputWriter(model, fields(model),
@@ -243,8 +252,8 @@ function build_numerical_wave_tank(model; ϵ=0.0, k=2π/0.03, stop_time=60.0, pr
     return simulation
 end
 
-function run_numerical_wave_tank!(model; ϵ=0.0, k=2π/0.03, stop_time=60.0, prefix="")
-    simulation = build_numerical_wave_tank(model; ϵ, k, stop_time, prefix)
+function run_numerical_wave_tank!(model; kw...)
+    simulation = build_numerical_wave_tank(model; kw...)
     run!(simulation)
 
     @info "Simulation complete: $simulation. Output:"
