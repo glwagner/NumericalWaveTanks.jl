@@ -176,9 +176,8 @@ function build_numerical_wave_tank(arch;
     U = Field(Average(u, dims=(1, 2)))
     E² = Field(Average(η², dims=(1, 2)))
 
-    simulation.output_writers[:averages] = JLD2OutputWriter(model, (c=C, u=U, η²=E²); dir,
+    simulation.output_writers[:averages] = JLD2OutputWriter(model, (c=C, u=U, η²=E²); dir, overwrite_existing,
                                                             schedule = TimeInterval(save_interval),
-                                                            overwrite_existing = true,
                                                             filename = prefix * "_averages")
 
     Nz = grid.Nz
@@ -188,7 +187,7 @@ function build_numerical_wave_tank(arch;
                   v_max = model -> maximum(abs, view(interior(model.velocities.v), :, :, Nz)),
                   w_max = model -> maximum(abs, model.velocities.w))
 
-    simulation.output_writers[:statistics] = JLD2OutputWriter(model, statistics; dir,
+    simulation.output_writers[:statistics] = JLD2OutputWriter(model, statistics; dir, overwrite_existing,
                                                               schedule = TimeInterval(save_interval),
                                                               overwrite_existing = true,
                                                               filename = prefix * "_statistics")
