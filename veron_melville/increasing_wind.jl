@@ -9,6 +9,8 @@ using Oceananigans.Forcings: regularize_forcing
 using Oceananigans.Units
 using Printf
 
+κ_rhodamine = 1e-9 # find a reference for this
+
 # Constant Stokes shear utility
 struct ConstantStokesShear{T}
     a :: T
@@ -35,8 +37,9 @@ function build_numerical_wave_tank(arch;
                                    ϵ = 0.0,
                                    k = 2π/0.03,
                                    ν = 1.05e-6,
-                                   κ = 1e-7,
-                                   stop_time = 50.0,
+                                   κ = κ_rhodamine,
+                                   β = 1.2e-5,
+                                   stop_time = 20.0,
                                    save_interval = 0.2,
                                    overwrite_existing = false,
                                    prefix = "increasing_wind")
@@ -66,7 +69,7 @@ function build_numerical_wave_tank(arch;
     ##### Surface stress
     #####
 
-    @inline τʷ(x, y, t) = - 1e-5 * sqrt(t)
+    @inline τʷ(x, y, t) = - β * sqrt(t)
     u_top_bc = FluxBoundaryCondition(τʷ)
         
     u_bcs = FieldBoundaryConditions(top = u_top_bc)
@@ -118,8 +121,10 @@ function build_numerical_wave_tank(arch;
                                         
     simulation = Simulation(model; Δt=1e-4, stop_time)
 
-    wizard = TimeStepWizard(cfl=0.3, max_Δt=1.0, max_change=1.1)
-    simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(10))
+    Δ = min(minimum(parent(grid.Δzᵃᵃᶜ)), grid.Δxᶜᵃᵃ)
+    @show max_Δt = 0.1 * Δ^2 / ν
+    wizard = TimeStepWizard(; cfl=0.3, max_Δt)
+    simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(1))
 
     wall_clock = Ref(time_ns())
 
@@ -176,9 +181,13 @@ function build_numerical_wave_tank(arch;
     U = Field(Average(u, dims=(1, 2)))
     E² = Field(Average(η², dims=(1, 2)))
 
-    simulation.output_writers[:averages] = JLD2OutputWriter(model, (c=C, u=U, η²=E²); dir, overwrite_existing,
-                                                            schedule = TimeInterval(save_interval),
-                                                            filename = prefix * "_averages")
+    simulation.output_writers[:avg] = JLD2OutputWriter(model, (c=C, u=U, η²=E²); dir, overwrite_existing,
+                                                       schedule = TimeInterval(save_interval),
+                                                       filename = prefix * "_averages")
+
+    simulation.output_writers[:fast_avg] = JLD2OutputWriter(model, (c=C, u=U, η²=E²); dir, overwrite_existing,
+                                                            schedule = TimeInterval(0.02),
+                                                            filename = prefix * "_hi_freq_averages")
 
     Nz = grid.Nz
 
@@ -187,9 +196,13 @@ function build_numerical_wave_tank(arch;
                   v_max = model -> maximum(abs, view(interior(model.velocities.v), :, :, Nz)),
                   w_max = model -> maximum(abs, model.velocities.w))
 
-    simulation.output_writers[:statistics] = JLD2OutputWriter(model, statistics; dir, overwrite_existing,
-                                                              schedule = TimeInterval(save_interval),
-                                                              filename = prefix * "_statistics")
+    simulation.output_writers[:stats] = JLD2OutputWriter(model, statistics; dir, overwrite_existing,
+                                                         schedule = TimeInterval(save_interval),
+                                                         filename = prefix * "_statistics")
+
+    simulation.output_writers[:fast_stats] = JLD2OutputWriter(model, statistics; dir, overwrite_existing,
+                                                              schedule = TimeInterval(0.02),
+                                                              filename = prefix * "_hi_freq_statistics")
 
     simulation.output_writers[:yz_left] = JLD2OutputWriter(model, outputs; dir, overwrite_existing,
                                                            schedule = TimeInterval(save_interval),
@@ -221,12 +234,12 @@ function build_numerical_wave_tank(arch;
                                                           filename = prefix * "_xy_top",
                                                           indices = (:, :, grid.Nz))
 
-    simulation.output_writers[:fields] = JLD2OutputWriter(model, fields(model); dir, overwrite_existing,
-                                                          schedule = SpecifiedTimes(24, 26, 28),
-                                                          filename = prefix * "_fields")
+    #simulation.output_writers[:fields] = JLD2OutputWriter(model, fields(model); dir, overwrite_existing,
+    #                                                      schedule = SpecifiedTimes(24, 26, 28),
+    #                                                      filename = prefix * "_fields")
 
     simulation.output_writers[:chk] = Checkpointer(model; dir, overwrite_existing,
-                                                   schedule = TimeInterval(2),
+                                                   schedule = TimeInterval(0.5),
                                                    cleanup = true,
                                                    prefix = prefix * "_checkpointer")
 
