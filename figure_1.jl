@@ -4,10 +4,9 @@ using MAT
 using Oceananigans
 
 dir = "data"
-#case = "increasing_wind_ep10_k30_N512_512_384_L20_20_10"
 #case = "increasing_wind_ep27_k30_N384_384_256_L10_10_5"
-case = "increasing_wind_ep28_k30_N384_384_256_L10_10_5"
 #case = "increasing_wind_ep27_k30_N512_512_384_L10_10_5"
+case = "increasing_wind_ep28_k30_N384_384_256_L10_10_5"
 statistics_filename = case * "_statistics.jld2"
 averages_filename   = case * "_averages.jld2"
 
@@ -44,7 +43,6 @@ function compute_timeseries(filepath)
         timeseries[stat] = [statsfile["timeseries/$stat/$i"] for i in iters]
         #timeseries[stat] = timeseries[stat][I]
     end
-
 
     close(statsfile)
 

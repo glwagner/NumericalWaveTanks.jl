@@ -23,13 +23,13 @@ averages_filenames = [
 =#
 
 statistics_filenames = [
-    "increasing_wind_ep27_k30_N384_384_256_L10_10_5_statistics.jld2",
-    "increasing_wind_ep27_k30_N512_512_384_L10_10_5_statistics.jld2",
+    "increasing_wind_ep27_k30_N384_384_256_L10_10_5_hi_freq_statistics.jld2",
+    "increasing_wind_ep27_k30_N512_512_384_L10_10_5_hi_freq_statistics.jld2",
 ]
 
 averages_filenames = [
-    "increasing_wind_ep27_k30_N384_384_256_L10_10_5_averages.jld2",
-    "increasing_wind_ep27_k30_N512_512_384_L10_10_5_averages.jld2",
+    "increasing_wind_ep27_k30_N384_384_256_L10_10_5_hi_freq_averages.jld2",
+    "increasing_wind_ep27_k30_N512_512_384_L10_10_5_hi_freq_averages.jld2",
 ]
 
 function compute_timeseries(statsname, avgsname)
