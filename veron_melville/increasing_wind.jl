@@ -38,11 +38,11 @@ function build_numerical_wave_tank(arch;
                                    k = 2π/0.03,
                                    ν = 1.05e-6,
                                    κ = κ_rhodamine,
-                                   β = 1.2e-5,
-                                   stop_time = 20.0,
+                                   β = 1.1e-5,
+                                   stop_time = 30.0,
                                    save_interval = 0.2,
                                    overwrite_existing = false,
-                                   prefix = "increasing_wind")
+                                   name = "increasing_wind")
 
     refinement = 1.5 # controls spacing near surface (higher means finer spaced)
     stretching = 8   # controls rate of stretching at bottom
@@ -60,10 +60,6 @@ function build_numerical_wave_tank(arch;
                            topology = (Periodic, Periodic, Bounded))
 
     @show grid
-
-    #####
-    ##### Parameters
-    #####
 
     #####
     ##### Surface stress
@@ -161,17 +157,17 @@ function build_numerical_wave_tank(arch;
 
     Nx, Ny, Nz = size(model.grid)
 
-    prefix = @sprintf("%s_ep%d_k%d_N%d_%d_%d_L%d_%d_%d",
-                      prefix, 100ϵ, 1000 * 2π/k,
-                      Nx, Ny, Nz,
-                      100 * model.grid.Lx,
-                      100 * model.grid.Ly,
-                      100 * model.grid.Lz)
+    file_prefix = @sprintf("%s_ep%d_k%d_beta%d_N%d_%d_%d_L%d_%d_%d",
+                           name, 100ϵ, 1000 * 2π/k, 1e7 * β,
+                           Nx, Ny, Nz,
+                           100 * model.grid.Lx,
+                           100 * model.grid.Ly,
+                           100 * model.grid.Lz)
 
     nobackup_dir = "/nobackup/users/glwagner/"
-    dir = joinpath(nobackup_dir, prefix)
+    dir = joinpath(nobackup_dir, file_prefix)
 
-    @info "Saving data to $prefix"
+    @info "Saving data to $file_prefix"
 
     outputs = merge(model.velocities, model.tracers)
 
@@ -183,11 +179,11 @@ function build_numerical_wave_tank(arch;
 
     simulation.output_writers[:avg] = JLD2OutputWriter(model, (c=C, u=U, η²=E²); dir, overwrite_existing,
                                                        schedule = TimeInterval(save_interval),
-                                                       filename = prefix * "_averages")
+                                                       filename = file_prefix * "_averages")
 
     simulation.output_writers[:fast_avg] = JLD2OutputWriter(model, (c=C, u=U, η²=E²); dir, overwrite_existing,
                                                             schedule = TimeInterval(0.02),
-                                                            filename = prefix * "_hi_freq_averages")
+                                                            filename = file_prefix * "_hi_freq_averages")
 
     Nz = grid.Nz
 
@@ -198,50 +194,50 @@ function build_numerical_wave_tank(arch;
 
     simulation.output_writers[:stats] = JLD2OutputWriter(model, statistics; dir, overwrite_existing,
                                                          schedule = TimeInterval(save_interval),
-                                                         filename = prefix * "_statistics")
+                                                         filename = file_prefix * "_statistics")
 
     simulation.output_writers[:fast_stats] = JLD2OutputWriter(model, statistics; dir, overwrite_existing,
                                                               schedule = TimeInterval(0.02),
-                                                              filename = prefix * "_hi_freq_statistics")
+                                                              filename = file_prefix * "_hi_freq_statistics")
 
     simulation.output_writers[:yz_left] = JLD2OutputWriter(model, outputs; dir, overwrite_existing,
                                                            schedule = TimeInterval(save_interval),
-                                                           filename = prefix * "_yz_left",
+                                                           filename = file_prefix * "_yz_left",
                                                            indices = (1, :, :))
 
     simulation.output_writers[:xz_left] = JLD2OutputWriter(model, outputs; dir, overwrite_existing,
                                                            schedule = TimeInterval(save_interval),
-                                                           filename = prefix * "_xz_left",
+                                                           filename = file_prefix * "_xz_left",
                                                            indices = (:, 1, :))
 
     simulation.output_writers[:xy_bottom] = JLD2OutputWriter(model, outputs; dir, overwrite_existing,
                                                              schedule = TimeInterval(save_interval),
-                                                             filename = prefix * "_xy_bottom",
+                                                             filename = file_prefix * "_xy_bottom",
                                                              indices = (:, :, 1))
 
     simulation.output_writers[:yz_right] = JLD2OutputWriter(model, outputs; dir, overwrite_existing,
                                                             schedule = TimeInterval(save_interval),
-                                                            filename = prefix * "_yz_right",
+                                                            filename = file_prefix * "_yz_right",
                                                             indices = (grid.Nx, :, :))
 
     simulation.output_writers[:xz_right] = JLD2OutputWriter(model, outputs; dir, overwrite_existing,
                                                             schedule = TimeInterval(save_interval),
-                                                            filename = prefix * "_xz_right",
+                                                            filename = file_prefix * "_xz_right",
                                                             indices = (:, grid.Ny, :))
 
     simulation.output_writers[:xy_top] = JLD2OutputWriter(model, outputs; dir, overwrite_existing,
                                                           schedule = TimeInterval(save_interval),
-                                                          filename = prefix * "_xy_top",
+                                                          filename = file_prefix * "_xy_top",
                                                           indices = (:, :, grid.Nz))
 
-    #simulation.output_writers[:fields] = JLD2OutputWriter(model, fields(model); dir, overwrite_existing,
-    #                                                      schedule = SpecifiedTimes(24, 26, 28),
-    #                                                      filename = prefix * "_fields")
+    simulation.output_writers[:fields] = JLD2OutputWriter(model, fields(model); dir, overwrite_existing,
+                                                          schedule = SpecifiedTimes(16, 17, 18, 19),
+                                                          filename = file_prefix * "_fields")
 
     simulation.output_writers[:chk] = Checkpointer(model; dir, overwrite_existing,
                                                    schedule = TimeInterval(0.5),
                                                    cleanup = true,
-                                                   prefix = prefix * "_checkpointer")
+                                                   prefix = file_prefix * "_checkpointer")
 
     return simulation
 end
@@ -256,12 +252,13 @@ if parsing
     Ly     = parse(Float64, ARGS[5])
     Lz     = parse(Float64, ARGS[6])
     ϵ      = parse(Float64, ARGS[7])
-    pickup = parse(Bool,    ARGS[8])
+    β      = parse(Float64, ARGS[8]) * 1e-5
+    pickup = parse(Bool,    ARGS[9])
 end
 
 @show overwrite_existing = !pickup
 
-simulation = build_numerical_wave_tank(GPU(); Nx, Ny, Nz, Lx, Ly, Lz, overwrite_existing, ϵ, k=2π/0.03)
+simulation = build_numerical_wave_tank(GPU(); Nx, Ny, Nz, Lx, Ly, Lz, β, overwrite_existing, ϵ, k=2π/0.03)
 
 run!(simulation; pickup)
 
