@@ -39,7 +39,7 @@ function build_numerical_wave_tank(arch;
                                    ν = 1.05e-6,
                                    κ = κ_rhodamine,
                                    β = 1.1e-5,
-                                   stop_time = 30.0,
+                                   stop_time = 20.0,
                                    save_interval = 0.2,
                                    overwrite_existing = false,
                                    name = "increasing_wind")
