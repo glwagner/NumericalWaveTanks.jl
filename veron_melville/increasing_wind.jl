@@ -39,7 +39,7 @@ function build_numerical_wave_tank(arch;
                                    ν = 1.05e-6,
                                    κ = κ_rhodamine,
                                    β = 1.1e-5,
-                                   stop_time = 20.0,
+                                   stop_time = 30.0,
                                    save_interval = 0.2,
                                    overwrite_existing = false,
                                    name = "increasing_wind")
@@ -84,7 +84,7 @@ function build_numerical_wave_tank(arch;
     #####
 
     model = NonhydrostaticModel(; grid, boundary_conditions,
-                                advection = WENO5(),
+                                advection = WENO(),
                                 timestepper = :RungeKutta3,
                                 tracers = :c,
                                 closure = ScalarDiffusivity(; ν, κ),
@@ -158,7 +158,7 @@ function build_numerical_wave_tank(arch;
     Nx, Ny, Nz = size(model.grid)
 
     file_prefix = @sprintf("%s_ep%d_k%d_beta%d_N%d_%d_%d_L%d_%d_%d",
-                           name, 100ϵ, 1000 * 2π/k, 1e7 * β,
+                           name, 1000ϵ, 1000 * 2π/k, 1e7 * β,
                            Nx, Ny, Nz,
                            100 * model.grid.Lx,
                            100 * model.grid.Ly,
@@ -196,9 +196,9 @@ function build_numerical_wave_tank(arch;
                                                          schedule = TimeInterval(save_interval),
                                                          filename = file_prefix * "_statistics")
 
-    simulation.output_writers[:fast_stats] = JLD2OutputWriter(model, statistics; dir, overwrite_existing,
-                                                              schedule = TimeInterval(0.02),
-                                                              filename = file_prefix * "_hi_freq_statistics")
+    simulation.output_writers[:hi_freq_stats] = JLD2OutputWriter(model, statistics; dir, overwrite_existing,
+                                                                 schedule = TimeInterval(0.02),
+                                                                 filename = file_prefix * "_hi_freq_statistics")
 
     simulation.output_writers[:yz_left] = JLD2OutputWriter(model, outputs; dir, overwrite_existing,
                                                            schedule = TimeInterval(save_interval),
@@ -230,9 +230,11 @@ function build_numerical_wave_tank(arch;
                                                           filename = file_prefix * "_xy_top",
                                                           indices = (:, :, grid.Nz))
 
+    #=
     simulation.output_writers[:fields] = JLD2OutputWriter(model, fields(model); dir, overwrite_existing,
                                                           schedule = SpecifiedTimes(16, 17, 18, 19),
                                                           filename = file_prefix * "_fields")
+    =#
 
     simulation.output_writers[:chk] = Checkpointer(model; dir, overwrite_existing,
                                                    schedule = TimeInterval(0.5),
