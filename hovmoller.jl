@@ -82,27 +82,21 @@ u_vm_wake = veron_melville_data[:u_wake] ./ 100
 t₀ = -10
 t₁ = 10
 z₀ = -0.04
-fig = Figure(resolution=(1200, 1600))
+fig = Figure(resolution=(1200, 800))
 colormap = :bilbao
 
-ax_u    = Axis(fig[1, 1], xlabel="Time relative to turbulent transition (seconds)", ylabel="Maximum streamwise velocity (m s⁻¹)")
-ax_w    = Axis(fig[2, 1], xlabel="Time relative to turbulent transition (seconds)", ylabel="Maximum vertical velocity (m s⁻¹)")
-ax_sim  = Axis(fig[3, 1], xlabel="Time relative to turbulent transition (seconds)", ylabel="z (m)")
+ax_sim  = Axis(fig[1, 1], xlabel="Time relative to turbulent transition (seconds)", ylabel="z (m)")
 
-xlims!(ax_u,    t₀, t₁)
-xlims!(ax_w,    t₀, t₁)
 xlims!(ax_sim,  t₀, t₁)
 ylims!(ax_sim,  z₀, 0.0)
 
-# ax_llif = Axis(fig[2, 1], xlabel="Time relative to turbulent transition (seconds)", ylabel="z (m)")
-#xlims!(ax_llif, t₀, t₁)
-#ylims!(ax_llif, z₀, 0.0)
+ax_llif = Axis(fig[2, 1], xlabel="Time relative to turbulent transition (seconds)", ylabel="z (m)")
+xlims!(ax_llif, t₀, t₁)
+ylims!(ax_llif, z₀, 0.0)
 
-#=
 lif_levels = collect(range(0, stop=500, length=6))
 push!(lif_levels, maximum(c_llif))
 contourf!(ax_llif, t_llif, z_llif, c_llif; colorrange=(50, 500), colormap, levels=lif_levels)
-=#
 
 c_max = 0.02
 sim_levels = collect(range(0, stop=c_max, length=6))
@@ -113,48 +107,10 @@ c_sim = max.(0, c_sim)
 
 contourf!(ax_sim, t_sim, z_sim, c_sim'; colormap, colorrange=(0, c_max), levels=sim_levels)
 
-# Scatter plot
-surface_velocity_filename = "data/Final_SurfVel_per_RAMP.mat"
-surface_velocity_data = matread(surface_velocity_filename)["BIN"]["R$ramp"]
-t_surf = surface_velocity_data["time"][:]
-u_surf = surface_velocity_data["U"][:]
-
-u_surf_max = replace(u -> isnan(u) ? 0.0 : u, u_surf)
-u_surf_max_max, n_max = findmax(u_surf_max)
-t_surf_max = t_surf[n_max]
-t_surf = t_surf .- t_surf_max
-
-#scatter!(ax_u, t_surf, u_surf, marker=:pentagon, markersize=15, color=(:blue, 0.6), label="Lab (feature tracking)")
-
-αsim = 0.6
-αvm = 0.7
-
-lines!(ax_u, t_stats, u_max, linewidth=6, color=(:red, αsim), label="max(u), simulation")
-lines!(ax_u, t_stats, u_min, linewidth=6, color=(:orange, αsim), label="min(u), simulation")
-lines!(ax_u, t_avg, u_avg, linewidth=4, color=(:black, αsim), label="mean(u), simulation")
-
-lines!(ax_w, t_stats, w_max, linewidth=6, color=(:red, αsim), label="max(w), simulation")
-
-scatter!(ax_u, t_vm_surf, u_vm_surf, marker=:utriangle, markersize=20, color=(:blue, αvm),
-         label="Surface velocity, Veron and Melville (2001)")
-
-scatter!(ax_u, t_vm_avg_surf, u_vm_avg_surf, marker=:rect, markersize=20, color=(:purple, αvm),
-         label="Average surface velocity, Veron and Melville (2001)")
-
-scatter!(ax_u, t_vm_jet, u_vm_jet, markersize=10, color=(:indigo, αvm),
-         label="Jet velocity, Veron and Melville (2001)")
-
-scatter!(ax_u, t_vm_wake, u_vm_wake, marker=:cross, markersize=20, color=(:cyan, 1.0),
-         label="Wake velocity, Veron and Melville (2001)")
-
-Legend(fig[0, 1], ax_u, tellwidth=false)
-
-#=
-tn_tlif = @lift t_tlif[$n] - 19.5 #- t_surf_max
-vlines!(ax_u, tn_tlif, linestyle=:solid, linewidth=3, color=(:black, 0.6))
-vlines!(ax_u, tn_sim, linestyle=:dash, linewidth=3, color=(:red, 0.8))
-=#
+#tn_tlif = @lift t_tlif[$n] - 19.5 #- t_surf_max
+#vlines!(ax_u, tn_tlif, linestyle=:solid, linewidth=3, color=(:black, 0.6))
+#vlines!(ax_u, tn_sim, linestyle=:dash, linewidth=3, color=(:red, 0.8))
 
 display(fig)
 
-save("/Users/gregorywagner/Desktop/figure_1.png", fig)
+save("hovmoller.png", fig)

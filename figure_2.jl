@@ -1,5 +1,4 @@
-#=
-#using GLMakie
+using GLMakie
 using JLD2
 using MAT
 using Oceananigans
@@ -68,7 +67,6 @@ t_stats = t_stats .- t_transition
 c_sim = FieldTimeSeries(yz_filepath, "c")
 t_sim = c_sim.times
 Nt = length(t_sim)
-=#
 
 # Figure
 fig = Figure(resolution=(2000, 800))

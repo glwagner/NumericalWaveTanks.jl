@@ -6,31 +6,14 @@ using Printf
 
 dir = "data"
 
-#=
-statistics_filenames = [
-    "increasing_wind_ep10_k30_N384_384_384_L10_10_10_statistics.jld2",
-    "increasing_wind_ep10_k30_N512_512_256_L20_20_10_statistics.jld2",
-    "increasing_wind_ep10_k30_N512_512_512_L10_10_10_statistics.jld2",
-    "increasing_wind_ep10_k30_N600_600_300_L20_20_10_statistics.jld2",
+prefixes = [
+    "increasing_wind_ep10_k30_beta120_N384_384_256_L10_10_5",
+    "increasing_wind_ep14_k30_beta120_N384_384_256_L10_10_5",
+    "increasing_wind_ep18_k30_beta120_N384_384_256_L10_10_5",
 ]
 
-averages_filenames = [
-    "increasing_wind_ep10_k30_N384_384_384_L10_10_10_averages.jld2",
-    "increasing_wind_ep10_k30_N512_512_256_L20_20_10_averages.jld2",
-    "increasing_wind_ep10_k30_N512_512_512_L10_10_10_averages.jld2",
-    "increasing_wind_ep10_k30_N600_600_300_L20_20_10_averages.jld2",
-]
-=#
-
-statistics_filenames = [
-    "increasing_wind_ep27_k30_N384_384_256_L10_10_5_hi_freq_statistics.jld2",
-    "increasing_wind_ep27_k30_N512_512_384_L10_10_5_hi_freq_statistics.jld2",
-]
-
-averages_filenames = [
-    "increasing_wind_ep27_k30_N384_384_256_L10_10_5_hi_freq_averages.jld2",
-    "increasing_wind_ep27_k30_N512_512_384_L10_10_5_hi_freq_averages.jld2",
-]
+statistics_filenames = [prefix * "_hi_freq_statistics.jld2" for prefix in prefixes]
+averages_filenames = [prefix * "_hi_freq_averages.jld2" for prefix in prefixes]
 
 function compute_timeseries(statsname, avgsname)
     statsfile = jldopen(joinpath(dir, statsname))
