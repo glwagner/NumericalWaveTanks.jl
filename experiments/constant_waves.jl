@@ -230,12 +230,6 @@ function build_numerical_wave_tank(arch;
                                                           filename = file_prefix * "_xy_top",
                                                           indices = (:, :, grid.Nz))
 
-    #=
-    simulation.output_writers[:fields] = JLD2OutputWriter(model, fields(model); dir, overwrite_existing,
-                                                          schedule = SpecifiedTimes(16, 17, 18, 19),
-                                                          filename = file_prefix * "_fields")
-    =#
-
     simulation.output_writers[:chk] = Checkpointer(model; dir, overwrite_existing,
                                                    schedule = TimeInterval(0.5),
                                                    cleanup = true,
@@ -245,6 +239,10 @@ function build_numerical_wave_tank(arch;
 end
 
 parsing = true
+
+# For example:
+# julia --project increasing_wind.jl 384 384 256 0.1 0.1 0.05 0.13 1.2 false
+#                                    Nx  Ny  Nz  Lx  Ly  Lz   ϵ    β   pickup
 
 if parsing
     Nx     = parse(Int,     ARGS[1])
