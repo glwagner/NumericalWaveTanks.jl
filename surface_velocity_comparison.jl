@@ -28,7 +28,7 @@ udel_vars = matread(udel_filename)
 exp = "R2"
 
 #t₀_udel = 95.9
-t₀_udel = 96.3
+t₀_udel = 97.2
 u_udel = udel_vars["BIN"][exp]["U"][:]
 t_udel = udel_vars["BIN"][exp]["time"][:] .- t₀_udel
 
@@ -52,12 +52,19 @@ z₀ = -0.04
 fig = Figure(resolution=(1200, 800))
 colormap = :bilbao
 
-ax_u = Axis(fig[1, 1],
+ax_u = Axis(fig[1, 1], xaxisposition=:top,
             xlabel = "Time relative to turbulent transition (seconds)",
-            ylabel = "Maximum streamwise velocity (m s⁻¹)")
+            ylabel = "Streamwise velocity (m s⁻¹)")
+
+ax_w = Axis(fig[2, 1],
+            xlabel = "Time relative to turbulent transition (seconds)",
+            ylabel = "Cross-stream velocities (m s⁻¹)")
 
 ylims!(ax_u, 0.0, 0.2)
 xlims!(ax_u, t₀, t₁)
+
+ylims!(ax_w, -0.01, 0.08)
+xlims!(ax_w, t₀, t₁)
 
 # Scatter plot
 surface_velocity_filename = "data/Final_SurfVel_per_RAMP.mat"
@@ -75,6 +82,7 @@ t_surf = t_surf .- t_surf_max
 scatter!(ax_u, t_udel, u_udel, marker=:circle, markersize=20, color=(:black, 0.5),
          label="Average surface velocity, UDelaware exp $exp")
 
+#=
 scatter!(ax_u, t_vm_surf, u_vm_surf, marker=:utriangle, markersize=20, color=(:blue, αvm),
          label="Surface velocity, Veron and Melville (2001)")
 
@@ -86,6 +94,7 @@ scatter!(ax_u, t_vm_jet, u_vm_jet, markersize=20, color=(:indigo, αvm), marker=
 
 scatter!(ax_u, t_vm_wake, u_vm_wake, marker=:cross, markersize=20, color=(:cyan, 1.0),
          label="Wake velocity, Veron and Melville (2001)")
+=#
 
 #####
 ##### Simulation stuff
@@ -97,10 +106,10 @@ dir = "data"
 #label = "ϵ = 0.14"
 #case = "increasing_wind_ep135_k30_beta120_N384_384_256_L10_10_5_hi_freq"
 #label = "ϵ = 0.135"
-case = "increasing_wind_ep135_k30_beta120_N512_512_384_L10_10_5_hi_freq"
-label = "ϵ = 0.13"
-#case = "increasing_wind_ep13_k30_beta120_N512_512_384_L10_10_5_hi_freq"
+#case = "increasing_wind_ep135_k30_beta120_N512_512_384_L10_10_5_hi_freq"
 #label = "ϵ = 0.13"
+case = "increasing_wind_ep13_k30_beta120_N512_512_384_L10_10_5_hi_freq"
+label = "ϵ = 0.13"
 #case = "increasing_wind_ep12_k30_beta100_N512_512_384_L10_10_5_hi_freq"
 #label = "ϵ = 0.12"
 αsim = 0.6
@@ -119,12 +128,14 @@ stats = compute_timeseries(statistics_filepath)
 t_stats = stats[:t]
 u_max = stats[:u_max]
 w_max = stats[:w_max]
+v_max = stats[:v_max]
 u_min = stats[:u_min]
 
 # Shift time according to turbulent transition
 nn = sortperm(t_stats)
 t_stats = t_stats[nn]
 u_max = u_max[nn]
+v_max = v_max[nn]
 w_max = w_max[nn]
 
 Δ_max = 1e-6
@@ -146,8 +157,15 @@ lines!(ax_u, t_stats, u_max; linewidth=6, color = (:darkred, 0.8), label =  "max
 lines!(ax_u, t_stats, u_min; linewidth=6, color = (:seagreen, 0.6), label =  "min(u), " * label)
 lines!(ax_u, t_avg,   u_avg; linewidth=8, color = (:royalblue1, 0.6), label = "mean(u), " * label)
 
-Legend(fig[0, 1], ax_u, tellwidth=false)
+lines!(ax_w, t_stats, v_max; linewidth=6, color = (:royalblue1, 0.8), label =  "max(v)")
+lines!(ax_w, t_stats, w_max; linewidth=6, color = (:darkred, 0.8), label =  "max(w)")
 
+Legend(fig[0, 1], ax_u, tellwidth=false)
+axislegend(ax_w, position=:lt)
+hidespines!(ax_w, :t, :r)
+hidespines!(ax_u, :b, :r)
+Δb (ν, κ)
+Δb = α * g * ΔT
 display(fig)
 
-save("surface_velocity_comparison.png", fig)
+# save("surface_velocity_comparison.png", fig)

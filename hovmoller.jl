@@ -9,7 +9,7 @@ include("veron_melville_data.jl")
 include("plotting_utilities.jl")
 
 dir = "data"
-case = "increasing_wind_ep14_k30_beta120_N384_384_256_L10_10_5_hi_freq"
+case = "increasing_wind_ep135_k30_beta120_N512_512_384_L10_10_5"
 statistics_filename = case * "_statistics.jld2"
 averages_filename   = case * "_averages.jld2"
 Δ_max = 1e-3
@@ -21,12 +21,17 @@ averages_filepath   = joinpath(dir, averages_filename)
 ##### Load LIF data
 #####
 
+new_filename = "data/fig4b.mat"
+
 ramp = "2"
-llif_filename = "data/LIF_analysis_mean_profiles_ALL_EXPS.mat"
-llif_data = matread(llif_filename)["STAT_R" * ramp * "_EXP2"]
-t_llif = llif_data["time"][:] .- 98.8
-c_llif = llif_data["mean_LIF"]
-z_llif = -llif_data["depth_relative_to_surface"][:] .+ 0.001
+lif_filename = "data/fig4b.mat" #"data/LIF_analysis_mean_profiles_ALL_EXPS.mat"
+#lif_data = matread(lif_filename)["STAT_R" * ramp * "_EXP2"]
+lif_data = matread(lif_filename)["fig4b"]
+t_lif = lif_data["time"][:]
+t_lif = t_lif .- t_lif[1]
+t_lif = t_lif .- 4 # 4.83 #.- 98.8
+c_lif = permutedims(lif_data["LIF"], (2, 1))
+z_lif = -lif_data["z"][:] .+ 0.034
 
 #####
 ##### Load simulation data
@@ -48,69 +53,80 @@ nn = sortperm(t_stats)
 t_stats = t_stats[nn]
 u_max = u_max[nn]
 w_max = w_max[nn]
-#u_surf = u_surf[nn]
-#u_jet = u_jet[nn]
-#u_avg_surf = u_avg_surf[nn]
-#u_wake = u_wake[nn]
 
 n_transition = findfirst(i -> u_max[i+1] < u_max[i] - Δ_max, 1:length(u_max)-1)
 t_transition = t_stats[n_transition]
-t_stats = t_stats .- t_transition
-t_avg = t_avg .- t_transition
-@show t_transition
 
 ct = FieldTimeSeries(averages_filepath, "c")
 c_sim = interior(ct, 1, 1, :, :)
 z_sim = znodes(Center, ct.grid)
-t_sim = ct.times .- t_transition
+t_sim = ct.times #.- t_transition
 Nt = length(t_sim)
 
-t₀_vm = 19.4
-t_vm_surf = veron_melville_data[:t_surf] .- t₀_vm
-u_vm_surf = veron_melville_data[:u_surf] ./ 100
+c_sim = permutedims(c_sim, (2, 1))
+c_lif_min = minimum(c_lif)
+c_lif = @. c_lif - c_lif_min
+C_lif = sum(c_lif, dims=2)
+c_lif = c_lif ./ C_lif[1]
 
-t_vm_avg_surf = veron_melville_data[:t_avg_surf] .- t₀_vm
-u_vm_avg_surf = veron_melville_data[:u_avg_surf] ./ 100
+c_lif[c_lif .< 3e-4] .= 0
 
-t_vm_jet = veron_melville_data[:t_jet] .- t₀_vm
-u_vm_jet = veron_melville_data[:u_jet] ./ 100
+C_sim = sum(c_sim, dims=2)
+C_lif = sum(c_lif, dims=2)
 
-t_vm_wake = veron_melville_data[:t_wake] .- t₀_vm
-u_vm_wake = veron_melville_data[:u_wake] ./ 100
+Z_sim = zeros(size(c_sim, 1))
+Z_lif = zeros(size(c_lif, 1))
+
+for n = 1:length(Z_sim)
+    Z_sim[n] = sum(z_sim .* c_sim[n, :]) / C_sim[n]
+end
+
+for n = 1:length(Z_lif)
+    Z_lif[n] = sum(z_lif .* c_lif[n, :]) / C_lif[n]
+end
+
+c_sim = c_sim ./ C_sim
+
+c_sim = @. max(c_sim, 0, c_sim)
 
 # Figure
-t₀ = -10
-t₁ = 10
-z₀ = -0.04
-fig = Figure(resolution=(1200, 800))
+t₀ = 15.0 #-10
+t₁ = 30 #^022.6 #12.6
+z₀ = -0.05
+z₁ = 0.02
+fig = Figure(resolution=(1600, 1200))
 colormap = :bilbao
 
-ax_sim  = Axis(fig[1, 1], xlabel="Time relative to turbulent transition (seconds)", ylabel="z (m)")
+yticks = -0.1:0.02:0.0
+xticks = -0.1:0.02:0.0
+ax_int = Axis(fig[1, 1]; xlabel="Time relative to turbulent transition (seconds)", ylabel="Normalized ∫c dz")
+ax_cen = Axis(fig[2, 1]; xlabel="Time relative to turbulent transition (seconds)", ylabel="Z(t) = ∫z c dz")
+ax_sim = Axis(fig[3, 1]; title="Simulation", xlabel="Time relative to turbulent transition (seconds)", ylabel="z (m)", yticks)
+ax_lif = Axis(fig[4, 1]; title="Laboratory LIF", xlabel="Time relative to turbulent transition (seconds)", ylabel="z (m)", yticks)
 
-xlims!(ax_sim,  t₀, t₁)
-ylims!(ax_sim,  z₀, 0.0)
+lines!(ax_int, t_sim, C_sim[:] / C_sim[1], label="Simulation")
+lines!(ax_int, t_lif, C_lif[:] / C_lif[1], label="LIF")
 
-ax_llif = Axis(fig[2, 1], xlabel="Time relative to turbulent transition (seconds)", ylabel="z (m)")
-xlims!(ax_llif, t₀, t₁)
-ylims!(ax_llif, z₀, 0.0)
+lines!(ax_cen, t_sim, Z_sim, label="Simulation")
+lines!(ax_cen, t_lif, Z_lif, label="LIF")
 
-lif_levels = collect(range(0, stop=500, length=6))
-push!(lif_levels, maximum(c_llif))
-contourf!(ax_llif, t_llif, z_llif, c_llif; colorrange=(50, 500), colormap, levels=lif_levels)
+axislegend(ax_cen, position=:lb)
 
-c_max = 0.02
-sim_levels = collect(range(0, stop=c_max, length=6))
-push!(sim_levels, maximum(c_sim))
+heatmap!(ax_lif, t_lif, z_lif, log10.(c_lif); colorrange=(-4, -2), colormap)
+lines!(ax_lif, t_lif, Z_lif, label="Simulation", color=:lightblue1, linewidth=6)
+
+xlims!(ax_int, t₀, t₁)
+xlims!(ax_cen, t₀, t₁)
+xlims!(ax_lif, t₀, t₁)
+ylims!(ax_lif, z₀, z₁)
 
 # Clip negative values
-c_sim = max.(0, c_sim)
+heatmap!(ax_sim, t_sim, z_sim, log10.(c_sim); colormap, colorrange=(-4, -2.5))
+lines!(ax_sim, t_sim, Z_sim, label="Simulation", color=:lightblue1, linewidth=6)
 
-contourf!(ax_sim, t_sim, z_sim, c_sim'; colormap, colorrange=(0, c_max), levels=sim_levels)
-
-#tn_tlif = @lift t_tlif[$n] - 19.5 #- t_surf_max
-#vlines!(ax_u, tn_tlif, linestyle=:solid, linewidth=3, color=(:black, 0.6))
-#vlines!(ax_u, tn_sim, linestyle=:dash, linewidth=3, color=(:red, 0.8))
+xlims!(ax_sim, t₀, t₁)
+ylims!(ax_sim, z₀, z₁)
 
 display(fig)
 
-save("hovmoller.png", fig)
+# save("hovmoller.png", fig)

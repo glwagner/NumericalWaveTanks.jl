@@ -1,5 +1,12 @@
 # NumericalWaveTanks.jl
+
 Numerical experiments replicating laboratory experiments
+
+## Figures
+
+* Figure 1: `turbulence_visualization.jl`
+* Figure 2: `compare_lab_simulation.jl`
+* Figure 3: `hovmoller.jl`
 
 ## Scripts
 
