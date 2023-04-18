@@ -164,7 +164,7 @@ function build_numerical_wave_tank(arch;
                            100 * model.grid.Ly,
                            100 * model.grid.Lz)
 
-    nobackup_dir = "/nobackup/users/glwagner/"
+    nobackup_dir = "."
     dir = joinpath(nobackup_dir, file_prefix)
 
     @info "Saving data to $file_prefix"
@@ -241,8 +241,9 @@ end
 parsing = true
 
 # For example:
-# julia --project increasing_wind.jl 384 384 256 0.1 0.1 0.05 0.13 1.2 false
-#                                    Nx  Ny  Nz  Lx  Ly  Lz   ϵ    β   pickup
+# julia --project constant_waves.jl 384 384 256 0.1 0.1 0.05 0.13 1.2 false
+#                                   Nx  Ny  Nz  Lx  Ly  Lz   ϵ    β   pickup
+# julia --project constant_waves.jl 32 32 32 0.1 0.1 0.05 0.13 1.2 false
 
 if parsing
     Nx     = parse(Int,     ARGS[1])
@@ -257,8 +258,9 @@ if parsing
 end
 
 @show overwrite_existing = !pickup
+arch = GPU()
 
-simulation = build_numerical_wave_tank(GPU(); Nx, Ny, Nz, Lx, Ly, Lz, β, overwrite_existing, ϵ, k=2π/0.03)
+simulation = build_numerical_wave_tank(arch; Nx, Ny, Nz, Lx, Ly, Lz, β, overwrite_existing, ϵ, k=2π/0.03)
 
 run!(simulation; pickup)
 
