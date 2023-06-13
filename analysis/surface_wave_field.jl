@@ -39,15 +39,13 @@ hidexdecorations!(axs, grid=false)
 hidespines!(axs, :t, :b, :r)
 hidespines!(axe, :t, :r)
 
-xlims!(axη, -0.01, 2.7)
-xlims!(axs, -0.01, 2.7)
-xlims!(axe, -0.01, 2.7)
-
+t₀_udel = 79.7 / 2π
+tᵢ = t[1] - t₀_udel
 δ = 1e-3
 Δt = t[2] - t[1]
 for n = 1:length(t)
     ηn = η[:, n]
-    lines!(axη, (ηn[:] ./ δ .+ n) .* Δt, x[:], color=(:black, 0.6), linewidth=5)
+    lines!(axη, (ηn[:] ./ δ .+ n) .* Δt .+ tᵢ, x[:], color=(:black, 0.6), linewidth=5)
 end
 
 g = 9.81
@@ -56,13 +54,13 @@ k = 2π / 0.03
 c = sqrt(g / k + T * k)
 phase_speed_colors = Makie.wong_colors(0.6)
 
-t₀ = 1.38:0.1:1.9
+t₀ = collect(1.38:0.1:1.9) .+ tᵢ
 x₀ = @. 0.065 + c * (t₀ - t₀[1])
 lines!(axη, t₀, x₀, color=phase_speed_colors[1], linewidth=10)
 
 k = 2π / 0.05
 c = sqrt(g / k + T * k)
-t₀ = 1.65:0.1:1.95
+t₀ = collect(1.65:0.1:1.95) .+ tᵢ
 x₀ = @. 0.005 + c * (t₀ - t₀[1])
 lines!(axη, t₀, x₀, color=phase_speed_colors[2], linewidth=10)
 
@@ -76,11 +74,10 @@ for sweep = 1:5
     a[2:end-1] .= (a[1:end-2] .+ 2 .* a[2:end-1] .+ a[3:end]) ./ 4 
 end
 
-t′ = t .- t[1]
+t′ = t .- t₀_udel
 lines!(axs, t′, troughs,   linewidth=3, color=(:royalblue, 1.0), label="min η")
 lines!(axs, t′, crests,    linewidth=3, color=(:seagreen, 1.0), label="max η")
 lines!(axs, t′, amplitude, linewidth=8, color=(:black, 0.3), label="Amplitude estimate")
-
 
 k1 = 2π / 0.03
 k2 = 2π / 0.05
@@ -97,6 +94,10 @@ ylims!(axs, -2e-3, 2e-3)
 
 rowsize!(fig.layout, 2, Relative(0.2))
 rowsize!(fig.layout, 3, Relative(0.2))
+
+xlims!(axη, t′[1] - 1e-2, t′[end] + 1e-1)
+xlims!(axs, t′[1] - 1e-2, t′[end] + 1e-1)
+xlims!(axe, t′[1] - 1e-2, t′[end] + 1e-1)
 
 display(fig)
 

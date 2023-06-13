@@ -8,11 +8,6 @@ include("plotting_utilities.jl")
 
 set_theme!(Theme(fontsize=32))
 
-Nx = Ny = 768
-Nz = 512
-k = 2.1e2
-ϵ = 0.18
-
 prefix = "constant_waves_ep140_k30_beta120_N768_768_512_L20_20_10"
 dir = "../data"
 
@@ -42,39 +37,15 @@ U = FieldTimeSeries(averages_filepath, "u")
 Nz = U.grid.Nz
 t = U.times
 
-t_avg = Float64[]
-u_avg = Float64[]
-Δt = t[2] - t[1]
-#u_avg = [U[n][1, 1, Nz] for n in 1:length(U.times)]
-
-for n = 1:length(t)
-    if n == 1 || t[n] - t[n-1] >= Δt
-        push!(t_avg, t[n])
-        push!(u_avg, U[n][1, 1, Nz])
-    end
-end
-
-Lx = Ly = 0.2
-Lz = Ly/2
-
-refinement = 1.5 # controls spacing near surface (higher means finer spaced)
-stretching = 8   # controls rate of stretching at bottom
-h(k) = (k - 1) / Nz
-ζ₀(k) = 1 + (h(k) - 1) / refinement
-Σ(k) = (1 - exp(-stretching * h(k))) / (1 - exp(-stretching))
-zf(k) = Lz * (ζ₀(k) * Σ(k) - 1)
-
 file = jldopen(xy_T_filepath)
 grid = file["serialized/grid"]
 close(file)
 
-#=
-grid = RectilinearGrid(CPU(),
-                       size = (Nx, Ny, Nz), halo = (3, 3, 3),
-                       x = (0, Lx), y = (0, Ly),
-                       z = zf,
-                       topology = (Periodic, Periodic, Bounded))
-=#
+Lx = grid.Lx
+Ly = grid.Ly
+Lz = grid.Lz
+
+Nx, Ny, Nz = size(grid)
 
 u_yz_L_series, t = extract_slices(yz_L_filepath, name="u", dims=1)
 c_yz_L_series, t = extract_slices(yz_L_filepath, name="c", dims=1)
@@ -131,14 +102,17 @@ aspect = :data
 xlabeloffset = 80
 ylabeloffset = 80
 zlabeloffset = 60
-u_colorbar_kw = (vertical=true, flipaxis=false, label="x-velocity, u (m s⁻¹)", height=Relative(0.6))
-c_colorbar_kw = (vertical=true, flipaxis=true, label="Tracer concentration", height=Relative(0.6))
+u_colorbar_kw = (vertical=true, labelpadding=20.0, valign=:center, alignmode=Mixed(top=100), flipaxis=false, label="Along-wind velocity, u (m s⁻¹)", height=Relative(0.6))
+c_colorbar_kw = (vertical=true, labelpadding=20.0, valign=:center, alignmode=Mixed(top=100), flipaxis=true, label="Tracer concentration", height=Relative(0.6))
 colormap_u = :solar
 colormap_c = :bilbao
+xtext = 0.15
+ytext = 0.65
 
 fig = Figure(resolution=(1800, 1800))
 
 n = 79
+@show tn = t[n]
 colorrange_c = (0.0, 0.06)
 colorrange_u = (0.0, 0.17)
 uticks = collect(colorrange_u)
@@ -146,6 +120,9 @@ cticks = collect(colorrange_c)
 
 ax_u = fig[1, 2] = Axis3(fig; aspect, xlabel, ylabel, zlabel, azimuth, elevation, perspectiveness, xlabeloffset, ylabeloffset, zlabeloffset)
 ax_c = fig[1, 3] = Axis3(fig; aspect, xlabel, ylabel, zlabel, azimuth, elevation, perspectiveness, xlabeloffset, ylabeloffset, zlabeloffset)
+
+text!(ax_u, xtext, ytext, space=:relative, align=(:left, :top), text="(a)")
+text!(ax_c, xtext, ytext, space=:relative, align=(:left, :top), text="(d)")
 
 hidedecorations!(ax_u)
 hidedecorations!(ax_c)
@@ -187,6 +164,7 @@ cp = fig[1, 4] = Colorbar(fig, pl; c_colorbar_kw..., ticks=cticks)
 # Label(fig[1, 9], @sprintf("t = %.1f seconds", t[n]), tellheight=false)
 
 n = 88
+@show tn = t[n]
 colorrange_c = (0.0, 0.03)
 colorrange_u = (0.0, 0.12)
 uticks = collect(colorrange_u)
@@ -194,6 +172,9 @@ cticks = collect(colorrange_c)
 
 ax_u = fig[2, 2] = Axis3(fig; aspect, xlabel, ylabel, zlabel, azimuth, elevation, perspectiveness, xlabeloffset, ylabeloffset, zlabeloffset)
 ax_c = fig[2, 3] = Axis3(fig; aspect, xlabel, ylabel, zlabel, azimuth, elevation, perspectiveness, xlabeloffset, ylabeloffset, zlabeloffset)
+
+text!(ax_u, xtext, ytext, space=:relative, align=(:left, :top), text="(b)")
+text!(ax_c, xtext, ytext, space=:relative, align=(:left, :top), text="(e)")
 
 hidedecorations!(ax_u)
 hidedecorations!(ax_c)
@@ -233,6 +214,7 @@ pl = surface!(ax_c, x_xz_L, y_xz_L, z_xz_L; color=c_xz_L, colormap=colormap_c, c
 cp = fig[2, 4] = Colorbar(fig, pl; c_colorbar_kw..., ticks=cticks)
 
 n = 120
+@show tn = t[n]
 colorrange_c = (0.0, 0.008)
 colorrange_u = (0.0, 0.12)
 uticks = collect(colorrange_u)
@@ -241,8 +223,9 @@ cticks = collect(colorrange_c)
 ax_u = fig[3, 2] = Axis3(fig; aspect, xlabel, ylabel, zlabel, azimuth, elevation, perspectiveness, xlabeloffset, ylabeloffset, zlabeloffset)
 ax_c = fig[3, 3] = Axis3(fig; aspect, xlabel, ylabel, zlabel, azimuth, elevation, perspectiveness, xlabeloffset, ylabeloffset, zlabeloffset)
 
-# hidedecorations!(ax_u)
-# hidedecorations!(ax_c)
+text!(ax_u, xtext, ytext, space=:relative, align=(:left, :top), text="(c)")
+text!(ax_c, xtext, ytext, space=:relative, align=(:left, :top), text="(f)")
+
 hidespines!(ax_u)
 hidespines!(ax_c)
 
@@ -278,18 +261,14 @@ pl = surface!(ax_c, x_xz_L, y_xz_L, z_xz_L; color=c_xz_L, colormap=colormap_c, c
 
 cp = fig[3, 4] = Colorbar(fig, pl; c_colorbar_kw..., ticks=cticks)
 
+colgap!(fig.layout, 1, -100)
+colgap!(fig.layout, 3, -50)
+
 colgap!(fig.layout, 2, -200)
 rowgap!(fig.layout, 1, -200)
 rowgap!(fig.layout, 2, -200)
 
-# Label(fig[2, 9], @sprintf("t = %.1f seconds", t[n]), tellheight=false)
-
 display(fig)
 
-save("turbulence_visualization.png", fig)
-
-# record(fig, "langmuir_turbulence.mp4", 1:Nt; framerate=12) do nn
-#     @info "Drawing frame $nn of $Nt..."
-#     n[] = nn
-# end
+save("turbulence_visualization.png", fig, px_per_area=200)
 
