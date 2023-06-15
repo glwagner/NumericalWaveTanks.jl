@@ -34,15 +34,15 @@ function build_numerical_wave_tank(arch;
                                    # Vertical direction
                                    Nz = round(Int, Ny/2),
                                    Lz = Ly / 2,
-                                   ϵ = 0.0,
-                                   k = 2π/0.03,
                                    ν = 1.05e-6,
                                    κ = κ_rhodamine,
                                    β = 1.1e-5,
-                                   stop_time = 10.0,
+                                   k = 2π / 0.03,
+                                   ϵ = 0.14,
+                                   stop_time = 15.0,
                                    save_interval = 0.2,
                                    overwrite_existing = false,
-                                   name = "constant_waves")
+                                   name = "sudden_waves")
 
     refinement = 1.5 # controls spacing near surface (higher means finer spaced)
     stretching = 8   # controls rate of stretching at bottom
@@ -75,7 +75,8 @@ function build_numerical_wave_tank(arch;
     ##### Stokes streaming term with a forcing function
     #####
     
-    a = ϵ / k
+    ϵ₀ = 0.14
+    a = ϵ₀ / k
     ∂z_uˢ = ConstantStokesShear(a, k)
     u_forcing = Forcing(ν_∂z²_uˢ, parameters=(; ∂z_uˢ, ν))
 
@@ -94,6 +95,8 @@ function build_numerical_wave_tank(arch;
     ω = ∂z_uˢ.ω
 
     @info """
+
+        "Sudden waves"
 
         Wave parameters | Values
         =============== | ======
@@ -241,8 +244,8 @@ end
 parsing = true
 
 # For example:
-# julia --project constant_waves.jl 768  768 512 0.2 0.2 0.1 0.3  7.5 false
-#                                   Nx   Ny  Nz  Lx  Ly  Lz  ϵ    β   pickup
+# julia --project sudden_waves.jl 768  768 512 0.2 0.2 0.1 0.2 1.2 false
+#                                  Nx   Ny  Nz  Lx  Ly  Lz   ϵ   β pickup
 
 if parsing
     Nx     = parse(Int,     ARGS[1])
@@ -257,9 +260,20 @@ if parsing
 end
 
 @show overwrite_existing = !pickup
+k = 2π / 0.03
+t_waves = 18
 
-simulation = build_numerical_wave_tank(GPU(); Nx, Ny, Nz, Lx, Ly, Lz, β, overwrite_existing, ϵ, k=2π/0.03)
+simulation = build_numerical_wave_tank(GPU(); Nx, Ny, Nz, Lx, Ly, Lz, β, k, ϵ, overwrite_existing)
 
+simulation.stop_time = t_waves
+run!(simulation; pickup)
+
+# Suddenly introduce waves
+a = ϵ / k
+∂z_uˢ = ConstantStokesShear(a, k)
+stokes_drift = UniformStokesDrift(; ∂z_uˢ)
+simulation.model.stokes_drift = stokes_drift
+simulation.stop_time = 30.0
 run!(simulation; pickup)
 
 @info "Simulation complete: $simulation. Output:"
