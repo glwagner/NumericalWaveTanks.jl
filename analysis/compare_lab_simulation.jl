@@ -46,13 +46,10 @@ function compute_timeseries(filepath)
 
     timeseries[:t] = t = [statsfile["timeseries/t/$i"] for i in iters]
     I = sortperm(t)
-    #t = t[I]
 
     for stat in (:u_max, :u_min, :v_max, :w_max)
         timeseries[stat] = [statsfile["timeseries/$stat/$i"] for i in iters]
-        #timeseries[stat] = timeseries[stat][I]
     end
-
 
     close(statsfile)
 

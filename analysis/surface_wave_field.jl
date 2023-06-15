@@ -9,7 +9,7 @@ vars = matread(filepath)
 
 exp = 1
 η = vars["ETA_R2_EXP$exp"]["ETA"]
-t = vars["ETA_R2_EXP$exp"]["t"] ./ 2π
+t = vars["ETA_R2_EXP$exp"]["t"] # ./ 2π
 x = vars["ETA_R2_EXP$exp"]["x"]
 
 Y = mean(η, dims=1)[:]
@@ -39,7 +39,8 @@ hidexdecorations!(axs, grid=false)
 hidespines!(axs, :t, :b, :r)
 hidespines!(axe, :t, :r)
 
-t₀_udel = 79.7 / 2π
+# t₀_udel = 79.7 / 2π
+t₀_udel = 12.4
 tᵢ = t[1] - t₀_udel
 δ = 1e-3
 Δt = t[2] - t[1]

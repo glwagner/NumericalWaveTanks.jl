@@ -1,4 +1,4 @@
-using CairoMakie
+using GLMakie #CairoMakie
 using JLD2
 using MAT
 using Oceananigans
@@ -9,7 +9,8 @@ include("veron_melville_data.jl")
 include("plotting_utilities.jl")
 
 dir = "../data"
-case = "constant_waves_ep140_k30_beta120_N768_768_512_L20_20_10"
+#case = "constant_waves_ep140_k30_beta120_N768_768_512_L20_20_10"
+case = "constant_waves_ep140_k30_beta750_N768_768_512_L20_20_10"
 label = "constant waves with ϵ = 0.14"
 
 linewidths = [6, 2, 2, 1]
@@ -17,10 +18,11 @@ t_transitions = [0, 0, 0, 0]
 exp = "R2"
 ramp = 2
 
+t₀_udel = 12.4
 udel_filename = joinpath(dir, "every_surface_velocity.mat")
 udel_vars = matread(udel_filename)
 u_udel = udel_vars["BIN"][exp]["U"][:]
-t_udel = udel_vars["BIN"][exp]["time"][:] .- t₀_udel
+t_udel = udel_vars["BIN"][exp]["time"][:] ./ 2π .- t₀_udel
 
 # Figure
 t₀ = 10
@@ -31,10 +33,10 @@ colormap = :bilbao
 
 ax_u = Axis(fig[1, 1], xaxisposition=:top,
             xlabel = "Simulation time (s)",
-            ylabel = "Streamwise \n velocity (m s⁻¹)")
+            ylabel = "Along-wind \n velocity (m s⁻¹)")
 
-ylims!(ax_u, 0.0, 0.2)
-xlims!(ax_u, t₀, t₁)
+#ylims!(ax_u, 0.0, 0.2)
+#xlims!(ax_u, t₀, t₁)
 
 # Scatter plot
 surface_velocity_filename = joinpath(dir, "Final_SurfVel_per_RAMP.mat")
@@ -51,6 +53,8 @@ t_surf = t_surf .- t_surf_max
 
 scatter!(ax_u, t_udel, u_udel, marker=:circle, markersize=20, color=(:black, 0.5),
          label="Average surface velocity, UDelaware exp $exp")
+
+#display(fig)
 
 #####
 ##### Simulation stuff
@@ -222,9 +226,9 @@ heatmap!(ax_sim, t_sim, z_sim, log10.(c_sim); colormap, colorrange=(-4, -2.5))
 xlims!(ax_sim, t₀, t₁)
 ylims!(ax_sim, z₀, z₁)
 
-xlims!(ax_95, t₀, t₁)
-ylims!(ax_95, z₀, z₁)
+# xlims!(ax_95, t₀, t₁)
+# ylims!(ax_95, z₀, z₁)
 
 display(fig)
 
-save("surface_velocity_comparison.pdf", fig)
+# save("surface_velocity_comparison.pdf", fig)
