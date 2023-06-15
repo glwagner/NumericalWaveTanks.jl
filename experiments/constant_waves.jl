@@ -265,8 +265,8 @@ end
 parsing = true
 
 # For example:
-# julia --project constant_waves.jl 768  768 512 0.2 0.2 0.1 0.3  7.5 false
-#                                   Nx   Ny  Nz  Lx  Ly  Lz  ϵ    β   pickup
+# julia --project constant_waves.jl 768  768 512 0.2 0.2 0.1 0.3  7.5 0.0          false
+#                                   Nx   Ny  Nz  Lx  Ly  Lz  ϵ    β   initial_time pickup
 
 if parsing
     Nx     = parse(Int,     ARGS[1])
@@ -277,13 +277,15 @@ if parsing
     Lz     = parse(Float64, ARGS[6])
     ϵ      = parse(Float64, ARGS[7])
     β      = parse(Float64, ARGS[8]) * 1e-5
-    pickup = parse(Bool,    ARGS[9])
+    t₀     = parse(Float64, ARGS[9])
+    pickup = parse(Bool,    ARGS[10])
 end
 
 @show overwrite_existing = !pickup
 arch = GPU()
 
-simulation = build_numerical_wave_tank(arch; Nx, Ny, Nz, Lx, Ly, Lz, β, overwrite_existing, ϵ, k=2π/0.03)
+simulation = build_numerical_wave_tank(arch; Nx, Ny, Nz, Lx, Ly, Lz, β, overwrite_existing,
+                                       ϵ, initial_time=t₀, k=2π/0.03)
 
 run!(simulation; pickup)
 
