@@ -1,6 +1,7 @@
 using CUDA
 using Random
 using Statistics
+using SpecialFunctions
 using OrderedCollections
 using JLD2
 using Oceananigans
@@ -38,7 +39,8 @@ function build_numerical_wave_tank(arch;
                                    k = 2π/0.03,
                                    ν = 1.05e-6,
                                    κ = κ_rhodamine,
-                                   β = 1.1e-5,
+                                   β = 1.2e-5,
+                                   initial_time = 0.0
                                    stop_time = 10.0,
                                    save_interval = 0.2,
                                    overwrite_existing = false,
@@ -106,15 +108,37 @@ function build_numerical_wave_tank(arch;
     model.clock.time = 0
     model.clock.iteration = 0
 
+    # Set initial condition
     Random.seed!(123)
-    uᵢ(x, y, z) = 1e-11 * randn()
-    set!(model, u=uᵢ, v=uᵢ, w=uᵢ)
+    wᵢ(x, y, z) = 1e-4 * randn()
 
-    c = model.tracers.c
-    view(interior(c), :, :, grid.Nz) .= 1
+    A = β * sqrt(π / 4ν)
+    U₀ = A * initial_time
+    h = √(2 * ν * initial_time)
+
+    function Uᵢ(z)
+        δ = z / h
+        return U₀ * ((1 + δ^2) * erfc(-δ / √2) + δ * √(2/π) * exp(-δ^2 / 2))
+    end
+
+    uᵢ(x, y, z) = Uᵢ(z) + wᵢ(x, y, z)
+
+    cᵢ(x, y, z) = erfc(- z / (2 * sqrt(κ * initial_time)))
+
+    if initial_time > 0.0
+        set!(model, u=uᵢ, v=wᵢ, w=wᵢ)
+        simulation.model.clock.time = initial_time
+    else
+        set!(model, u=wᵢ, v=wᵢ, w=wᵢ)
+        c = model.tracers.c
+        view(interior(c), :, :, grid.Nz) .= 1
+    end
+
+    # Normalize so that ∫ c dV = 1.
+    C = mean(c) * Lx * Ly * Lz
+    interior(c) ./= C
 
     @info "Revvving up a simulation..."
-                                        
     simulation = Simulation(model; Δt=1e-4, stop_time)
 
     Δ = min(minimum(parent(grid.Δzᵃᵃᶜ)), grid.Δxᶜᵃᵃ)

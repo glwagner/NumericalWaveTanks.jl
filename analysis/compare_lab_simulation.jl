@@ -6,7 +6,7 @@ using Oceananigans
 set_theme!(Theme(fontsize=32))
 
 dir = "../data"
-case = "constant_waves_ep120_k30_beta120_N768_768_512_L20_20_10"
+case = "constant_waves_ep140_k30_beta120_N768_768_512_L20_20_10"
 
 #yz_filename         = case * "_yz_left.jld2"
 yz_filename         = case * "_yz_right.jld2"
@@ -28,7 +28,7 @@ c_tlif = tlif_data["LIFa"]
 c_tlif = permutedims(c_tlif, (2, 3, 1)) # puts time in last dimension
 
 # Load time (convert from 2D array to 1D vector)
-t₀_udel = 79.5
+t₀_udel = 79.7
 t_tlif = tlif_data["time"][:]
 t_tlif = t_tlif .- t₀_udel
 Nt_tlif = length(t_tlif)
@@ -94,6 +94,7 @@ Nx, Ny, Nz = size(grid)
 
 # Lab data heatmap
 n = Observable(151)
+@show t_tlif[n.val]
 cn_tlif = @lift rotr90(view(c_tlif, :, :, $n))[:, j1:j2]
 
 # colorrange=(50, 2500)
@@ -119,7 +120,9 @@ end
 x_sim, y_sim, z_sim = nodes(c_sim)
 
 levels = 0.0:0.01:0.04
-contourf!(ax_sim, y_sim, z_sim, cn_sim; levels, colormap, extendhigh=:auto)
+#contourf!(ax_sim, y_sim, z_sim, cn_sim; levels, colormap, extendhigh=:auto)
+
+heatmap!(ax_sim, y_sim, z_sim, cn_sim; colorrange=(0, 0.04), colormap)
 
 z₀ = -0.015
 xlims!(ax_tlif, 0, maximum(x_tlif))

@@ -12,11 +12,13 @@ exp = 1
 t = vars["ETA_R2_EXP$exp"]["t"] # ./ 2π
 x = vars["ETA_R2_EXP$exp"]["x"]
 
+Nt = length(t)
+
 Y = mean(η, dims=1)[:]
 η .-= mean(η, dims=1)
 
-n₀ = 100
-n₁ = 220
+n₀ = 50
+n₁ = Nt - 150 #220
 nn = n₀:n₁
 t = t[nn]
 η = η[:, nn]
@@ -40,7 +42,7 @@ hidespines!(axs, :t, :b, :r)
 hidespines!(axe, :t, :r)
 
 # t₀_udel = 79.7 / 2π
-t₀_udel = 12.4
+t₀_udel = 79.7 #12.4
 tᵢ = t[1] - t₀_udel
 δ = 1e-3
 Δt = t[2] - t[1]
@@ -53,17 +55,28 @@ g = 9.81
 T = 7.2e-5
 k = 2π / 0.03
 c = sqrt(g / k + T * k)
-phase_speed_colors = Makie.wong_colors(0.6)
+phase_speed_colors = Makie.wong_colors(0.8)
+markersize = 20
+linewidth = 10
 
-t₀ = collect(1.38:0.1:1.9) .+ tᵢ
-x₀ = @. 0.065 + c * (t₀ - t₀[1])
-lines!(axη, t₀, x₀, color=phase_speed_colors[1], linewidth=10)
+t₀ = collect(0.0:Δt:4Δt) .+ 15 .+ tᵢ
+#x₀ = @. 0.065 + c * (t₀ - t₀[1])
+x₀ = @. 0.005 + c * (t₀ - t₀[1])
+scatter!(axη, t₀, x₀; markersize, linewidth, color=phase_speed_colors[1])
+
+t₀ = collect(0.0:Δt:24Δt) .+ 15 .+ tᵢ
+x₀ = @. 0.005 + c / 2π * (t₀ - t₀[1])
+scatter!(axη, t₀, x₀; markersize, linewidth, color=phase_speed_colors[1])
 
 k = 2π / 0.05
-c = sqrt(g / k + T * k)
-t₀ = collect(1.65:0.1:1.95) .+ tᵢ
+c = sqrt(g / k + T * k) * 0.6
+t₀ = collect(0.0:Δt:4Δt) .+ 20 .+ tᵢ
 x₀ = @. 0.005 + c * (t₀ - t₀[1])
-lines!(axη, t₀, x₀, color=phase_speed_colors[2], linewidth=10)
+scatter!(axη, t₀, x₀; markersize, linewidth, color=phase_speed_colors[2])
+
+t₀ = collect(0.0:Δt:24Δt) .+ 20 .+ tᵢ
+x₀ = @. 0.005 + c / 2π * (t₀ - t₀[1])
+scatter!(axη, t₀, x₀; markersize, linewidth, color=phase_speed_colors[2])
 
 troughs = Float64[]
 crests = Float64[]
@@ -91,6 +104,7 @@ band!(axe, t′, a * k1, a * k2, color=(:black, 0.2))
 Legend(fig[2:3, 1], axs, tellwidth=false, halign=:left, margin=(20, 0, 0, 20))
 Legend(fig[2:3, 1], axe, tellwidth=false, valign=:center, halign=:center, margin=(0, 0, 0, 20))
 
+ylims!(axe, 0.0, 0.4)
 ylims!(axs, -2e-3, 2e-3)
 
 rowsize!(fig.layout, 2, Relative(0.2))
@@ -102,4 +116,4 @@ xlims!(axe, t′[1] - 1e-2, t′[end] + 1e-1)
 
 display(fig)
 
-save("surface_wave_field_estimates.pdf", fig)
+# save("surface_wave_field_estimates.pdf", fig)

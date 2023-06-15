@@ -10,21 +10,21 @@ include("plotting_utilities.jl")
 dir = "../data"
 
 cases = [
-    #"constant_waves_ep150_k30_beta120_N512_512_384_L20_20_10",
-    "constant_waves_ep140_k30_beta120_N512_512_384_L20_20_10",
-    #"constant_waves_ep130_k30_beta120_N512_512_384_L20_20_10",
-    "sudden_waves_ep140_k30_beta120_N512_512_384_L20_20_10",
-    "sudden_waves_ep200_k30_beta120_N512_512_384_L20_20_10",
-    "sudden_waves_ep300_k30_beta120_N512_512_384_L20_20_10",
+    "constant_waves_ep120_k30_beta120_N768_768_512_L20_20_10",
+    "constant_waves_ep130_k30_beta120_N768_768_512_L20_20_10",
+    "constant_waves_ep140_k30_beta120_N768_768_512_L20_20_10",
+    #"sudden_waves_ep140_k30_beta120_N512_512_384_L20_20_10",
+    #"sudden_waves_ep200_k30_beta120_N512_512_384_L20_20_10",
+    #"sudden_waves_ep300_k30_beta120_N512_512_384_L20_20_10",
 ]
 
 labels = [
-    #"constant waves with ϵ = 0.15",
+    "constant waves with ϵ = 0.12",
+    "constant waves with ϵ = 0.13",
     "constant waves with ϵ = 0.14",
-    #"constant waves with ϵ = 0.13",
-    "sudden waves with ϵ = 0.14",
-    "sudden waves with ϵ = 0.2",
-    "sudden waves with ϵ = 0.3",
+    #"sudden waves with ϵ = 0.14",
+    #"sudden waves with ϵ = 0.2",
+    #"sudden waves with ϵ = 0.3",
 ]
 
 linewidths = [6, 2, 2, 1]
