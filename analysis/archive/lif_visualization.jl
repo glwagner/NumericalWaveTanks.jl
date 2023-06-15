@@ -2,7 +2,7 @@ using GLMakie
 using Oceananigans
 using MAT
 
-lif_filename = "../data/TRANSVERSE_STAT_RAMP1_LIF_final.mat"
+lif_filename = "TRANSVERSE_STAT_RAMP1_LIF_final.mat"
 ramp_1_data = matread(lif_filename)["STAT_R1"]
 
 # Load LIF data as "concentration"
@@ -16,12 +16,12 @@ Nt = length(t)
 x = ramp_1_data["X_transverse_m"][:]
 z = ramp_1_data["Z_transverse_m"][:] .- 0.11
 
-fig = Figure(resolution=(2700, 900))
-ax = Axis(fig[2, 1], xlabel="Along-wind direction (m)", ylabel="z (m)")
+fig = Figure(resolution=(1200, 800))
+ax = Axis(fig[2, 1])
 slider = Slider(fig[3, 1], range=1:Nt, startvalue=127)
 n = slider.value
 
-title = @lift @sprintf("LIF data frame %d at t = %.2f seconds", $n, t[$n])
+title = @lift string("LIF data frame ", $n, " at t = ", prettytime(t[$n]))
 Label(fig[1, 1], title, tellwidth=false)
 
 j1 = 1200
@@ -30,10 +30,6 @@ cn = @lift rotr90(view(c, :, :, $n))[:, j1:j2]
 heatmap!(ax, x, z[j1:j2], cn, colorrange=(0, 1500))
 
 display(fig)
-
-record(fig, "compare_lif_simulation.mp4", 1:Nt, framerate=12) do nn
-    n[] = nn
-end
 
 #=
 n = 130

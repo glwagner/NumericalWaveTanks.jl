@@ -10,24 +10,26 @@ include("plotting_utilities.jl")
 dir = "../data"
 
 cases = [
-    #"constant_waves_ep150_k30_beta120_N512_512_384_L20_20_10",
-    "constant_waves_ep140_k30_beta120_N512_512_384_L20_20_10",
-    #"constant_waves_ep130_k30_beta120_N512_512_384_L20_20_10",
-    "sudden_waves_ep140_k30_beta120_N512_512_384_L20_20_10",
-    "sudden_waves_ep200_k30_beta120_N512_512_384_L20_20_10",
-    "sudden_waves_ep300_k30_beta120_N512_512_384_L20_20_10",
+    "constant_waves_ep120_k30_beta120_N768_768_512_L20_20_10",
+    "constant_waves_ep130_k30_beta120_N768_768_512_L20_20_10",
+    "constant_waves_ep140_k30_beta120_N768_768_512_L20_20_10",
+    "constant_waves_ep160_k30_beta120_N768_768_512_L20_20_10",
+    #"sudden_waves_ep140_k30_beta120_N512_512_384_L20_20_10",
+    #"sudden_waves_ep200_k30_beta120_N512_512_384_L20_20_10",
+    #"sudden_waves_ep300_k30_beta120_N512_512_384_L20_20_10",
 ]
 
 labels = [
-    #"constant waves with ϵ = 0.15",
-    "constant waves with ϵ = 0.14",
-    #"constant waves with ϵ = 0.13",
-    "sudden waves with ϵ = 0.14",
-    "sudden waves with ϵ = 0.2",
-    "sudden waves with ϵ = 0.3",
+    "Constant waves with ϵ = 0.12",
+    "Constant waves with ϵ = 0.13",
+    "Constant waves with ϵ = 0.14",
+    "Constant waves with ϵ = 0.16",
+    #"sudden waves with ϵ = 0.14",
+    #"Sudden waves with ϵ = 0.2",
+    #"Sudden waves with ϵ = 0.3",
 ]
 
-linewidths = [6, 2, 2, 1]
+linewidths = [4, 4, 4, 1]
 t_transitions = [0, 0, 0, 0]
 exp = "R2"
 ramp = 2
@@ -39,7 +41,7 @@ u_udel = udel_vars["BIN"][exp]["U"][:]
 t_udel = udel_vars["BIN"][exp]["time"][:] .- t₀_udel
 
 # Figure
-t₀ = 5
+t₀ = 10
 t₁ = 30
 z₀ = -0.04
 fig = Figure(resolution=(1200, 800))
@@ -47,16 +49,16 @@ colormap = :bilbao
 
 ax_u = Axis(fig[1, 1], xaxisposition=:top,
             xlabel = "Simulation time (s)",
-            ylabel = "Streamwise \n velocity (m s⁻¹)")
+            ylabel = "Streamwise \n surface \n velocity (m s⁻¹)")
 
 ax_w = Axis(fig[2, 1],
             xlabel = "Simulation time (s)",
-            ylabel = "Cross-stream \n velocities (m s⁻¹)")
+            ylabel = "Maximum \n vertical \n velocity (m s⁻¹)")
 
-ylims!(ax_u, 0.0, 0.2)
+ylims!(ax_u, 0.1, 0.23)
 xlims!(ax_u, t₀, t₁)
 
-# ylims!(ax_w, 0.0, 0.2)
+ylims!(ax_w, -0.01, 0.1)
 xlims!(ax_w, t₀, t₁)
 
 # Scatter plot
@@ -72,22 +74,11 @@ t_surf = t_surf .- t_surf_max
 
 αvm = 0.5
 
-scatter!(ax_u, t_udel, u_udel, marker=:circle, markersize=20, color=(:black, 0.5),
-         label="Average surface velocity, UDelaware exp $exp")
+scatter!(ax_u, t_udel, u_udel, marker=:circle, markersize=20, color=(:black, 0.7),
+         label="Lab average surface velocity")
 
-#=
-scatter!(ax_u, t_vm_surf, u_vm_surf, marker=:utriangle, markersize=20, color=(:blue, αvm),
-         label="Surface velocity, Veron and Melville (2001)")
-
-scatter!(ax_u, t_vm_avg_surf, u_vm_avg_surf, marker=:rect, markersize=20, color=(:purple, αvm),
-         label="Average surface velocity, Veron and Melville (2001)")
-
-scatter!(ax_u, t_vm_jet, u_vm_jet, markersize=20, color=(:indigo, αvm), marker=:dtriangle,
-         label="Jet velocity, Veron and Melville (2001)")
-
-scatter!(ax_u, t_vm_wake, u_vm_wake, marker=:cross, markersize=20, color=(:cyan, 1.0),
-         label="Wake velocity, Veron and Melville (2001)")
-=#
+scatter!(ax_w, [0.0], [0.0], marker=:circle, markersize=20, color=(:black, 0.7),
+         label="Lab average surface velocity")
 
 #####
 ##### Simulation stuff
@@ -141,21 +132,19 @@ for n = 1:length(cases)
     t_sim = ct.times .- t_transition
     Nt = length(t_sim)
 
-    linewidth = linewidths[n]
+    linewidth = 4 #linewidths[n]
 
-    lines!(ax_u, t_stats, u_max; linewidth, color = (:darkred, 0.8), label =  "max(u), " * label)
-    lines!(ax_u, t_stats, u_min; linewidth, color = (:seagreen, 0.6), label =  "min(u), " * label)
-    lines!(ax_u, t_avg,   u_avg; linewidth, color = (:royalblue1, 0.6), label = "mean(u), " * label)
-
-    lines!(ax_w, t_stats, v_max; linewidth, color = (:royalblue1, 0.8), label =  "max(v)")
-    lines!(ax_w, t_stats, w_max; linewidth, color = (:darkred, 0.8), label =  "max(w)")
+    lines!(ax_u, t_stats, u_max; linewidth, label)
+    lines!(ax_w, t_stats, w_max; linewidth, label)
+    #lines!(ax_w, t_stats, v_max; linewidth, label)
 end
 
-Legend(fig[0, 1], ax_u, tellwidth=false)
+#Legend(fig[1:2, 2], ax_u, tellwidth=false)
 axislegend(ax_w, position=:lt)
 hidespines!(ax_w, :t, :r)
 hidespines!(ax_u, :b, :r)
 
 display(fig)
 
-save("surface_velocity_comparison.png", fig)
+save("surface_velocity_sudden_waves.pdf", fig)
+

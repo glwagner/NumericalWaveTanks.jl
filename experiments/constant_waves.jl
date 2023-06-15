@@ -257,8 +257,9 @@ if parsing
 end
 
 @show overwrite_existing = !pickup
+arch = GPU()
 
-simulation = build_numerical_wave_tank(GPU(); Nx, Ny, Nz, Lx, Ly, Lz, β, overwrite_existing, ϵ, k=2π/0.03)
+simulation = build_numerical_wave_tank(arch; Nx, Ny, Nz, Lx, Ly, Lz, β, overwrite_existing, ϵ, k=2π/0.03)
 
 run!(simulation; pickup)
 

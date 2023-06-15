@@ -3,13 +3,12 @@ using JLD2
 using MAT
 using Oceananigans
 
-set_theme!(Theme(fontsize=32))
+set_theme!(Theme(fontsize=24))
 
-dir = "../data"
-case = "constant_waves_ep120_k30_beta120_N768_768_512_L20_20_10"
+dir = "data"
+case = "increasing_wind_ep135_k30_beta120_N512_512_384_L10_10_5"
 
-#yz_filename         = case * "_yz_left.jld2"
-yz_filename         = case * "_yz_right.jld2"
+yz_filename         = case * "_yz_left.jld2"
 statistics_filename = case * "_statistics.jld2"
 
 yz_filepath = joinpath(dir, yz_filename)
@@ -20,7 +19,7 @@ statistics_filepath = joinpath(dir, statistics_filename)
 #####
 
 ramp = "2"
-tlif_filename = string("../data/TRANSVERSE_STAT_RAMP", ramp, "_LIF_final.mat")
+tlif_filename = string("data/TRANSVERSE_STAT_RAMP", ramp, "_LIF_final.mat")
 tlif_data = matread(tlif_filename)["STAT_R$ramp"]
 
 # Load LIF data as "concentration"
@@ -28,9 +27,8 @@ c_tlif = tlif_data["LIFa"]
 c_tlif = permutedims(c_tlif, (2, 3, 1)) # puts time in last dimension
 
 # Load time (convert from 2D array to 1D vector)
-t₀_udel = 79.5
 t_tlif = tlif_data["time"][:]
-t_tlif = t_tlif .- t₀_udel
+t_tlif = t_tlif .- t_tlif[1]
 Nt_tlif = length(t_tlif)
 
 #####
@@ -46,10 +44,13 @@ function compute_timeseries(filepath)
 
     timeseries[:t] = t = [statsfile["timeseries/t/$i"] for i in iters]
     I = sortperm(t)
+    #t = t[I]
 
     for stat in (:u_max, :u_min, :v_max, :w_max)
         timeseries[stat] = [statsfile["timeseries/$stat/$i"] for i in iters]
+        #timeseries[stat] = timeseries[stat][I]
     end
+
 
     close(statsfile)
 
@@ -63,24 +64,19 @@ n_transition = findfirst(i -> u_max[i+1] < u_max[i], 1:length(u_max)-1)
 t_transition = t_stats[n_transition]
 t_stats = t_stats .- t_transition
 
-c_sim = FieldTimeSeries(yz_filepath, "c", backend=OnDisk())
+c_sim = FieldTimeSeries(yz_filepath, "c")
 t_sim = c_sim.times
 Nt = length(t_sim)
 
 # Figure
-fig = Figure(resolution=(2100, 400))
+fig = Figure(resolution=(2000, 800))
 colormap = :bilbao
 
 # LIF data heatmap
 #
 xticks = 0:0.02:0.12
 ax_sim  = Axis(fig[1, 1]; xlabel="Transverse distance (m)", ylabel="Vertical distance (m)", xticks)
-ax_tlif = Axis(fig[2, 1]; xlabel="Across-wind distance (m)", ylabel="Vertical distance (m)", xticks)
-
-text!(ax_sim, 0.02, 0.02, space=:relative, text="(a)")
-text!(ax_tlif, 0.02, 0.02, space=:relative, text="(b)")
-
-hidexdecorations!(ax_sim)
+ax_tlif = Axis(fig[2, 1]; xlabel="Transverse distance (m)", ylabel="Vertical distance (m)", xticks)
 
 j1 = 1200
 j2 = 1600
@@ -92,48 +88,48 @@ z_tlif = z_tlif .- maximum(z_tlif)
 grid = c_sim.grid
 Nx, Ny, Nz = size(grid)
 
-# Lab data heatmap
-n = Observable(151)
-cn_tlif = @lift rotr90(view(c_tlif, :, :, $n))[:, j1:j2]
+#=
+sim_slider  = Slider(fig[3, 1], range=1:Nt, startvalue=n_transition)
+tlif_slider = Slider(fig[5, 1], range=1:Nt_tlif, startvalue=151)
 
-# colorrange=(50, 2500)
-levels = 50:250:2500
-contourf!(ax_tlif, x_tlif, z_tlif, cn_tlif; levels, extendhigh=:auto, colormap)
+n = tlif_slider.value
+cn_tlif = @lift rotr90(view(c_tlif, :, :, $n))[:, j1:j2]
+tn_tlif = @lift t_tlif[$n] - 19.5 #- t_surf_max
+
+n = sim_slider.value
+tn_sim = @lift t_sim[$n] - t_transition
+cn_sim = @lift begin
+    c = interior(c_sim[$n], 1, :, :)
+    vcat(c, c)
+end
+=#
+
+# Lab data heatmap
+n = 151
+cn_tlif = rotr90(view(c_tlif, :, :, n))[:, j1:j2]
+tn_tlif = t_tlif[n]
+heatmap!(ax_tlif, x_tlif, z_tlif, cn_tlif; colorrange=(50, 2500), colormap)
 
 # Simulation heatmap
-# n = 95
-# n = searchsortedfirst(t_sim, tn_tlif) - 1
-cn_sim = @lift begin
-    m = searchsortedfirst(t_sim, t_tlif[$n])# - 1
-    m = isnothing(m) ? length(t_sim) : m
-    m = max(1, m)
-    m = min(length(t_sim), m)
-    @show t_sim[m]
-    cn_sim = interior(c_sim[m], 1, :, :)
-    cn_sim
-end
+n = 91
+tn_sim = t_sim[n]
+cn_sim = interior(c_sim[n], 1, :, :)
 
-# tn_sim = t_sim[n]
-# @show tn_sim tn_tlif
+@show tn_sim tn_tlif
 
 x_sim, y_sim, z_sim = nodes(c_sim)
 
-levels = 0.0:0.01:0.04
-contourf!(ax_sim, y_sim, z_sim, cn_sim; levels, colormap, extendhigh=:auto)
+cn_sim = vcat(cn_sim, cn_sim)
+y_sim = range(0.0, stop=2y_sim[Ny], length=2Ny)
 
-z₀ = -0.015
+heatmap!(ax_sim, y_sim, z_sim, cn_sim; colorrange=(0.0, 0.08), colormap)
+
 xlims!(ax_tlif, 0, maximum(x_tlif))
-ylims!(ax_tlif, z₀, 0)
+ylims!(ax_tlif, minimum(z_tlif), 0)
 
 xlims!(ax_sim, 0, maximum(x_tlif))
-ylims!(ax_sim, z₀, 0)
+ylims!(ax_sim, minimum(z_tlif), 0)
 
 display(fig)
 
-# Nt = length(t_tlif)
-# record(fig, "compare_lif_simulation.mp4", 1:Nt, framerate=12) do nn
-#     @info "Plotting frame $nn of $Nt..."
-#     n[] = nn
-# end
-
-#save("compare_lab_simulation.png", fig)
+save("compare_lab_simulation.png", fig)

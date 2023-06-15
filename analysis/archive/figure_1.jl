@@ -8,8 +8,9 @@ set_theme!(Theme(fontsize=24))
 include("veron_melville_data.jl")
 include("plotting_utilities.jl")
 
-dir = "data"
-case = "increasing_wind_ep14_k30_beta120_N384_384_256_L10_10_5_hi_freq"
+dir = "../data"
+#case = "increasing_wind_ep14_k30_beta120_N384_384_256_L10_10_5_hi_freq"
+case = "increasing_wind_ep135_k30_beta120_N768_768_512_L20_20_10_hi_freq"
 statistics_filename = case * "_statistics.jld2"
 averages_filename   = case * "_averages.jld2"
 Δ_max = 1e-3
@@ -22,9 +23,10 @@ averages_filepath   = joinpath(dir, averages_filename)
 #####
 
 ramp = "2"
-llif_filename = "data/LIF_analysis_mean_profiles_ALL_EXPS.mat"
+llif_filename = "../data/LIF_analysis_mean_profiles_ALL_EXPS.mat"
 llif_data = matread(llif_filename)["STAT_R" * ramp * "_EXP2"]
-t_llif = llif_data["time"][:] .- 98.8
+#t_llif = llif_data["time"][:] .- 98.8
+t_llif = llif_data["time"][:] .- 80.0
 c_llif = llif_data["mean_LIF"]
 z_llif = -llif_data["depth_relative_to_surface"][:] .+ 0.001
 
@@ -61,11 +63,12 @@ t_avg = t_avg .- t_transition
 
 ct = FieldTimeSeries(averages_filepath, "c")
 c_sim = interior(ct, 1, 1, :, :)
-z_sim = znodes(Center, ct.grid)
+z_sim = znodes(ct.grid, Center())
 t_sim = ct.times .- t_transition
 Nt = length(t_sim)
 
-t₀_vm = 19.4
+#t₀_vm = 19.4
+t₀_vm = 20.0
 t_vm_surf = veron_melville_data[:t_surf] .- t₀_vm
 u_vm_surf = veron_melville_data[:u_surf] ./ 100
 
@@ -114,7 +117,7 @@ c_sim = max.(0, c_sim)
 contourf!(ax_sim, t_sim, z_sim, c_sim'; colormap, colorrange=(0, c_max), levels=sim_levels)
 
 # Scatter plot
-surface_velocity_filename = "data/Final_SurfVel_per_RAMP.mat"
+surface_velocity_filename = "../data/Final_SurfVel_per_RAMP.mat"
 surface_velocity_data = matread(surface_velocity_filename)["BIN"]["R$ramp"]
 t_surf = surface_velocity_data["time"][:]
 u_surf = surface_velocity_data["U"][:]
@@ -157,4 +160,4 @@ vlines!(ax_u, tn_sim, linestyle=:dash, linewidth=3, color=(:red, 0.8))
 
 display(fig)
 
-save("/Users/gregorywagner/Desktop/figure_1.png", fig)
+# save("/Users/gregorywagner/Desktop/figure_1.png", fig)

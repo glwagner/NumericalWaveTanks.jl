@@ -8,28 +8,21 @@ set_theme!(Theme(fontsize=24))
 include("veron_melville_data.jl")
 include("plotting_utilities.jl")
 
-dir = "data"
-case = "increasing_wind_ep135_k30_beta120_N512_512_384_L10_10_5"
+dir = "../data"
+case = "constant_waves_ep140_k30_beta120_N768_768_512_L20_20_10"
 statistics_filename = case * "_statistics.jld2"
 averages_filename   = case * "_averages.jld2"
-Δ_max = 1e-3
 
 statistics_filepath = joinpath(dir, statistics_filename)
 averages_filepath   = joinpath(dir, averages_filename)
 
-#####
-##### Load LIF data
-#####
-
-new_filename = "data/fig4b.mat"
-
+new_filename = "../data/fig4b.mat"
 ramp = "2"
-lif_filename = "data/fig4b.mat" #"data/LIF_analysis_mean_profiles_ALL_EXPS.mat"
-#lif_data = matread(lif_filename)["STAT_R" * ramp * "_EXP2"]
+t₀_udel = 79.7
+
+lif_filename = "../data/fig4b.mat" #"data/LIF_analysis_mean_profiles_ALL_EXPS.mat"
 lif_data = matread(lif_filename)["fig4b"]
-t_lif = lif_data["time"][:]
-t_lif = t_lif .- t_lif[1]
-t_lif = t_lif .- 4 # 4.83 #.- 98.8
+t_lif = lif_data["time"][:] .- t₀_udel
 c_lif = permutedims(lif_data["LIF"], (2, 1))
 z_lif = -lif_data["z"][:] .+ 0.034
 
@@ -48,28 +41,28 @@ u_max = stats[:u_max]
 w_max = stats[:w_max]
 u_min = stats[:u_min]
 
-# Shift time according to turbulent transition
-nn = sortperm(t_stats)
-t_stats = t_stats[nn]
-u_max = u_max[nn]
-w_max = w_max[nn]
-
-n_transition = findfirst(i -> u_max[i+1] < u_max[i] - Δ_max, 1:length(u_max)-1)
-t_transition = t_stats[n_transition]
-
 ct = FieldTimeSeries(averages_filepath, "c")
 c_sim = interior(ct, 1, 1, :, :)
-z_sim = znodes(Center, ct.grid)
-t_sim = ct.times #.- t_transition
+c_sim = permutedims(c_sim, (2, 1))
+z_sim = znodes(ct.grid, Center())
+t_sim = ct.times
 Nt = length(t_sim)
 
-c_sim = permutedims(c_sim, (2, 1))
 c_lif_min = minimum(c_lif)
 c_lif = @. c_lif - c_lif_min
 C_lif = sum(c_lif, dims=2)
 c_lif = c_lif ./ C_lif[1]
+ζk = mapslices(findmax, c_lif, dims=2)
+ζ = map(elem -> elem[1], ζk)
+K = map(elem -> elem[2], ζk)
+@show ζ K
 
+#for (n, k) in K
+
+
+zz = repeat(z_lif', length(t_lif), 1)
 c_lif[c_lif .< 3e-4] .= 0
+c_lif[zz .> 0.003] .= 0
 
 C_sim = sum(c_sim, dims=2)
 C_lif = sum(c_lif, dims=2)
@@ -86,23 +79,23 @@ for n = 1:length(Z_lif)
 end
 
 c_sim = c_sim ./ C_sim
-
 c_sim = @. max(c_sim, 0, c_sim)
 
 # Figure
-t₀ = 15.0 #-10
-t₁ = 30 #^022.6 #12.6
-z₀ = -0.05
+t₀ = 5.0
+t₁ = 30
+z₀ = -0.08
 z₁ = 0.02
 fig = Figure(resolution=(1600, 1200))
 colormap = :bilbao
 
 yticks = -0.1:0.02:0.0
 xticks = -0.1:0.02:0.0
-ax_int = Axis(fig[1, 1]; xlabel="Time relative to turbulent transition (seconds)", ylabel="Normalized ∫c dz")
-ax_cen = Axis(fig[2, 1]; xlabel="Time relative to turbulent transition (seconds)", ylabel="Z(t) = ∫z c dz")
+ax_int = Axis(fig[1, 1]; xlabel="Simulation time (seconds)", ylabel="Normalized ∫c dz")
+ax_cen = Axis(fig[2, 1]; xlabel="Simulation time (seconds)", ylabel="Z(t) = ∫z c dz")
 ax_sim = Axis(fig[3, 1]; title="Simulation", xlabel="Time relative to turbulent transition (seconds)", ylabel="z (m)", yticks)
 ax_lif = Axis(fig[4, 1]; title="Laboratory LIF", xlabel="Time relative to turbulent transition (seconds)", ylabel="z (m)", yticks)
+ax_u   = Axis(fig[5, 1]; xlabel="Simulation time (seconds)", ylabel="Streamwise \n velocity (m s⁻¹)", yticks)
 
 lines!(ax_int, t_sim, C_sim[:] / C_sim[1], label="Simulation")
 lines!(ax_int, t_lif, C_lif[:] / C_lif[1], label="LIF")
@@ -126,6 +119,13 @@ lines!(ax_sim, t_sim, Z_sim, label="Simulation", color=:lightblue1, linewidth=6)
 
 xlims!(ax_sim, t₀, t₁)
 ylims!(ax_sim, z₀, z₁)
+
+udel_filename = joinpath(dir, "every_surface_velocity.mat")
+udel_vars = matread(udel_filename)
+u_udel = udel_vars["BIN"][exp]["U"][:]
+t_udel = udel_vars["BIN"][exp]["time"][:] .- t₀_udel
+
+
 
 display(fig)
 
