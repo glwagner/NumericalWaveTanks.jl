@@ -10,28 +10,21 @@ include("plotting_utilities.jl")
 dir = "../data"
 
 cases = [
-    "constant_waves_ep120_k30_beta120_N768_768_512_L20_20_10",
-    "constant_waves_ep130_k30_beta120_N768_768_512_L20_20_10",
-    "constant_waves_ep140_k30_beta120_N768_768_512_L20_20_10",
-    #"sudden_waves_ep140_k30_beta120_N512_512_384_L20_20_10",
-    #"sudden_waves_ep200_k30_beta120_N512_512_384_L20_20_10",
-    #"sudden_waves_ep300_k30_beta120_N512_512_384_L20_20_10",
+    "constant_waves_ep100_k30_beta120_x1_N768_768_512_L20_20_10"
+    "constant_waves_ep100_k30_beta120_x2_N768_768_512_L20_20_10"
 ]
 
 labels = [
-    "constant waves with ϵ = 0.12",
-    "constant waves with ϵ = 0.13",
-    "constant waves with ϵ = 0.14",
-    #"sudden waves with ϵ = 0.14",
-    #"sudden waves with ϵ = 0.2",
-    #"sudden waves with ϵ = 0.3",
+    "constant waves with ϵ = 0.10 and Χ = 10⁻¹",
+    "constant waves with ϵ = 0.10 and Χ = 10⁻²",
 ]
 
-linewidths = [6, 2, 2, 1]
+colors = Makie.wong_colors()
+linewidths = [6, 6, 2, 1]
 t_transitions = [0, 0, 0, 0]
 exp = "R2"
 ramp = 2
-t₀_udel = 79.7
+t₀_udel = 79.5
 
 udel_filename = joinpath(dir, "every_surface_velocity.mat")
 udel_vars = matread(udel_filename)
@@ -39,8 +32,8 @@ u_udel = udel_vars["BIN"][exp]["U"][:]
 t_udel = udel_vars["BIN"][exp]["time"][:] .- t₀_udel
 
 # Figure
-t₀ = 5
-t₁ = 30
+t₀ = 15
+t₁ = 23
 z₀ = -0.04
 fig = Figure(resolution=(1200, 800))
 colormap = :bilbao
@@ -50,13 +43,12 @@ ax_u = Axis(fig[1, 1], xaxisposition=:top,
             ylabel = "Streamwise \n velocity (m s⁻¹)")
 
 ax_w = Axis(fig[2, 1],
+            yscale = log10,
             xlabel = "Simulation time (s)",
             ylabel = "Cross-stream \n velocities (m s⁻¹)")
 
-ylims!(ax_u, 0.0, 0.2)
+ylims!(ax_u, 0.1, 0.2)
 xlims!(ax_u, t₀, t₁)
-
-# ylims!(ax_w, 0.0, 0.2)
 xlims!(ax_w, t₀, t₁)
 
 # Scatter plot
@@ -70,34 +62,16 @@ u_surf_max_max, n_max = findmax(u_surf_max)
 t_surf_max = t_surf[n_max]
 t_surf = t_surf .- t_surf_max
 
-αvm = 0.5
-
 scatter!(ax_u, t_udel, u_udel, marker=:circle, markersize=20, color=(:black, 0.5),
          label="Average surface velocity, UDelaware exp $exp")
-
-#=
-scatter!(ax_u, t_vm_surf, u_vm_surf, marker=:utriangle, markersize=20, color=(:blue, αvm),
-         label="Surface velocity, Veron and Melville (2001)")
-
-scatter!(ax_u, t_vm_avg_surf, u_vm_avg_surf, marker=:rect, markersize=20, color=(:purple, αvm),
-         label="Average surface velocity, Veron and Melville (2001)")
-
-scatter!(ax_u, t_vm_jet, u_vm_jet, markersize=20, color=(:indigo, αvm), marker=:dtriangle,
-         label="Jet velocity, Veron and Melville (2001)")
-
-scatter!(ax_u, t_vm_wake, u_vm_wake, marker=:cross, markersize=20, color=(:cyan, 1.0),
-         label="Wake velocity, Veron and Melville (2001)")
-=#
 
 #####
 ##### Simulation stuff
 #####
 
-for n = 1:length(cases)
-
-    case = cases[n]
-    label = labels[n]
-    αsim = 0.6
+for c = 1:length(cases)
+    case = cases[c]
+    label = labels[c]
     statistics_filename = case * "_hi_freq_statistics.jld2"
     averages_filename   = case * "_hi_freq_averages.jld2"
 
@@ -123,15 +97,7 @@ for n = 1:length(cases)
     v_max = v_max[nn]
     w_max = w_max[nn]
 
-    #=
-    Δ_max = 1e-6
-    n_transition = findfirst(i -> u_max[i+1] < u_max[i] - Δ_max, 1:length(u_max)-1)
-    isnothing(n_transition) && (n_transition=length(u_max))
-    t_transition = t_stats[n_transition]
-    =#
-
-    t_transition = t_transitions[n]
-
+    t_transition = t_transitions[c]
     t_stats = t_stats .- t_transition
     t_avg = t_avg .- t_transition
 
@@ -141,15 +107,43 @@ for n = 1:length(cases)
     t_sim = ct.times .- t_transition
     Nt = length(t_sim)
 
-    linewidth = linewidths[n]
+    linewidth = linewidths[c]
 
-    lines!(ax_u, t_stats, u_max; linewidth, color = (:darkred, 0.8), label =  "max(u), " * label)
-    lines!(ax_u, t_stats, u_min; linewidth, color = (:seagreen, 0.6), label =  "min(u), " * label)
-    lines!(ax_u, t_avg,   u_avg; linewidth, color = (:royalblue1, 0.6), label = "mean(u), " * label)
+    #lines!(ax_u, t_stats, u_max; linewidth, color = (:darkred, 0.8), label =  "max(u), " * label)
+    #lines!(ax_u, t_stats, u_min; linewidth, color = (:seagreen, 0.6), label =  "min(u), " * label)
+    lines!(ax_u, t_avg,   u_avg; linewidth, color = colors[c], label = "mean(u), " * label)
 
-    lines!(ax_w, t_stats, v_max; linewidth, color = (:royalblue1, 0.8), label =  "max(v)")
-    lines!(ax_w, t_stats, w_max; linewidth, color = (:darkred, 0.8), label =  "max(w)")
+    #lines!(ax_w, t_stats, v_max; linewidth, color = (:royalblue1, 0.8), label =  "max(v)")
+    lines!(ax_w, t_stats, w_max; linewidth, color = colors[c], label =  "max|w|")
 end
+
+wt = []
+for c in 1:length(cases)
+    case = cases[c]
+    slice_filename = case * "_yz_right.jld2"
+    slice_filepath = joinpath(dir, slice_filename)
+    wc = FieldTimeSeries(slice_filepath, "w")
+    push!(wt, wc)
+    times = wc.times
+    Nt = length(times)
+end
+
+x, y, z = nodes(wt[1])
+
+ax_c1 = Axis(fig[3, 1])
+ax_c2 = Axis(fig[4, 1])
+slider = Slider(fig[5, 1], range=1:Nt, startvalue=1)
+n = slider.value
+w1 = @lift interior(wt[1][$n], 1, :, :)
+w2 = @lift interior(wt[2][$n], 1, :, :)
+tn = @lift times[$n]
+heatmap!(ax_c1, y, z, w1)
+heatmap!(ax_c2, y, z, w2)
+vlines!(ax_u, tn)
+vlines!(ax_w, tn)
+
+ylims!(ax_c1, -0.04, 0.0)
+ylims!(ax_c2, -0.04, 0.0)
 
 Legend(fig[0, 1], ax_u, tellwidth=false)
 axislegend(ax_w, position=:lt)
@@ -158,4 +152,4 @@ hidespines!(ax_u, :b, :r)
 
 display(fig)
 
-save("surface_velocity_comparison.png", fig)
+# save("compare_model_surface_velocities.png", fig)

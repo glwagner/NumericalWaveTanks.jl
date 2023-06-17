@@ -2,6 +2,7 @@ using Oceananigans
 using SpecialFunctions
 using Printf
 using GLMakie
+using JLD2
 
 struct StokesShear
     S₀ :: Float64
@@ -20,6 +21,7 @@ end
 function StokesShear(; g=9.81, T=7.2e-5, k=2π/0.03, ϵ=0.14)
     ω = sqrt(g * k + T * k^3)
     S₀ = 2 * ω * ϵ^2
+
     return StokesShear(S₀, k)
 end
 
@@ -30,7 +32,7 @@ function grow_instability!(simulation, energy)
     simulation.model.clock.iteration = 0
     t₀ = simulation.model.clock.time = 0
     compute!(energy)
-    energy₀ = energy[1, 1, 1]
+    energy₀ = first(energy)
 
     # Grow
     run!(simulation)
@@ -59,7 +61,7 @@ end
 
 convergence(σ) = (length(σ) < 2 || isnan(σ[end]) || isnan(σ[end-1])) ? 9.1e18 : abs((σ[end] - σ[end-1]) / σ[end])
     
-function simulate_linear_growth(simulation, energy; target_kinetic_energy=1e-8, convergence_criterion=2e-3)
+function simulate_linear_growth(simulation, energy; target_kinetic_energy=1e-8, convergence_criterion=1e-4)
     # Initialize
     compute!(energy)
     rescale!(simulation.model, energy; target_kinetic_energy)
@@ -89,7 +91,7 @@ function simulate_linear_growth(simulation, energy; target_kinetic_energy=1e-8, 
         compute!(energy)
 
         @info @sprintf("Power method iteration %d, kinetic energy: %.2e, σⁿ: %.2e, relative Δσ: %.2e",
-                       length(σ), energy[1, 1, 1], σ[end], convergence(σ))
+                       length(σ), first(energy), σ[end], convergence(σ))
 
         rescale!(simulation.model, energy; target_kinetic_energy)
 
@@ -107,18 +109,21 @@ end
 
 function langmuir_instability_simulation(; t₀ = 15.0,
                                            A = 1e-2,
-                                           Ny = 256,
+                                           Ny = 384,
                                            Nz = 128,
-                                           Ly = 0.06,
+                                           Ly = 0.05,
                                            Lz = 0.02,
+                                           ϵ = 0.3,
                                            ν = 1.05e-6,
                                            time_dependent = true,
                                            stop_time = 0.1)
 
+    @show ϵ
+
     U = BackgroundField(mean_velocity, parameters=(; A, ν, t₀, time_dependent))
     grid = RectilinearGrid(size=(Ny, Nz), y=(0, Ly), z=(-Lz, 0), topology=(Flat, Periodic, Bounded))
     closure = ScalarDiffusivity(; ν)
-    stokes_drift = UniformStokesDrift(; ∂z_uˢ=StokesShear())
+    stokes_drift = UniformStokesDrift(; ∂z_uˢ=StokesShear(; ϵ))
 
     model = NonhydrostaticModel(; grid, closure, stokes_drift,
                                 timestepper = :RungeKutta3,
@@ -141,70 +146,69 @@ function estimate_growth_rate(; target_kinetic_energy=1e-10, kw...)
     return growth_rates[end], simulation
 end
 
-inception_times = collect(1.0:2.0:20.0)
-time_independent_growth_rates = Float64[]
-time_dependent_growth_rates = Float64[]
-strong_time_dependent_growth_rates = Float64[]
+all_time_independent_growth_rates = Dict()
+for ϵ = 0.05:0.05:0.3
+    inception_times = collect(15.0:0.5:17.0)
+    time_independent_growth_rates = Float64[]
+    # time_dependent_growth_rates = Float64[]
+    # strong_time_dependent_growth_rates = Float64[]
 
-for t₀ in inception_times
-    # Time-independent problem
-    growth_rate, simulation = estimate_growth_rate(; t₀, time_dependent=false)
-    push!(time_independent_growth_rates, growth_rate)
+    for t₀ in inception_times
+        # Time-independent problem
+        growth_rate, simulation = estimate_growth_rate(; t₀, ϵ, time_dependent=false)
+        push!(time_independent_growth_rates, growth_rate)
 
-    u, v, w = simulation.model.velocities
-    wn = interior(w, 1, :, :)
-    fig = Figure(resolution=(1200, 600))
-    ax = Axis(fig[1, 1], aspect=2)
-    heatmap!(ax, wn)
-    display(current_figure())
+        u, v, w = simulation.model.velocities
+        wn = interior(w, 1, :, :)
+        fig = Figure(resolution=(1200, 600))
+        title = @sprintf("ϵ = %.2f, t★ = %.1f, σ = %.4f", ϵ, t₀, growth_rate)
+        ax = Axis(fig[1, 1]; title, aspect=2)
+        heatmap!(ax, wn)
+        plotname = @sprintf("unstable_mode_t%02d_ep%02d.png", 10t₀, 100ϵ)
+        save(plotname, fig)
 
-    # Time-dependent problem
-    growth_rate, simulation = estimate_growth_rate(; t₀, time_dependent=true)
-    push!(time_dependent_growth_rates, growth_rate)
+        #=
+        # Time-dependent problem
+        growth_rate, simulation = estimate_growth_rate(; t₀, time_dependent=true)
+        push!(time_dependent_growth_rates, growth_rate)
 
-    u, v, w = simulation.model.velocities
-    wn = interior(w, 1, :, :)
-    fig = Figure(resolution=(1200, 600))
-    ax = Axis(fig[1, 1], aspect=2)
-    heatmap!(ax, wn)
-    display(current_figure())
+        u, v, w = simulation.model.velocities
+        wn = interior(w, 1, :, :)
+        fig = Figure(resolution=(1200, 600))
+        ax = Axis(fig[1, 1], aspect=2)
+        heatmap!(ax, wn)
+        display(current_figure())
 
-    # Time-dependent problem
-    growth_rate, simulation = estimate_growth_rate(; t₀, target_kinetic_energy=1e-8, time_dependent=true)
-    push!(strong_time_dependent_growth_rates, growth_rate)
+        # Time-dependent problem
+        growth_rate, simulation = estimate_growth_rate(; t₀, target_kinetic_energy=1e-8, time_dependent=true)
+        push!(strong_time_dependent_growth_rates, growth_rate)
+        =#
 
-    @info """\n
-          Power method growth rate estimate:
-              - Inception time: $t₀.
-              - Estimated growth rate (fixed mean flow):                                 $(time_independent_growth_rates[end])
-              - Estimated growth rate (time-dependent mean flow):                        $(time_dependent_growth_rates[end])
-              - Estimated growth rate (time-dependent mean flow, stronger perturbation): $(strong_time_dependent_growth_rates[end])
+        @info """\n
+              Power method growth rate estimate:
+                  - ϵ: $ϵ
+                  - Inception time: $t₀.
+                  - Estimated growth rate (fixed mean flow): $(time_independent_growth_rates[end])
+              """
+                  # - Estimated growth rate (time-dependent mean flow):                        $(time_dependent_growth_rates[end])
+                  # - Estimated growth rate (time-dependent mean flow, stronger perturbation): $(strong_time_dependent_growth_rates[end])
+    end
 
-          """
+    all_time_independent_growth_rates[ϵ] = time_independent_growth_rates
+    filename = @sprintf("linear_instability_analysis_ep%02d", 100ϵ)
+    filepath = filename * ".jld2"
+
+    n = 1
+    while isfile(filepath)
+        filepath = filename * "_$(n).jld2"
+        n += 1
+    end
+
+    file = jldopen(filepath, "a+")
+    file["inception_times"] = inception_times
+    file["time_independent_growth_rates"] = time_independent_growth_rates
+    #file["time_dependent_growth_rates"] = time_dependent_growth_rates
+    #file["strong_time_dependent_growth_rates"] = strong_time_dependent_growth_rates
+    close(file)
 end
-
-# Save data
-using JLD2
-
-filename = "linear_instability_analysis"
-filepath = filename * ".jld2"
-
-n = 1
-while isfile(filepath)
-    global filepath = filename * "_$(n).jld2"
-    global n += 1
-end
-
-file = jldopen(filepath, "a+")
-file["inception_times"] = inception_times
-file["time_independent_growth_rates"] = time_independent_growth_rates
-file["time_dependent_growth_rates"] = time_dependent_growth_rates
-file["strong_time_dependent_growth_rates"] = strong_time_dependent_growth_rates
-close(file)
-
-fig = Figure()
-ax = Axis(fig[1, 1], xlabel="Inception time (s)", ylabel="Growth rate (s⁻¹)")
-scatter!(ax, inception_times, time_independent_growth_rates, label="Fixed base flow")
-scatter!(ax, inception_times, time_dependent_growth_rates, label="Accelerating base flow")
-display(fig)
 

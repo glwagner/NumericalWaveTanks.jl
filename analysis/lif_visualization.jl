@@ -1,20 +1,21 @@
 using GLMakie
 using Oceananigans
 using MAT
+using Printf
 
-lif_filename = "../data/TRANSVERSE_STAT_RAMP1_LIF_final.mat"
-ramp_1_data = matread(lif_filename)["STAT_R1"]
+lif_filename = "../data/TRANSVERSE_STAT_RAMP2_LIF_final.mat"
+lif_data = matread(lif_filename)["STAT_R2"]
 
 # Load LIF data as "concentration"
-c = ramp_1_data["LIFa"]
+c = lif_data["LIFa"]
 c = permutedims(c, (2, 3, 1)) # puts time in last dimension
 
 # Load time (convert from 2D array to 1D vector)
-t = ramp_1_data["time"][:]
+t = lif_data["time"][:]
 Nt = length(t)
 
-x = ramp_1_data["X_transverse_m"][:]
-z = ramp_1_data["Z_transverse_m"][:] .- 0.11
+x = lif_data["X_transverse_m"][:]
+z = lif_data["Z_transverse_m"][:] .- 0.11
 
 fig = Figure(resolution=(2700, 900))
 ax = Axis(fig[2, 1], xlabel="Along-wind direction (m)", ylabel="z (m)")
