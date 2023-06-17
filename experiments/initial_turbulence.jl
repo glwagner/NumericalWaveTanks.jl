@@ -117,7 +117,7 @@ function decaying_turbulence_on_shear_flow(arch;
     dir = joinpath(nobackup_dir, file_prefix)
 
     @info "Saving data to $file_prefix"
-    schedule = SpecifiedTimes(0.1, 0.2, 0.4, 0.8, 1.6)
+    schedule = SpecifiedTimes(0.01, 0.05, 0.1, 0.5, 1.0)
     simulation.output_writers[:fields] = JLD2OutputWriter(model, model.velocities; dir,
                                                           overwrite_existing, schedule,
                                                           filename = file_prefix * "_fields")
