@@ -10,17 +10,19 @@ include("plotting_utilities.jl")
 dir = "../data"
 
 cases = [
-    "constant_waves_ep100_k30_beta120_x1_N768_768_512_L20_20_10"
-    "constant_waves_ep100_k30_beta120_x2_N768_768_512_L20_20_10"
+    "constant_waves_medium_ic_ep80_k30_beta120_N768_768_512_L10_10_5",
+    "constant_waves_medium_ic_ep100_k30_beta120_N768_768_512_L10_10_5",
+    "constant_waves_medium_ic_ep110_k30_beta120_N768_768_512_L10_10_5",
 ]
 
 labels = [
-    "constant waves with ϵ = 0.10 and Χ = 10⁻¹",
-    "constant waves with ϵ = 0.10 and Χ = 10⁻²",
+    "constant waves with ϵ = 0.08 and medium IC",
+    "constant waves with ϵ = 0.10 and medium IC",
+    "constant waves with ϵ = 0.11 and medium IC",
 ]
 
 colors = Makie.wong_colors()
-linewidths = [6, 6, 2, 1]
+linewidths = [6, 6, 6, 1]
 t_transitions = [0, 0, 0, 0]
 exp = "R2"
 ramp = 2
@@ -35,21 +37,21 @@ t_udel = udel_vars["BIN"][exp]["time"][:] .- t₀_udel
 t₀ = 15
 t₁ = 23
 z₀ = -0.04
-fig = Figure(resolution=(1200, 800))
+fig = Figure(resolution=(1100, 1600))
 colormap = :bilbao
 
-ax_u = Axis(fig[1, 1], xaxisposition=:top,
+ax_u = Axis(fig[2, 1], xaxisposition=:top,
             xlabel = "Simulation time (s)",
             ylabel = "Streamwise \n velocity (m s⁻¹)")
 
-ax_w = Axis(fig[2, 1],
+ax_w = Axis(fig[3, 1],
             yscale = log10,
             xlabel = "Simulation time (s)",
             ylabel = "Cross-stream \n velocities (m s⁻¹)")
 
-ylims!(ax_u, 0.1, 0.2)
 xlims!(ax_u, t₀, t₁)
 xlims!(ax_w, t₀, t₁)
+ylims!(ax_u, 0.05, 0.2)
 
 # Scatter plot
 surface_velocity_filename = joinpath(dir, "Final_SurfVel_per_RAMP.mat")
@@ -117,39 +119,107 @@ for c = 1:length(cases)
     lines!(ax_w, t_stats, w_max; linewidth, color = colors[c], label =  "max|w|")
 end
 
+ut = []
 wt = []
-for c in 1:length(cases)
+ct = []
+for c in 1:2 #ength(cases)
     case = cases[c]
     slice_filename = case * "_yz_right.jld2"
     slice_filepath = joinpath(dir, slice_filename)
     wc = FieldTimeSeries(slice_filepath, "w")
+    uc = FieldTimeSeries(slice_filepath, "u")
+    cc = FieldTimeSeries(slice_filepath, "c")
     push!(wt, wc)
+    push!(ut, uc)
+    push!(ct, cc)
     times = wc.times
     Nt = length(times)
 end
 
-x, y, z = nodes(wt[1])
+x, y, z = nodes(ut[1])
 
-ax_c1 = Axis(fig[3, 1])
-ax_c2 = Axis(fig[4, 1])
-slider = Slider(fig[5, 1], range=1:Nt, startvalue=1)
+x = x .* 1e2
+y = y .* 1e2
+z = z .* 1e2
+aspect = 10 / 1.5
+
+ax_c1 = Axis(fig[1, 2]; aspect)
+ax_c2 = Axis(fig[2, 2]; aspect)
+slider = Slider(fig[4, 1:2], range=1:length(times), startvalue=1)
 n = slider.value
 w1 = @lift interior(wt[1][$n], 1, :, :)
 w2 = @lift interior(wt[2][$n], 1, :, :)
+u1 = @lift interior(ut[1][$n], 1, :, :)
+u2 = @lift interior(ut[2][$n], 1, :, :)
+c1 = @lift interior(ct[1][$n], 1, :, :)
+c2 = @lift interior(ct[2][$n], 1, :, :)
 tn = @lift times[$n]
-heatmap!(ax_c1, y, z, w1)
-heatmap!(ax_c2, y, z, w2)
+#heatmap!(ax_c1, y, z, u1)
+#heatmap!(ax_c2, y, z, u2)
+heatmap!(ax_c1, y, z, c1, colormap=:bilbao)
+heatmap!(ax_c2, y, z, c2, colormap=:bilbao)
 vlines!(ax_u, tn)
 vlines!(ax_w, tn)
 
-ylims!(ax_c1, -0.04, 0.0)
-ylims!(ax_c2, -0.04, 0.0)
+#####
+##### Load LIF data as "concentration"
+#####
 
-Legend(fig[0, 1], ax_u, tellwidth=false)
+lif_filename = "../data/TRANSVERSE_STAT_RAMP2_LIF_final.mat"
+lif_data = matread(lif_filename)["STAT_R2"]
+
+c_lif = lif_data["LIFa"]
+c_lif = permutedims(c_lif, (2, 3, 1)) # puts time in last dimension
+
+# Load time (convert from 2D array to 1D vector)
+t_lif = lif_data["time"][:] .- t₀_udel
+x_lif = lif_data["X_transverse_m"][:]
+z_lif = lif_data["Z_transverse_m"][:] .- 0.108
+Nt = length(t_lif)
+
+x_lif .-= minimum(x_lif)
+
+# Convert to cm
+x_lif .*= 1e2
+z_lif .*= 1e2
+
+colorrange = (100, 1500)
+colormap = :bilbao
+j1 = 1250
+j2 = 1660
+
+tn = @lift times[$n]
+nlif = @lift searchsortedfirst(t_lif, $tn)
+tn_lif = @lift begin
+    t = t_lif[$nlif]
+    @show t
+    t
+end
+cn_lif = @lift rotr90(view(c_lif, :, :, $nlif))[:, j1:j2]
+
+Lx = maximum(x_lif) - minimum(x_lif)
+Lz = maximum(z_lif[j1:j2]) - minimum(z_lif[j1:j2])
+# aspect = Lx / Lz
+
+ax_lif = Axis(fig[3, 2]; xlabel="Cross-wind direction (cm)", ylabel="z (cm)", aspect)
+heatmap!(ax_lif, x_lif, z_lif[j1:j2], cn_lif; colorrange, colormap=:bilbao)
+
+Legend(fig[1, 1], ax_u, tellwidth=false, tellheight=false)
 axislegend(ax_w, position=:lt)
 hidespines!(ax_w, :t, :r)
 hidespines!(ax_u, :b, :r)
 
+xlims!(ax_c1,  0, 10)
+xlims!(ax_c2,  0, 10)
+xlims!(ax_lif, 0, 10)
+
+ylims!(ax_c1,  -2.0, 0)
+ylims!(ax_c2,  -2.0, 0)
+ylims!(ax_lif, -2.0, 0)
+
+colsize!(fig.layout, 1, Relative(0.2))
+
 display(fig)
 
 # save("compare_model_surface_velocities.png", fig)
+

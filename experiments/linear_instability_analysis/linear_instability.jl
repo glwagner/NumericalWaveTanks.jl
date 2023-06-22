@@ -4,24 +4,22 @@ using Printf
 using GLMakie
 using JLD2
 
-struct StokesShear
-    S₀ :: Float64
-    k :: Float64
-end
-
 @inline function mean_velocity(x, y, z, t, p)
     t′ = ifelse(p.time_dependent, p.t₀ + t, p.t₀)
     h = √(2 * p.ν * t′)
     U₀ = p.A * t′
     δ = z / h
-
     return U₀ * ((1 + δ^2) * erfc(-δ / √2) + δ * √(2/π) * exp(-δ^2 / 2))
+end
+
+struct StokesShear
+    S₀ :: Float64
+    k :: Float64
 end
 
 function StokesShear(; g=9.81, T=7.2e-5, k=2π/0.03, ϵ=0.14)
     ω = sqrt(g * k + T * k^3)
     S₀ = 2 * ω * ϵ^2
-
     return StokesShear(S₀, k)
 end
 
@@ -107,21 +105,36 @@ function simulate_linear_growth(simulation, energy; target_kinetic_energy=1e-8, 
     return σ
 end
 
-function langmuir_instability_simulation(; t₀ = 15.0,
-                                           A = 1e-2,
-                                           Ny = 384,
-                                           Nz = 128,
-                                           Ly = 0.05,
-                                           Lz = 0.02,
-                                           ϵ = 0.3,
+function langmuir_instability_simulation(; t₀ = 16.0,
+                                           β = 1.2e-5,
+                                           Ny = 768,
+                                           Nz = 512,
+                                           Ly = 0.1,
+                                           Lz = 0.05,
+                                           ϵ = 0.08,
                                            ν = 1.05e-6,
-                                           time_dependent = true,
-                                           stop_time = 0.1)
+                                           time_dependent = false,
+                                           stop_time = 0.2)
 
     @show ϵ
-
+    A = β * sqrt(π / 4ν)
     U = BackgroundField(mean_velocity, parameters=(; A, ν, t₀, time_dependent))
-    grid = RectilinearGrid(size=(Ny, Nz), y=(0, Ly), z=(-Lz, 0), topology=(Flat, Periodic, Bounded))
+
+    refinement = 1.5 # controls spacing near surface (higher means finer spaced)
+    stretching = 8   # controls rate of stretching at bottom
+    h(k) = (k - 1) / Nz
+    ζ₀(k) = 1 + (h(k) - 1) / refinement
+    Σ(k) = (1 - exp(-stretching * h(k))) / (1 - exp(-stretching))
+
+    @info "Building a grid..." 
+    # grid = RectilinearGrid(size=(Ny, Nz), y=(0, Ly), z=(-Lz, 0), topology=(Flat, Periodic, Bounded))
+    grid = RectilinearGrid(CPU(),
+                           size = (Ny, Nz),
+                           halo = (3, 3),
+                           y = (0, Ly),
+                           z = k -> Lz * (ζ₀(k) * Σ(k) - 1), # (-Lz, 0)
+                           topology = (Flat, Periodic, Bounded))
+
     closure = ScalarDiffusivity(; ν)
     stokes_drift = UniformStokesDrift(; ∂z_uˢ=StokesShear(; ϵ))
 
@@ -147,8 +160,8 @@ function estimate_growth_rate(; target_kinetic_energy=1e-10, kw...)
 end
 
 all_time_independent_growth_rates = Dict()
-for ϵ = 0.05:0.05:0.3
-    inception_times = collect(15.0:0.5:17.0)
+for ϵ = 0.06:0.02:0.12
+    inception_times = [16.0] #collect(15.0:0.5:17.0)
     time_independent_growth_rates = Float64[]
     # time_dependent_growth_rates = Float64[]
     # strong_time_dependent_growth_rates = Float64[]
@@ -164,25 +177,19 @@ for ϵ = 0.05:0.05:0.3
         title = @sprintf("ϵ = %.2f, t★ = %.1f, σ = %.4f", ϵ, t₀, growth_rate)
         ax = Axis(fig[1, 1]; title, aspect=2)
         heatmap!(ax, wn)
-        plotname = @sprintf("unstable_mode_t%02d_ep%02d.png", 10t₀, 100ϵ)
+        plotname = @sprintf("linearly_unstable_mode_t%02d_ep%02d.png", 10t₀, 100ϵ)
         save(plotname, fig)
 
-        #=
-        # Time-dependent problem
-        growth_rate, simulation = estimate_growth_rate(; t₀, time_dependent=true)
-        push!(time_dependent_growth_rates, growth_rate)
-
-        u, v, w = simulation.model.velocities
-        wn = interior(w, 1, :, :)
-        fig = Figure(resolution=(1200, 600))
-        ax = Axis(fig[1, 1], aspect=2)
-        heatmap!(ax, wn)
-        display(current_figure())
-
-        # Time-dependent problem
-        growth_rate, simulation = estimate_growth_rate(; t₀, target_kinetic_energy=1e-8, time_dependent=true)
-        push!(strong_time_dependent_growth_rates, growth_rate)
-        =#
+        filename = @sprintf("linearly_unstable_mode_t%02d_ep%02d.jld2", 10t₀, 100ϵ)
+        filepath = filename * ".jld2"
+        file = jldopen(filepath, "a+")
+        file["inception_time"] = t₀
+        file["growth_rate"] = growth_rate
+        file["u"] = Array(parent(u))
+        file["v"] = Array(parent(v))
+        file["w"] = Array(parent(w))
+        file["grid"] = simulation.model.grid
+        close(file)
 
         @info """\n
               Power method growth rate estimate:
@@ -190,25 +197,14 @@ for ϵ = 0.05:0.05:0.3
                   - Inception time: $t₀.
                   - Estimated growth rate (fixed mean flow): $(time_independent_growth_rates[end])
               """
-                  # - Estimated growth rate (time-dependent mean flow):                        $(time_dependent_growth_rates[end])
-                  # - Estimated growth rate (time-dependent mean flow, stronger perturbation): $(strong_time_dependent_growth_rates[end])
     end
 
     all_time_independent_growth_rates[ϵ] = time_independent_growth_rates
-    filename = @sprintf("linear_instability_analysis_ep%02d", 100ϵ)
+    filename = @sprintf("linear_stability_analysis_ep%02d", 100ϵ)
     filepath = filename * ".jld2"
-
-    n = 1
-    while isfile(filepath)
-        filepath = filename * "_$(n).jld2"
-        n += 1
-    end
-
     file = jldopen(filepath, "a+")
     file["inception_times"] = inception_times
     file["time_independent_growth_rates"] = time_independent_growth_rates
-    #file["time_dependent_growth_rates"] = time_dependent_growth_rates
-    #file["strong_time_dependent_growth_rates"] = strong_time_dependent_growth_rates
     close(file)
 end
 
