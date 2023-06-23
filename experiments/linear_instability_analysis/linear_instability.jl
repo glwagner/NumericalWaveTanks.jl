@@ -1,8 +1,9 @@
 using Oceananigans
 using SpecialFunctions
 using Printf
-using GLMakie
+# using GLMakie
 using JLD2
+using CUDA
 
 @inline function mean_velocity(x, y, z, t, p)
     t′ = ifelse(p.time_dependent, p.t₀ + t, p.t₀)
@@ -30,14 +31,14 @@ function grow_instability!(simulation, energy)
     simulation.model.clock.iteration = 0
     t₀ = simulation.model.clock.time = 0
     compute!(energy)
-    energy₀ = first(energy)
+    energy₀ = CUDA.@allowscalar first(energy)
 
     # Grow
     run!(simulation)
 
     # Analyze
     compute!(energy)
-    energy₁ = first(energy)
+    energy₁ = CUDA.@allowscalar first(energy)
     Δτ = simulation.model.clock.time - t₀
 
     # ½(u² + v²) ~ exp(2 σ Δτ)
@@ -48,7 +49,7 @@ end
 
 function rescale!(model, energy; target_kinetic_energy = 1e-8)
     compute!(energy)
-    rescale_factor = √(target_kinetic_energy / first(energy))
+    rescale_factor = CUDA.@allowscalar √(target_kinetic_energy / first(energy))
 
     for f in merge(model.velocities, model.tracers)
         f .*= rescale_factor
@@ -88,8 +89,12 @@ function simulate_linear_growth(simulation, energy; target_kinetic_energy=1e-8, 
 
         compute!(energy)
 
-        @info @sprintf("Power method iteration %d, kinetic energy: %.2e, σⁿ: %.2e, relative Δσ: %.2e",
-                       length(σ), first(energy), σ[end], convergence(σ))
+        msg = CUDA.@allowscalar begin
+                @sprintf("Power method iteration %d, kinetic energy: %.2e, σⁿ: %.2e, relative Δσ: %.2e",
+                          length(σ), first(energy), σ[end], convergence(σ))
+        end
+
+        @info msg
 
         rescale!(simulation.model, energy; target_kinetic_energy)
 
@@ -105,16 +110,17 @@ function simulate_linear_growth(simulation, energy; target_kinetic_energy=1e-8, 
     return σ
 end
 
-function langmuir_instability_simulation(; t₀ = 16.0,
-                                           β = 1.2e-5,
-                                           Ny = 768,
-                                           Nz = 512,
-                                           Ly = 0.1,
-                                           Lz = 0.05,
-                                           ϵ = 0.08,
-                                           ν = 1.05e-6,
-                                           time_dependent = false,
-                                           stop_time = 0.2)
+function langmuir_instability_simulation(arch;
+                                         t₀ = 16.0,
+                                         β = 1.2e-5,
+                                         Ny = 768  * 2,
+                                         Nz = 512  * 2,
+                                         Ly = 0.1  * 2,
+                                         Lz = 0.05 * 2,
+                                         ϵ = 0.08,
+                                         ν = 1.05e-6,
+                                         time_dependent = false,
+                                         stop_time = 0.2)
 
     @show ϵ
     A = β * sqrt(π / 4ν)
@@ -128,7 +134,7 @@ function langmuir_instability_simulation(; t₀ = 16.0,
 
     @info "Building a grid..." 
     # grid = RectilinearGrid(size=(Ny, Nz), y=(0, Ly), z=(-Lz, 0), topology=(Flat, Periodic, Bounded))
-    grid = RectilinearGrid(CPU(),
+    grid = RectilinearGrid(arch,
                            size = (Ny, Nz),
                            halo = (3, 3),
                            y = (0, Ly),
@@ -150,8 +156,8 @@ function langmuir_instability_simulation(; t₀ = 16.0,
     return simulation
 end
 
-function estimate_growth_rate(; target_kinetic_energy=1e-10, kw...)
-    simulation = langmuir_instability_simulation(; kw...)
+function estimate_growth_rate(arch; target_kinetic_energy=1e-10, kw...)
+    simulation = langmuir_instability_simulation(arch; kw...)
     u, v, w = simulation.model.velocities
     e = Field((u^2 + v^2 + w^2) / 2)
     E = Field(Average(e))
@@ -159,19 +165,21 @@ function estimate_growth_rate(; target_kinetic_energy=1e-10, kw...)
     return growth_rates[end], simulation
 end
 
+arch = GPU()
 all_time_independent_growth_rates = Dict()
-for ϵ = 0.06:0.02:0.12
-    inception_times = [16.0] #collect(15.0:0.5:17.0)
+inception_times = [16.0] #collect(15.0:0.5:17.0)
+
+for ϵ = 0.06:0.01:0.30
     time_independent_growth_rates = Float64[]
-    # time_dependent_growth_rates = Float64[]
-    # strong_time_dependent_growth_rates = Float64[]
 
     for t₀ in inception_times
         # Time-independent problem
-        growth_rate, simulation = estimate_growth_rate(; t₀, ϵ, time_dependent=false)
+        growth_rate, simulation = estimate_growth_rate(arch; t₀, ϵ, time_dependent=false)
         push!(time_independent_growth_rates, growth_rate)
 
         u, v, w = simulation.model.velocities
+    
+        #=
         wn = interior(w, 1, :, :)
         fig = Figure(resolution=(1200, 600))
         title = @sprintf("ϵ = %.2f, t★ = %.1f, σ = %.4f", ϵ, t₀, growth_rate)
@@ -179,10 +187,17 @@ for ϵ = 0.06:0.02:0.12
         heatmap!(ax, wn)
         plotname = @sprintf("linearly_unstable_mode_t%02d_ep%02d.png", 10t₀, 100ϵ)
         save(plotname, fig)
+        =#
 
-        filename = @sprintf("linearly_unstable_mode_t%02d_ep%02d.jld2", 10t₀, 100ϵ)
-        filepath = filename * ".jld2"
-        file = jldopen(filepath, "a+")
+        grid = simulation.model.grid
+        Nx, Ny, Nz = size(grid)
+
+        filename = @sprintf("linearly_unstable_mode_t0%02d_ep%02d_N%d_%d_L%d_%d.jld2",
+                            10t₀, 100ϵ, Ny, Nz,
+                            100 * grid.Ly,
+                            100 * grid.Lz)
+
+        file = jldopen(filename, "a+")
         file["inception_time"] = t₀
         file["growth_rate"] = growth_rate
         file["u"] = Array(parent(u))

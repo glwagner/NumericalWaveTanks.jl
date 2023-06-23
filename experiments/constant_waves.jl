@@ -40,11 +40,13 @@ function build_numerical_wave_tank(arch;
                                    ν = 1.05e-6,
                                    κ = κ_rhodamine,
                                    β = 1.2e-5,
-                                   initial_time = 0.0
-                                   stop_time = 10.0,
+                                   initial_time = 0.0,
+                                   stop_time = 22.0,
                                    save_interval = 0.2,
                                    overwrite_existing = false,
-                                   name = "constant_waves")
+                                   name = "constant_waves_mediumish_ic")
+                                   #name = "constant_waves_medium_strong_ic")
+                                   #name = "constant_waves_weak_ic")
 
     refinement = 1.5 # controls spacing near surface (higher means finer spaced)
     stretching = 8   # controls rate of stretching at bottom
@@ -108,10 +110,47 @@ function build_numerical_wave_tank(arch;
     model.clock.time = 0
     model.clock.iteration = 0
 
-    # Set initial condition
-    Random.seed!(123)
-    wᵢ(x, y, z) = 1e-4 * randn()
+    #####
+    ##### Initial condition: mean flow + perturbations
+    #####
 
+    # Perturbations
+    #initial_name = "medium_initial_turbulence"
+    initial_name = "weakish_initial_turbulence"
+    #initial_name = "very_weak_initial_turbulence"
+    fileprefix = @sprintf("%s_beta%d_t0%d_N%d_%d_%d_L%d_%d_%d",
+                          initial_name,
+                          1e7 * β, initial_time,
+                          Nx, Ny, Nz,
+                          100 * model.grid.Lx,
+                          100 * model.grid.Ly,
+                          100 * model.grid.Lz)
+
+    filename = fileprefix * "_fields.jld2"
+    filepath = joinpath("/nobackup1/glwagner", fileprefix, filename)
+
+    utᵢ = FieldTimeSeries(filepath, "u", backend=OnDisk())
+    vtᵢ = FieldTimeSeries(filepath, "v", backend=OnDisk())
+    wtᵢ = FieldTimeSeries(filepath, "w", backend=OnDisk())
+
+    spin_up_times = utᵢ.times
+    spin_up_Nt = length(spin_up_times)
+    uᵢ = utᵢ[spin_up_Nt - 2]
+    vᵢ = vtᵢ[spin_up_Nt - 2]
+    wᵢ = wtᵢ[spin_up_Nt - 2]
+
+    set!(model, u=uᵢ, v=vᵢ, w=wᵢ)
+
+    # Subtract horizontal mean from perturbations
+    u, v, w = model.velocities
+    ū = compute!(Field(Average(u, dims=(1, 2))))
+    interior(u) .-= interior(ū)
+
+    # copyto!(parent(u), parent(uᵢ))
+    # copyto!(parent(v), parent(vᵢ))
+    # copyto!(parent(w), parent(wᵢ))
+
+    # Add mean flow
     A = β * sqrt(π / 4ν)
     U₀ = A * initial_time
     h = √(2 * ν * initial_time)
@@ -121,22 +160,19 @@ function build_numerical_wave_tank(arch;
         return U₀ * ((1 + δ^2) * erfc(-δ / √2) + δ * √(2/π) * exp(-δ^2 / 2))
     end
 
-    uᵢ(x, y, z) = Uᵢ(z) + wᵢ(x, y, z)
 
-    cᵢ(x, y, z) = erfc(- z / (2 * sqrt(κ * initial_time)))
+    U = Field{Nothing, Nothing, Center}(grid)
+    set!(U, Uᵢ)
+    interior(u) .+= interior(U)
 
-    if initial_time > 0.0
-        set!(model, u=uᵢ, v=wᵢ, w=wᵢ)
-        simulation.model.clock.time = initial_time
-    else
-        set!(model, u=wᵢ, v=wᵢ, w=wᵢ)
-        c = model.tracers.c
-        view(interior(c), :, :, grid.Nz) .= 1
-    end
+    model.clock.time = initial_time
 
-    # Normalize so that ∫ c dV = 1.
-    C = mean(c) * Lx * Ly * Lz
-    interior(c) ./= C
+    c = model.tracers.c
+    view(interior(c), :, :, grid.Nz) .= 1
+
+    #####
+    ##### Set up simulation
+    #####
 
     @info "Revvving up a simulation..."
     simulation = Simulation(model; Δt=1e-4, stop_time)
@@ -265,8 +301,10 @@ end
 parsing = true
 
 # For example:
-# julia --project constant_waves.jl 768  768 512 0.2 0.2 0.1 0.3  7.5 0.0          false
-#                                   Nx   Ny  Nz  Lx  Ly  Lz  ϵ    β   initial_time pickup
+# julia --project constant_waves.jl 768  768 512 0.2 0.2 0.1  0.1 1.2 16.0 false
+# julia --project constant_waves.jl 384  384 256 0.1 0.1 0.05 0.1 1.2 16.0 false
+# julia --project constant_waves.jl 768  768 512 0.1 0.1 0.05 0.1 1.2 16.0 false
+#                                   Nx   Ny  Nz  Lx  Ly  Lz   ϵ   β   t₀   pickup
 
 if parsing
     Nx     = parse(Int,     ARGS[1])
