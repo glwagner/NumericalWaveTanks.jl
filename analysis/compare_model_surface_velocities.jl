@@ -10,19 +10,21 @@ include("plotting_utilities.jl")
 dir = "../data"
 
 cases = [
-    "constant_waves_medium_ic_ep80_k30_beta120_N768_768_512_L10_10_5",
-    "constant_waves_medium_ic_ep100_k30_beta120_N768_768_512_L10_10_5",
-    "constant_waves_medium_ic_ep110_k30_beta120_N768_768_512_L10_10_5",
+    "constant_waves_ic000100_ep100_k30_alpha120_N768_768_512_L10_10_5",
+    "constant_waves_ic000050_ep120_k30_alpha120_N768_768_512_L10_10_5",
+    "constant_waves_ic000300_ep080_k30_alpha120_N768_768_512_L10_10_5",
+    "constant_waves_ic000500_ep060_k30_alpha120_N768_768_512_L10_10_5",
 ]
 
 labels = [
-    "constant waves with ϵ = 0.08 and medium IC",
-    "constant waves with ϵ = 0.10 and medium IC",
-    "constant waves with ϵ = 0.11 and medium IC",
+    "constant waves with ϵ = 0.10 and w′ = 0.0001 m s⁻¹",
+    "constant waves with ϵ = 0.12 and w′ = 0.00005 m s⁻¹",
+    "constant waves with ϵ = 0.08 and w′ = 0.0003 m s⁻¹",
+    "constant waves with ϵ = 0.06 and w′ = 0.0005 m s⁻¹",
 ]
 
 colors = Makie.wong_colors()
-linewidths = [6, 6, 6, 1]
+linewidths = [6, 6, 6, 6]
 t_transitions = [0, 0, 0, 0]
 exp = "R2"
 ramp = 2
@@ -132,9 +134,10 @@ for c in 1:2 #ength(cases)
     push!(wt, wc)
     push!(ut, uc)
     push!(ct, cc)
-    times = wc.times
-    Nt = length(times)
 end
+
+times = first(wt).times
+Nt = length(times)
 
 x, y, z = nodes(ut[1])
 
