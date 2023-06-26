@@ -7,6 +7,7 @@ using JLD2
 using Oceananigans
 using Oceananigans: fields
 using Oceananigans.Forcings: regularize_forcing
+using Oceananigans.TurbulenceClosures: VerticallyImplicitTimeDiscretization
 using Oceananigans.Units
 using Printf
 
@@ -19,7 +20,7 @@ struct ConstantStokesShear{T}
     ω :: T
 end
 
-ConstantStokesShear(a, k; g=9.81, T=7.2e-5) = ConstantStokesShear{Float64}(a, k, sqrt(g * k + T * k^3))
+ConstantStokesShear(a, k; g=9.81, γ=7.2e-5) = ConstantStokesShear{Float64}(a, k, sqrt(g * k + γ * k^3))
 @inline (sh::ConstantStokesShear)(z, t) = 2 * sh.a^2 * sh.k^2 * sh.ω * exp(2 * sh.k * z) 
 
 # Stokes streaming
@@ -39,14 +40,13 @@ function build_numerical_wave_tank(arch;
                                    k = 2π/0.03,
                                    ν = 1.05e-6,
                                    κ = κ_rhodamine,
-                                   β = 1.2e-5,
-                                   initial_time = 0.0,
+                                   α = 1.2e-5,
+                                   t₀ = 0.0,
+                                   W′ = 1e-4,
                                    stop_time = 22.0,
                                    save_interval = 0.2,
-                                   overwrite_existing = false,
-                                   name = "constant_waves_mediumish_ic")
-                                   #name = "constant_waves_medium_strong_ic")
-                                   #name = "constant_waves_weak_ic")
+                                   overwrite_existing = true,
+                                   name = "constant_waves")
 
     refinement = 1.5 # controls spacing near surface (higher means finer spaced)
     stretching = 8   # controls rate of stretching at bottom
@@ -69,7 +69,7 @@ function build_numerical_wave_tank(arch;
     ##### Surface stress
     #####
 
-    @inline τʷ(x, y, t) = - β * sqrt(t)
+    @inline τʷ(x, y, t) = - α * sqrt(t)
     u_top_bc = FluxBoundaryCondition(τʷ)
         
     u_bcs = FieldBoundaryConditions(top = u_top_bc)
@@ -87,11 +87,13 @@ function build_numerical_wave_tank(arch;
     ##### The model
     #####
 
+    vitd = VerticallyImplicitTimeDiscretization()
+  
     model = NonhydrostaticModel(; grid, boundary_conditions,
                                 advection = CenteredSecondOrder(),
                                 timestepper = :RungeKutta3,
                                 tracers = :c,
-                                closure = ScalarDiffusivity(; ν, κ),
+                                closure = ScalarDiffusivity(vitd; ν, κ),
                                 stokes_drift = UniformStokesDrift(; ∂z_uˢ),
                                 forcing = (; u = u_forcing))
 
@@ -107,69 +109,59 @@ function build_numerical_wave_tank(arch;
                       ϵ | $ϵ
     """
 
-    model.clock.time = 0
-    model.clock.iteration = 0
-
     #####
     ##### Initial condition: mean flow + perturbations
     #####
 
-    # Perturbations
-    #initial_name = "medium_initial_turbulence"
-    initial_name = "weakish_initial_turbulence"
-    #initial_name = "very_weak_initial_turbulence"
-    fileprefix = @sprintf("%s_beta%d_t0%d_N%d_%d_%d_L%d_%d_%d",
-                          initial_name,
-                          1e7 * β, initial_time,
-                          Nx, Ny, Nz,
-                          100 * model.grid.Lx,
-                          100 * model.grid.Ly,
-                          100 * model.grid.Lz)
+    # Mean flow
+    A = α * sqrt(π / 4ν)
+    U₀ = A * t₀
+    h = √(2 * ν * t₀)
 
-    filename = fileprefix * "_fields.jld2"
-    filepath = joinpath("/nobackup1/glwagner", fileprefix, filename)
-
-    utᵢ = FieldTimeSeries(filepath, "u", backend=OnDisk())
-    vtᵢ = FieldTimeSeries(filepath, "v", backend=OnDisk())
-    wtᵢ = FieldTimeSeries(filepath, "w", backend=OnDisk())
-
-    spin_up_times = utᵢ.times
-    spin_up_Nt = length(spin_up_times)
-    uᵢ = utᵢ[spin_up_Nt - 2]
-    vᵢ = vtᵢ[spin_up_Nt - 2]
-    wᵢ = wtᵢ[spin_up_Nt - 2]
-
-    set!(model, u=uᵢ, v=vᵢ, w=wᵢ)
-
-    # Subtract horizontal mean from perturbations
-    u, v, w = model.velocities
-    ū = compute!(Field(Average(u, dims=(1, 2))))
-    interior(u) .-= interior(ū)
-
-    # copyto!(parent(u), parent(uᵢ))
-    # copyto!(parent(v), parent(vᵢ))
-    # copyto!(parent(w), parent(wᵢ))
-
-    # Add mean flow
-    A = β * sqrt(π / 4ν)
-    U₀ = A * initial_time
-    h = √(2 * ν * initial_time)
-
-    function Uᵢ(z)
+    function Uᵢ(x, y, z)
         δ = z / h
-        return U₀ * ((1 + δ^2) * erfc(-δ / √2) + δ * √(2/π) * exp(-δ^2 / 2))
+        Ξ = 10W′ * randn()
+        return Ξ + U₀ * ((1 + δ^2) * erfc(-δ / √2) + δ * √(2/π) * exp(-δ^2 / 2))
     end
 
+    wᵢ(x, y, z) = 10W′ * randn()
 
-    U = Field{Nothing, Nothing, Center}(grid)
-    set!(U, Uᵢ)
-    interior(u) .+= interior(U)
+    set!(model, u=Uᵢ, v=wᵢ, w=wᵢ)
 
-    model.clock.time = initial_time
+    # Add perturbations to initial condition
+    filename = @sprintf("linearly_unstable_mode_t0%02d_ep%02d_N%d_%d_L%d_%d.jld2",
+                        10t₀, 100ϵ, Ny, Nz, 100Ly, 100Lz)
+
+    filepath = joinpath("linear_instability_analysis", filename)
+
+    file = jldopen(filepath)
+    û = file["u"]
+    v̂ = file["v"]
+    ŵ = file["w"]
+    close(file)
+
+    # Convert eigenperturbations to device array type
+    ArrayType = arch isa CPU ? Array : CuArray
+    u′ = ArrayType(û)
+    v′ = ArrayType(v̂)
+    w′ = ArrayType(ŵ)
+
+    # Rescale eigenperturbations to set desired maximum vertical velocity
+    W = maximum(abs, ŵ)
+    u′ .*= W′ / W
+    v′ .*= W′ / W
+    w′ .*= W′ / W
+
+    u, v, w = model.velocities
+    parent(u) .+= u′
+    parent(v) .+= v′
+    parent(w) .+= w′
+
+    model.clock.time = t₀
 
     c = model.tracers.c
     view(interior(c), :, :, grid.Nz) .= 1
-
+    
     #####
     ##### Set up simulation
     #####
@@ -177,9 +169,10 @@ function build_numerical_wave_tank(arch;
     @info "Revvving up a simulation..."
     simulation = Simulation(model; Δt=1e-4, stop_time)
 
-    Δ = min(minimum(parent(grid.Δzᵃᵃᶜ)), grid.Δxᶜᵃᵃ)
+    #Δ = min(minimum(parent(grid.Δzᵃᵃᶜ)), grid.Δxᶜᵃᵃ)
+    Δ = grid.Δxᶜᵃᵃ
     @show max_Δt = 0.1 * Δ^2 / ν
-    wizard = TimeStepWizard(; cfl=0.3, max_Δt)
+    wizard = TimeStepWizard(; cfl=1.0, max_Δt)
     simulation.callbacks[:wizard] = Callback(wizard, IterationInterval(1))
 
     wall_clock = Ref(time_ns())
@@ -196,13 +189,12 @@ function build_numerical_wave_tank(arch;
         Re = umax * h / ν
         elapsed = 1e-9 * (time_ns() - wall_clock[])
 
-        @info @sprintf("Time: %s, iter: %d, Δt: %s, wall time: %s, max|U|: (%.2e, %.2e, %.2e)  m s⁻¹, Re: %.1f",
+        @info @sprintf("Time: %s, iter: %d, Δt: %s, wall time: %s, max|U|: (%.2e, %.2e, %.2e)  m s⁻¹",
                        prettytime(t),
                        iteration(sim),
                        prettytime(sim.Δt),
                        prettytime(elapsed),
-                       umax, vmax, wmax,
-                       Re)
+                       umax, vmax, wmax)
 
         wall_clock[] = time_ns()
 
@@ -217,8 +209,8 @@ function build_numerical_wave_tank(arch;
 
     Nx, Ny, Nz = size(model.grid)
 
-    file_prefix = @sprintf("%s_ep%d_k%d_beta%d_N%d_%d_%d_L%d_%d_%d",
-                           name, 1000ϵ, 1000 * 2π/k, 1e7 * β,
+    file_prefix = @sprintf("%s_ic%06d_ep%03d_k%d_alpha%d_N%d_%d_%d_L%d_%d_%d",
+                           name, 1e6 * W′, 1000ϵ, 1000 * 2π/k, 1e7 * α,
                            Nx, Ny, Nz,
                            100 * model.grid.Lx,
                            100 * model.grid.Ly,
@@ -301,10 +293,9 @@ end
 parsing = true
 
 # For example:
-# julia --project constant_waves.jl 768  768 512 0.2 0.2 0.1  0.1 1.2 16.0 false
-# julia --project constant_waves.jl 384  384 256 0.1 0.1 0.05 0.1 1.2 16.0 false
-# julia --project constant_waves.jl 768  768 512 0.1 0.1 0.05 0.1 1.2 16.0 false
-#                                   Nx   Ny  Nz  Lx  Ly  Lz   ϵ   β   t₀   pickup
+# julia --project constant_waves.jl 768  768 512 0.2 0.2 0.1  0.1 1.2 16.0 0.01
+# julia --project constant_waves.jl 768  768 512 0.1 0.1 0.05 0.08 1.2 16.0 0.0005
+#                                   Nx   Ny  Nz  Lx  Ly  Lz   ϵ    α   t₀   w′  
 
 if parsing
     Nx     = parse(Int,     ARGS[1])
@@ -314,18 +305,17 @@ if parsing
     Ly     = parse(Float64, ARGS[5])
     Lz     = parse(Float64, ARGS[6])
     ϵ      = parse(Float64, ARGS[7])
-    β      = parse(Float64, ARGS[8]) * 1e-5
+    α      = parse(Float64, ARGS[8]) * 1e-5
     t₀     = parse(Float64, ARGS[9])
-    pickup = parse(Bool,    ARGS[10])
+    W′     = parse(Float64, ARGS[10])
 end
 
-@show overwrite_existing = !pickup
-arch = GPU()
+simulation = build_numerical_wave_tank(GPU();
+                                       Nx, Ny, Nz,
+                                       Lx, Ly, Lz,
+                                       α, ϵ, t₀, W′)
 
-simulation = build_numerical_wave_tank(arch; Nx, Ny, Nz, Lx, Ly, Lz, β, overwrite_existing,
-                                       ϵ, initial_time=t₀, k=2π/0.03)
-
-run!(simulation; pickup)
+run!(simulation)
 
 @info "Simulation complete: $simulation. Output:"
 
