@@ -1,4 +1,4 @@
-using GLMakie #CairoMakie
+using CairoMakie
 using JLD2
 using MAT
 using Oceananigans
@@ -6,6 +6,7 @@ using Printf
 using Statistics
 
 include("veron_melville_data.jl")
+include("steepness_data.jl")
 include("plotting_utilities.jl")
 
 dir = "../data"
@@ -18,6 +19,7 @@ t₀ = 79.5
 ###### Load wave data
 ######
 
+#=
 filename = "ETAT_R2_allexp.mat"
 filepath = joinpath(dir, filename)
 vars = matread(filepath)
@@ -48,6 +50,7 @@ amplitude = a = @. (crests - troughs) / 2
 for sweep = 1:5
     a[2:end-1] .= (a[1:end-2] .+ 2 .* a[2:end-1] .+ a[3:end]) ./ 4 
 end
+=#
 
 ######
 ###### Load surface velocity data
@@ -90,7 +93,7 @@ k2 = 2π / 0.05
 
 xticks = 0:5:30
 ax_e = Axis(fig[1, 1],
-            ylabel = "Steepness \n estimates \n ϵ = a k",
+            ylabel = "Characteristic \n steepness, ϵ̃",
             xlabel = "Time (s)",
             yscale = log10,
             yticks = ([0.03, 0.1, 0.3], ["0.03", "0.1", "0.3"]),
@@ -99,10 +102,15 @@ ax_e = Axis(fig[1, 1],
 
 text!(ax_e, 0.01, 0.98, text="(a)", space=:relative, align=(:left, :top))
 
-lines!(ax_e, t_wave, a * k1, linewidth=3, label="k = 2π / (3 cm)")
-lines!(ax_e, t_wave, a * k2, linewidth=3, label="k = 2π / (5 cm)")
- band!(ax_e, t_wave, a * k1, a * k2, color=(:black, 0.2))
-axislegend(ax_e, position=:lb)
+#lines!(ax_e, t_wave, a * k1, linewidth=3, label="k = 2π / (3 cm)")
+#lines!(ax_e, t_wave, a * k2, linewidth=3, label="k = 2π / (5 cm)")
+# band!(ax_e, t_wave, a * k1, a * k2, color=(:black, 0.2))
+
+t_measured = steepness_data[:, 1]
+ϵ_measured = steepness_data[:, 2]
+
+lines!(ax_e, t_measured, ϵ_measured, linewidth=8, label="measured")
+# axislegend(ax_e, position=:lb)
 
 ax_u = Axis(fig[2, 1],
             xticks = xticks,
@@ -117,7 +125,7 @@ t₂ = 30
 xlims!(ax_e, t₁, t₂)
 ylims!(ax_e, 0.03, 0.5)
 xlims!(ax_u, t₁, t₂)
-ylims!(ax_u, 0, 25)
+ylims!(ax_u, 0, 20)
 
 scatter!(ax_u, t_surface, 1e2 .* U_surface, marker=:circle, markersize=20, color=:black,
          label="Measured surface velocity (cm s⁻¹)")
@@ -186,25 +194,25 @@ label  = @sprintf("(c) t = %.2f seconds", t1_lif)
 text!(ax_c1, 0.1, z_lif[j1] + 0.1, text=label, color=colors[1], align=(:left, :bottom))
 
 #vlines!(ax_u, t1_lif, ymin=ymin1, ymax=ymax1, color=(colors[1], 0.5), linewidth=6)
-arrows!(ax_u, [t1_lif], [ymin1], [0], [(ymax1-ymin1)], color=(colors[1], 0.5), linewidth=6)
-text!(ax_u, xlabel1, ylabel1, text=@sprintf("%.2f", t1_lif), color=colors[1], align=(:right, :center))
+#arrows!(ax_u, [t1_lif], [ymin1], [0], [(ymax1-ymin1)], color=(colors[1], 0.5), linewidth=6)
+#text!(ax_u, xlabel1, ylabel1, text=@sprintf("%.2f", t1_lif), color=colors[1], align=(:right, :center))
 
 tn = Observable(19)
 ax_c2 = Axis(fig[4, 1]; xlabel="Across-wind direction (cm)", ylabel="z (cm)", aspect)
 heatmap!(ax_c2, x_lif, z_lif[j1:j2], c2; colorrange, colormap=:bilbao)
 label  = @sprintf("(d) t = %.2f seconds", t2_lif)
-text!(ax_c2, 0.1, z_lif[j1] + 0.1, text=label, color=colors[2], align=(:left, :bottom))
+#text!(ax_c2, 0.1, z_lif[j1] + 0.1, text=label, color=colors[2], align=(:left, :bottom))
 
-vlines!(ax_u, t2_lif, ymin=ymin2, ymax=ymax2, color=(colors[2], 0.6), linewidth=6)
-text!(ax_u, xlabel2, ylabel2, text=@sprintf("%.2f", t2_lif), color=colors[2], align=(:right, :center))
+#vlines!(ax_u, t2_lif, ymin=ymin2, ymax=ymax2, color=(colors[2], 0.6), linewidth=6)
+#text!(ax_u, xlabel2, ylabel2, text=@sprintf("%.2f", t2_lif), color=colors[2], align=(:right, :center))
 
 ax_c3 = Axis(fig[5, 1]; xlabel="Across-wind direction (cm)", ylabel="z (cm)", aspect)
 heatmap!(ax_c3, x_lif, z_lif[j1:j2], c3; colorrange, colormap=:bilbao)
 label  = @sprintf("(e) t = %.2f seconds", t3_lif)
-text!(ax_c3, 7.0, z_lif[j1] + 0.1, text=label, color=colors[3], align=(:left, :bottom))
+#text!(ax_c3, 7.0, z_lif[j1] + 0.1, text=label, color=colors[3], align=(:left, :bottom))
 
-vlines!(ax_u, t3_lif, ymin=ymin3, ymax=ymax3, color=(colors[3], 0.6), linewidth=6)
-text!(ax_u, xlabel3, ylabel3, text=@sprintf("%.2f", t3_lif), color=colors[3], align=(:left, :center))
+#vlines!(ax_u, t3_lif, ymin=ymin3, ymax=ymax3, color=(colors[3], 0.6), linewidth=6)
+#text!(ax_u, xlabel3, ylabel3, text=@sprintf("%.2f", t3_lif), color=colors[3], align=(:left, :center))
 
 hidexdecorations!(ax_c1)
 hidexdecorations!(ax_c2)
@@ -216,5 +224,5 @@ rowsize!(fig.layout, 5, Relative(0.2))
 
 display(fig)
 
-#save("lab_data_summary.pdf", fig)
+save("lab_data_summary.png", fig)
 

@@ -15,10 +15,36 @@ Ny = 3072
 Ly = 0.4
 big_grid = OneDGrid(nx=Ny, Lx=Ly)
 
-grids = [small_grid, big_grid]
+grids = [
+    small_grid,
+    big_grid,
+    small_grid,
+    big_grid,
+]
 
-resolutions = ["N768_512_L10_5",
-               "N3072_256_L40_2"]
+resolutions = [
+    "N768_512_L10_5",
+    "N3072_256_L40_2",
+    "N768_512_L10_5",
+    "N3072_256_L40_2",
+]
+
+initial_times = [
+    16,
+    16,
+    18,
+    18,
+]
+
+colors = Makie.wong_colors(0.8)
+markers = [:circle, :utriangle, :rect, :diamond]
+markersizes = [20, 15, 15, 15]
+labels = [
+    "t = 16 s, L = 10 cm",
+    "t = 16 s, L = 40 cm",
+    "t = 18 s, L = 10 cm",
+    "t = 18 s, L = 40 cm",
+]
 
 steepnesses = 0.02:0.01:0.3
 
@@ -32,20 +58,18 @@ xlims!(axs, -0.01, 0.31)
 xlims!(axl, -0.01, 0.31)
 ylims!(axs, 0, 2.4)
 
-colors = Makie.wong_colors(0.8)
-markers = [:circle, :utriangle]
-markersizes = [20, 15]
-labels = ["L = 10 cm", "L = 40 cm"]
+Ncases = length(labels)
 
-for n = 1:2
+for n = 1:Ncases
     grid = grids[n]
     resolution = resolutions[n]
+    t0 = initial_times[n]
     kr = grid.kr
     growth_rates = Float64[]
     wavenumbers = Float64[]
 
     for ϵ in steepnesses
-        prefix = @sprintf("linearly_unstable_mode_t0160_ep%02d_%s", 100ϵ, resolution)
+        prefix = @sprintf("linearly_unstable_mode_t%04d_ep%02d_%s", 10t0, 100ϵ, resolution)
         filename = prefix * ".jld2"
 
         file = jldopen(filename)
@@ -78,7 +102,7 @@ for n = 1:2
 end
 
 axislegend(axs)
-text!(axr, 0.25, 0.08, text="σ ~ 27.5 ϵ", space=:relative, color=:gray, fontsize=32)
+text!(axr, 0.3, 0.08, text="σ ~ 27.5 ϵ", space=:relative, color=:gray, fontsize=32)
 display(fig)
-save("linear_stability_summary.pdf", fig)
+#save("linear_stability_summary.pdf", fig)
 
