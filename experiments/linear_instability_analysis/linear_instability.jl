@@ -150,7 +150,7 @@ function langmuir_instability_simulation(arch;
 
     model = NonhydrostaticModel(; grid, closure, stokes_drift,
                                 timestepper = :RungeKutta3,
-                                advection = CenteredSecondOrder(),
+                                advection = Centered(order=2),
                                 background_fields = (; u=U))
 
     uᵢ(x, y, z) = 1e-6 * randn()
