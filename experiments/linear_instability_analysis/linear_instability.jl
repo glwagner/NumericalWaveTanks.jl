@@ -69,7 +69,7 @@ function simulate_linear_growth(simulation, energy; target_kinetic_energy=1e-8, 
     u★ = sqrt(target_kinetic_energy)
     ν = simulation.model.closure.ν
     grid = simulation.model.grid
-    Δ = min(minimum(parent(grid.Δzᵃᵃᶜ)), grid.Δxᶜᵃᵃ)
+    Δ = min(minimum(parent(grid.Nz)), grid.Δxᶜᵃᵃ)
     adv_Δt = 0.1 * Δ / u★
     diff_Δt = 0.1 * Δ^2 / ν
     Δt = min(adv_Δt, diff_Δt)  
@@ -153,8 +153,8 @@ function langmuir_instability_simulation(arch;
                                 advection = Centered(order=2),
                                 background_fields = (; u=U))
 
-    uᵢ(x, y, z) = 1e-6 * randn()
-    set!(model, u=uᵢ, v=uᵢ, w=uᵢ)
+    uᵢ(y, z) = 1e-6 * randn()
+    set!(model, u=uᵢ, v=uᵢ)
     simulation = Simulation(model; Δt=1, stop_time, verbose=false)
 
     return simulation
