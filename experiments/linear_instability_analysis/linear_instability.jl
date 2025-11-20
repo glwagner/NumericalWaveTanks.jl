@@ -5,7 +5,7 @@ using Printf
 using JLD2
 using CUDA
 
-@inline function mean_velocity(x, y, z, t, p)
+@inline function mean_velocity(y, z, t, p)
     t′ = ifelse(p.time_dependent, p.t₀ + t, p.t₀)
     h = √(2 * p.ν * t′)
     U₀ = p.A * t′
@@ -74,7 +74,7 @@ function simulate_linear_growth(simulation, energy; target_kinetic_energy=1e-8, 
     Δ = min(min_Δx, min_Δz)
     adv_Δt = 0.1 * Δ / u★
     diff_Δt = 0.1 * Δ^2 / ν
-    Δt = min(adv_Δt, diff_Δt)  
+    Δt = min(adv_Δt, diff_Δt)
 
     simulation.Δt = Δt
     @info "Setting time step to $Δt, estimated iterations: " *
