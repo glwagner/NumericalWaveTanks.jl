@@ -90,7 +90,7 @@ function build_numerical_wave_tank(arch;
     vitd = VerticallyImplicitTimeDiscretization()
   
     model = NonhydrostaticModel(; grid, boundary_conditions,
-                                advection = CenteredSecondOrder(),
+                                advection = Centered(order=2),
                                 timestepper = :RungeKutta3,
                                 tracers = :c,
                                 closure = ScalarDiffusivity(vitd; ν, κ),

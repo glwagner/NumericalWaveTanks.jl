@@ -5,7 +5,7 @@ using Printf
 using JLD2
 using CUDA
 
-@inline function mean_velocity(x, y, z, t, p)
+@inline function mean_velocity(y, z, t, p)
     t′ = ifelse(p.time_dependent, p.t₀ + t, p.t₀)
     h = √(2 * p.ν * t′)
     U₀ = p.A * t′
@@ -69,10 +69,12 @@ function simulate_linear_growth(simulation, energy; target_kinetic_energy=1e-8, 
     u★ = sqrt(target_kinetic_energy)
     ν = simulation.model.closure.ν
     grid = simulation.model.grid
-    Δ = min(minimum(parent(grid.Δzᵃᵃᶜ)), grid.Δxᶜᵃᵃ)
+    min_Δx = minimum(xspacings(grid, Center()))
+    min_Δz = minimum(zspacings(grid, Center()))
+    Δ = min(min_Δx, min_Δz)
     adv_Δt = 0.1 * Δ / u★
     diff_Δt = 0.1 * Δ^2 / ν
-    Δt = min(adv_Δt, diff_Δt)  
+    Δt = min(adv_Δt, diff_Δt)
 
     simulation.Δt = Δt
     @info "Setting time step to $Δt, estimated iterations: " *
@@ -150,11 +152,11 @@ function langmuir_instability_simulation(arch;
 
     model = NonhydrostaticModel(; grid, closure, stokes_drift,
                                 timestepper = :RungeKutta3,
-                                advection = CenteredSecondOrder(),
+                                advection = Centered(order=2),
                                 background_fields = (; u=U))
 
-    uᵢ(x, y, z) = 1e-6 * randn()
-    set!(model, u=uᵢ, v=uᵢ, w=uᵢ)
+    uᵢ(y, z) = 1e-6 * randn()
+    set!(model, u=uᵢ, v=uᵢ)
     simulation = Simulation(model; Δt=1, stop_time, verbose=false)
 
     return simulation
