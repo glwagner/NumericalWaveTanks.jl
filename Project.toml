@@ -1,9 +1,10 @@
 name = "NumericalWaveTanks"
 uuid = "b8728df9-18d3-4915-a95c-1a171d8db415"
-authors = ["Gregory Wagner <wagner.greg@gmail.com>"]
 version = "0.1.0"
+authors = ["Gregory Wagner <wagner.greg@gmail.com>"]
 
 [deps]
+Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
 CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
@@ -15,3 +16,7 @@ MAT = "23992714-dd62-5051-b70f-ba57cb901cac"
 Oceananigans = "9e8cae18-63c1-5223-a75c-80ca9d6e9a09"
 OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
+
+[compat]
+Adapt = "4.4.0"
+Oceananigans = "0.104.2"
