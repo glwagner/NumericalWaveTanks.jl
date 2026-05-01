@@ -1,7 +1,7 @@
 name = "NumericalWaveTanks"
 uuid = "b8728df9-18d3-4915-a95c-1a171d8db415"
-version = "0.1.0"
 authors = ["Gregory Wagner <wagner.greg@gmail.com>"]
+version = "0.1.0"
 
 [deps]
 Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
@@ -13,11 +13,15 @@ GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 KernelAbstractions = "63c18a36-062a-441e-b654-da1e3ab1ce7c"
 MAT = "23992714-dd62-5051-b70f-ba57cb901cac"
+MPI = "da04e1cc-30fd-572f-bb4f-1f8673147195"
+MPIPreferences = "3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"
 Oceananigans = "9e8cae18-63c1-5223-a75c-80ca9d6e9a09"
 OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 
 [compat]
 Adapt = "4.4.0"
+MPI = "0.20.26"
+MPIPreferences = "0.1.12"
 Oceananigans = "0.107"
 julia = "1.11"

@@ -4,12 +4,28 @@ using Statistics
 using SpecialFunctions
 using OrderedCollections
 using JLD2
+using MPI
 using Oceananigans
 using Oceananigans: fields
 using Oceananigans.Forcings: regularize_forcing
 using Oceananigans.TurbulenceClosures: VerticallyImplicitTimeDiscretization
+using Oceananigans.DistributedComputations: Distributed, Partition, mpi_rank
 using Oceananigans.Units
 using Printf
+
+# Helper: select architecture from a (Px, Py, Pz) partition. Initializes MPI on
+# first call when distribution is requested. Pz is currently always 1 (no z split)
+# because the FFT pressure solver requires the z-direction to be local.
+function select_architecture(Px, Py, Pz)
+    if Px * Py * Pz > 1
+        MPI.Initialized() || MPI.Init()
+        return Distributed(GPU(); partition = Partition(Px, Py, Pz))
+    else
+        return GPU()
+    end
+end
+
+is_root() = !MPI.Initialized() || MPI.Comm_rank(MPI.COMM_WORLD) == 0
 
 κ_rhodamine = 1e-7 # find a reference for this
 
@@ -305,10 +321,16 @@ end
 
 parsing = true
 
-# For example:
-# julia --project constant_waves.jl 768  768 512 0.2 0.2 0.1  0.1 1.2 16.0 0.01
-# julia --project constant_waves.jl 768  768 512 0.1 0.1 0.05 0.08 1.2 16.0 0.0005
-#                                   Nx   Ny  Nz  Lx  Ly  Lz   ϵ    α   t₀   w′  
+# CLI:
+#   julia --project constant_waves.jl Nx Ny Nz Lx Ly Lz ϵ α t₀ W' [stop_time] [Px Py Pz]
+#
+# Single-GPU example:
+#   julia --project constant_waves.jl 768 768 512 0.2 0.2 0.1 0.1 1.2 16.0 0.01 18.0
+#
+# Multi-GPU (4 ranks, 2x2 horizontal partition) — DeltaAI / GH200:
+#   srun -n 4 julia --project constant_waves.jl 768 768 512 0.2 0.2 0.1 0.1 1.2 16.0 0.01 18.0 2 2 1
+#
+# Pz must currently be 1 (FFT pressure solver requires z-direction to be local).
 
 if parsing
     Nx     = parse(Int,     ARGS[1])
@@ -322,21 +344,28 @@ if parsing
     t₀     = parse(Float64, ARGS[9])
     W′     = parse(Float64, ARGS[10])
     stop_time = length(ARGS) >= 11 ? parse(Float64, ARGS[11]) : 22.0
+    Px     = length(ARGS) >= 14 ? parse(Int, ARGS[12]) : 1
+    Py     = length(ARGS) >= 14 ? parse(Int, ARGS[13]) : 1
+    Pz     = length(ARGS) >= 14 ? parse(Int, ARGS[14]) : 1
 end
 
-simulation = build_numerical_wave_tank(GPU();
+arch = select_architecture(Px, Py, Pz)
+is_root() && @info "Architecture: $arch"
+
+simulation = build_numerical_wave_tank(arch;
                                        Nx, Ny, Nz,
                                        Lx, Ly, Lz,
                                        α, ϵ, t₀, W′, stop_time)
 
 run!(simulation)
 
-@info "Simulation complete: $simulation. Output:"
-
-for (name, writer) in simulation.output_writers
-    if !(writer isa Checkpointer)
-        absfilepath = abspath(writer.filepath)
-        @info "OutputWriter $name, $absfilepath:\n $writer"
+if is_root()
+    @info "Simulation complete: $simulation. Output:"
+    for (name, writer) in simulation.output_writers
+        if !(writer isa Checkpointer)
+            absfilepath = abspath(writer.filepath)
+            @info "OutputWriter $name, $absfilepath:\n $writer"
+        end
     end
 end
 
