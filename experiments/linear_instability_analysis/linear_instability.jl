@@ -150,7 +150,7 @@ function langmuir_instability_simulation(arch;
     closure = ScalarDiffusivity(; ν)
     stokes_drift = UniformStokesDrift(; ∂z_uˢ=StokesShear(; ϵ))
 
-    model = NonhydrostaticModel(; grid, closure, stokes_drift,
+    model = NonhydrostaticModel(grid; closure, stokes_drift,
                                 timestepper = :RungeKutta3,
                                 advection = Centered(order=2),
                                 background_fields = (; u=U))
