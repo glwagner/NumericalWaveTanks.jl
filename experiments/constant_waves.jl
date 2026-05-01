@@ -45,6 +45,7 @@ function build_numerical_wave_tank(arch;
                                    W′ = 1e-4,
                                    stop_time = 22.0,
                                    save_interval = 0.2,
+                                   save_interval_3d = 0.5,
                                    overwrite_existing = true,
                                    name = "constant_waves")
 
@@ -128,34 +129,38 @@ function build_numerical_wave_tank(arch;
 
     set!(model, u=Uᵢ, v=wᵢ, w=wᵢ)
 
-    # Add perturbations to initial condition
-    filename = @sprintf("linearly_unstable_mode_t0%02d_ep%02d_N%d_%d_L%d_%d.jld2",
-                        10t₀, 100ϵ, Ny, Nz, 100Ly, 100Lz)
+    # Optionally add precomputed eigenmode perturbations on top of the random noise.
+    # If the eigenmode file is missing, fall back to random noise alone — useful for
+    # tests at coarse resolutions where no eigenmode has been computed.
+    eigen_filename = @sprintf("linearly_unstable_mode_t0%02d_ep%02d_N%d_%d_L%d_%d.jld2",
+                              10t₀, 100ϵ, Ny, Nz, 100Ly, 100Lz)
+    eigen_filepath = joinpath("linear_instability_analysis", eigen_filename)
 
-    filepath = joinpath("linear_instability_analysis", filename)
+    if isfile(eigen_filepath)
+        @info "Loading eigenmode IC from $eigen_filepath"
+        file = jldopen(eigen_filepath)
+        û = file["u"]
+        v̂ = file["v"]
+        ŵ = file["w"]
+        close(file)
 
-    file = jldopen(filepath)
-    û = file["u"]
-    v̂ = file["v"]
-    ŵ = file["w"]
-    close(file)
+        ArrayType = arch isa CPU ? Array : CuArray
+        u′ = ArrayType(û)
+        v′ = ArrayType(v̂)
+        w′ = ArrayType(ŵ)
 
-    # Convert eigenperturbations to device array type
-    ArrayType = arch isa CPU ? Array : CuArray
-    u′ = ArrayType(û)
-    v′ = ArrayType(v̂)
-    w′ = ArrayType(ŵ)
+        W = maximum(abs, ŵ)
+        u′ .*= W′ / W
+        v′ .*= W′ / W
+        w′ .*= W′ / W
 
-    # Rescale eigenperturbations to set desired maximum vertical velocity
-    W = maximum(abs, ŵ)
-    u′ .*= W′ / W
-    v′ .*= W′ / W
-    w′ .*= W′ / W
-
-    u, v, w = model.velocities
-    parent(u) .+= u′
-    parent(v) .+= v′
-    parent(w) .+= w′
+        u, v, w = model.velocities
+        parent(u) .+= u′
+        parent(v) .+= v′
+        parent(w) .+= w′
+    else
+        @info "Eigenmode file $eigen_filepath not found; using random IC only"
+    end
 
     model.clock.time = t₀
 
@@ -280,12 +285,20 @@ function build_numerical_wave_tank(arch;
                                                           filename = file_prefix * "_xy_top",
                                                           indices = (:, :, grid.Nz))
 
-    #=
+    # 3D state snapshots for using as LES initial conditions.
+    # Saved as Float32 without halos to keep file sizes manageable.
+    simulation.output_writers[:fields_3d] = JLD2Writer(model, outputs; dir, overwrite_existing,
+                                                       schedule = TimeInterval(save_interval_3d),
+                                                       filename = file_prefix * "_3d_fields",
+                                                       array_type = Array{Float32},
+                                                       with_halos = false)
+
+    # Full-state checkpointer for bit-exact restart (also lets the run be resumed).
+    # `cleanup = false` keeps every checkpoint so any one can be picked as an LES IC.
     simulation.output_writers[:chk] = Checkpointer(model; dir, overwrite_existing,
-                                                   schedule = TimeInterval(4.0),
-                                                   cleanup = true,
+                                                   schedule = TimeInterval(save_interval_3d),
+                                                   cleanup = false,
                                                    prefix = file_prefix * "_checkpointer")
-    =#
 
     return simulation
 end
@@ -308,12 +321,13 @@ if parsing
     α      = parse(Float64, ARGS[8]) * 1e-5
     t₀     = parse(Float64, ARGS[9])
     W′     = parse(Float64, ARGS[10])
+    stop_time = length(ARGS) >= 11 ? parse(Float64, ARGS[11]) : 22.0
 end
 
 simulation = build_numerical_wave_tank(GPU();
                                        Nx, Ny, Nz,
                                        Lx, Ly, Lz,
-                                       α, ϵ, t₀, W′)
+                                       α, ϵ, t₀, W′, stop_time)
 
 run!(simulation)
 
