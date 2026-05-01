@@ -1,0 +1,20 @@
+#!/bin/bash
+#SBATCH --job-name=oc-smoke
+#SBATCH --output=smoke-%j.log
+#SBATCH --time=00:20:00
+#SBATCH --nodes=1
+#SBATCH --partition=gpu-dev
+#SBATCH --gres=gpu:1
+
+set -e
+
+cd /shared/home/greg/NumericalWaveTanks.jl
+
+echo "=== nvidia-smi ==="
+nvidia-smi
+echo ""
+echo "=== julia version ==="
+julia --version
+echo ""
+echo "=== running smoke test ==="
+julia --project=. experiments/smoke_test.jl

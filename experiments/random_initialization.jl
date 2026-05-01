@@ -37,7 +37,7 @@ w₀ = zeros(Nx, Ny, Nz+1)
 w₀[:, :, 2:Nz] .= w₀′[:, :, 2:Nz]
 
 grid = RectilinearGrid(size=(Nx, Ny, Nz), x=(0, Lx), y=(0, Ly), z=(-Lz, 0))
-model = NonhydrostaticModel(; grid)
+model = NonhydrostaticModel(grid)
 
 Ξ(x, y, z) = randn()
 #set!(model, u=u₀, v=v₀, w=w₀)

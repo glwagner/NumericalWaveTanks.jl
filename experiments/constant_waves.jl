@@ -69,8 +69,8 @@ function build_numerical_wave_tank(arch;
     ##### Surface stress
     #####
 
-    @inline τʷ(x, y, t) = - α * sqrt(t)
-    u_top_bc = FluxBoundaryCondition(τʷ)
+    @inline τʷ(x, y, t, p) = - p.α * sqrt(t)
+    u_top_bc = FluxBoundaryCondition(τʷ, parameters = (; α))
         
     u_bcs = FieldBoundaryConditions(top = u_top_bc)
     boundary_conditions = (; u = u_bcs)
@@ -89,7 +89,7 @@ function build_numerical_wave_tank(arch;
 
     vitd = VerticallyImplicitTimeDiscretization()
   
-    model = NonhydrostaticModel(; grid, boundary_conditions,
+    model = NonhydrostaticModel(grid; boundary_conditions,
                                 advection = Centered(order=2),
                                 timestepper = :RungeKutta3,
                                 tracers = :c,
@@ -227,11 +227,11 @@ function build_numerical_wave_tank(arch;
     C = Field(Average(model.tracers.c, dims=(1, 2)))
     U = Field(Average(u, dims=(1, 2)))
 
-    simulation.output_writers[:avg] = JLD2OutputWriter(model, (c=C, u=U); dir, overwrite_existing,
+    simulation.output_writers[:avg] = JLD2Writer(model, (c=C, u=U); dir, overwrite_existing,
                                                        schedule = TimeInterval(save_interval),
                                                        filename = file_prefix * "_averages")
 
-    simulation.output_writers[:fast_avg] = JLD2OutputWriter(model, (c=C, u=U); dir, overwrite_existing,
+    simulation.output_writers[:fast_avg] = JLD2Writer(model, (c=C, u=U); dir, overwrite_existing,
                                                             schedule = TimeInterval(0.02),
                                                             filename = file_prefix * "_hi_freq_averages")
 
@@ -242,40 +242,40 @@ function build_numerical_wave_tank(arch;
                   v_max = model -> maximum(abs, view(interior(model.velocities.v), :, :, Nz)),
                   w_max = model -> maximum(abs, model.velocities.w))
 
-    simulation.output_writers[:stats] = JLD2OutputWriter(model, statistics; dir, overwrite_existing,
+    simulation.output_writers[:stats] = JLD2Writer(model, statistics; dir, overwrite_existing,
                                                          schedule = TimeInterval(save_interval),
                                                          filename = file_prefix * "_statistics")
 
-    simulation.output_writers[:hi_freq_stats] = JLD2OutputWriter(model, statistics; dir, overwrite_existing,
+    simulation.output_writers[:hi_freq_stats] = JLD2Writer(model, statistics; dir, overwrite_existing,
                                                                  schedule = TimeInterval(0.02),
                                                                  filename = file_prefix * "_hi_freq_statistics")
 
-    simulation.output_writers[:yz_left] = JLD2OutputWriter(model, outputs; dir, overwrite_existing,
+    simulation.output_writers[:yz_left] = JLD2Writer(model, outputs; dir, overwrite_existing,
                                                            schedule = TimeInterval(save_interval),
                                                            filename = file_prefix * "_yz_left",
                                                            indices = (1, :, :))
 
-    simulation.output_writers[:xz_left] = JLD2OutputWriter(model, outputs; dir, overwrite_existing,
+    simulation.output_writers[:xz_left] = JLD2Writer(model, outputs; dir, overwrite_existing,
                                                            schedule = TimeInterval(save_interval),
                                                            filename = file_prefix * "_xz_left",
                                                            indices = (:, 1, :))
 
-    simulation.output_writers[:xy_bottom] = JLD2OutputWriter(model, outputs; dir, overwrite_existing,
+    simulation.output_writers[:xy_bottom] = JLD2Writer(model, outputs; dir, overwrite_existing,
                                                              schedule = TimeInterval(save_interval),
                                                              filename = file_prefix * "_xy_bottom",
                                                              indices = (:, :, 1))
 
-    simulation.output_writers[:yz_right] = JLD2OutputWriter(model, outputs; dir, overwrite_existing,
+    simulation.output_writers[:yz_right] = JLD2Writer(model, outputs; dir, overwrite_existing,
                                                             schedule = TimeInterval(save_interval),
                                                             filename = file_prefix * "_yz_right",
                                                             indices = (grid.Nx, :, :))
 
-    simulation.output_writers[:xz_right] = JLD2OutputWriter(model, outputs; dir, overwrite_existing,
+    simulation.output_writers[:xz_right] = JLD2Writer(model, outputs; dir, overwrite_existing,
                                                             schedule = TimeInterval(save_interval),
                                                             filename = file_prefix * "_xz_right",
                                                             indices = (:, grid.Ny, :))
 
-    simulation.output_writers[:xy_top] = JLD2OutputWriter(model, outputs; dir, overwrite_existing,
+    simulation.output_writers[:xy_top] = JLD2Writer(model, outputs; dir, overwrite_existing,
                                                           schedule = TimeInterval(save_interval),
                                                           filename = file_prefix * "_xy_top",
                                                           indices = (:, :, grid.Nz))

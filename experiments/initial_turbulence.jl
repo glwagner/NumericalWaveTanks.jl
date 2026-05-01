@@ -56,9 +56,9 @@ function decaying_turbulence_on_shear_flow(arch;
     t₀ = initial_time
     U = BackgroundField(mean_velocity, parameters=(; A, ν, t₀))
 
-    model = NonhydrostaticModel(; grid,
+    model = NonhydrostaticModel(grid;
                                 background_fields = (; u=U),
-                                advection = CenteredSecondOrder(),
+                                advection = Centered(order=2),
                                 timestepper = :RungeKutta3,
                                 closure = ScalarDiffusivity(; ν))
 
@@ -117,7 +117,7 @@ function decaying_turbulence_on_shear_flow(arch;
 
     @info "Saving data to $file_prefix"
     schedule = SpecifiedTimes(0.1, 0.2, 0.5, 1.0)
-    simulation.output_writers[:fields] = JLD2OutputWriter(model, model.velocities; dir,
+    simulation.output_writers[:fields] = JLD2Writer(model, model.velocities; dir,
                                                           overwrite_existing, schedule,
                                                           with_halos = true,
                                                           filename = file_prefix * "_fields")
@@ -127,21 +127,21 @@ function decaying_turbulence_on_shear_flow(arch;
                   v_max = model -> maximum(abs, view(interior(model.velocities.v), :, :, Nz)),
                   w_max = model -> maximum(abs, model.velocities.w))
 
-    simulation.output_writers[:hi_freq_stats] = JLD2OutputWriter(model, statistics; dir, overwrite_existing,
+    simulation.output_writers[:hi_freq_stats] = JLD2Writer(model, statistics; dir, overwrite_existing,
                                                                  schedule = TimeInterval(1e-3),
                                                                  filename = file_prefix * "_hi_freq_statistics")
 
-    simulation.output_writers[:yz_left] = JLD2OutputWriter(model, model.velocities; dir, overwrite_existing,
+    simulation.output_writers[:yz_left] = JLD2Writer(model, model.velocities; dir, overwrite_existing,
                                                            schedule = TimeInterval(save_interval),
                                                            filename = file_prefix * "_yz_left",
                                                            indices = (1, :, :))
 
-    simulation.output_writers[:xz_left] = JLD2OutputWriter(model, model.velocities; dir, overwrite_existing,
+    simulation.output_writers[:xz_left] = JLD2Writer(model, model.velocities; dir, overwrite_existing,
                                                            schedule = TimeInterval(save_interval),
                                                            filename = file_prefix * "_xz_left",
                                                            indices = (:, 1, :))
 
-    simulation.output_writers[:xy_top] = JLD2OutputWriter(model, model.velocities; dir, overwrite_existing,
+    simulation.output_writers[:xy_top] = JLD2Writer(model, model.velocities; dir, overwrite_existing,
                                                           schedule = TimeInterval(save_interval),
                                                           filename = file_prefix * "_xy_top",
                                                           indices = (:, :, grid.Nz))

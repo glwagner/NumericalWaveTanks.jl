@@ -19,4 +19,5 @@ SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 
 [compat]
 Adapt = "4.4.0"
-Oceananigans = "0.104.2"
+Oceananigans = "0.107"
+julia = "1.11"
