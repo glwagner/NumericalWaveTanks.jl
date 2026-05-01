@@ -59,21 +59,21 @@ run that actually resolves the W23 DNS scales.
 
 #### Cost on multi-GPU
 
-Single-H100 throughput estimate at 768² × 512 with Centered(2) advection
-is ~1 s/iter. With Δt ≈ 0.9 ms set by CFL on the smallest cell, the
-iteration counts and wall-time estimates are:
+A 152-iteration timing run at 768² × 512 on a single H100 measured
+**~440 ms/iter** steady-state (after JIT warm-up) and a converged
+Δt of ~1.55 ms. Wall-time projections:
 
-| Window       | Iters  | 1 H100 wall  | 4× GH200 wall (est.) |
-|--------------|--------|--------------|----------------------|
-| t = 16 → 18 s | ~2700  | ~45 min      | ~15 min              |
-| t = 16 → 20 s | ~5000  | ~80 min      | ~25 min              |
-| t = 16 → 22 s | ~7000  | ~115 min     | ~40 min              |
+| Window       | Iters  | 1 H100 wall  | 4× GH200 wall (est., 3× scaling) |
+|--------------|--------|--------------|----------------------------------|
+| t = 16 → 18 s | ~1700  | ~13 min      | ~5 min                           |
+| t = 16 → 20 s | ~3300  | ~25 min      | ~9 min                           |
+| t = 16 → 22 s | ~5000  | ~37 min      | ~13 min                          |
 
 The 4-GPU number assumes ~3× scaling — limited by the all-to-all
 communication in the FFT-based pressure solver. Better than 3× would
 be a pleasant surprise; worse is possible if internode bandwidth is
-the bottleneck. Confirm with a 1-iteration benchmark before committing
-to the full run.
+the bottleneck. Confirm with a 1-iteration benchmark on DeltaAI before
+committing to the full run.
 
 #### Multi-GPU setup
 
@@ -92,13 +92,24 @@ Launched via `mpirun -n 4 julia --project ...` or Slurm's `srun -n 4 ...`.
 
 #### Output combining
 
-Each rank writes its own JLD2 (`..._rank0.jld2`, ...). Since the LES
-restart workflow expects a single file, we combine eagerly: a small
-`analysis/combine_dns_snapshots.jl` runs after the DNS, reads each rank
-file's interior, places it in the global array using the partition
-metadata embedded by Oceananigans v0.107+, and writes a merged
-`..._merged_t<...>.jld2`. The merged file is what the LES ingests via
-`set!(les_model, ...)`.
+In distributed mode the script appends a `_rankNNN` suffix to every
+output filename so each rank writes its own shard
+(`..._3d_fields_rank000.jld2`, `..._3d_fields_rank001.jld2`, ...). The
+LES restart workflow expects a single file, so we combine eagerly with
+`analysis/combine_dns_snapshots.jl`. The combiner:
+
+- Discovers `*_3d_fields*.jld2` shards in the run directory.
+- Reads each shard's `timeseries/<field>/serialized/indices`, which
+  records the rank's global index range (the metadata Oceananigans
+  v0.107 added to the JLD2 file format).
+- Allocates the global array per field per iteration and places each
+  rank's slice at its indices.
+- Writes a single merged JLD2 with the same schema as a single-rank
+  output, so downstream code can use
+  `FieldTimeSeries(merged, "u")` etc. unchanged.
+
+The combiner is also a no-op pass-through when given a single shard,
+so analysis scripts can call it uniformly regardless of partition.
 
 ### A3 — Snapshot selection
 

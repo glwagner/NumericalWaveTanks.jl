@@ -240,7 +240,15 @@ function build_numerical_wave_tank(arch;
     nobackup_dir = "."
     dir = joinpath(nobackup_dir, file_prefix)
 
-    @info "Saving data to $file_prefix"
+    # In distributed mode each rank writes its own files into the shared
+    # output directory; suffix all filenames/prefixes with the rank index.
+    # `analysis/combine_dns_snapshots.jl` stitches the rank shards back
+    # into a single global file for downstream LES restart.
+    rank_suffix = MPI.Initialized() ?
+                  @sprintf("_rank%03d", MPI.Comm_rank(MPI.COMM_WORLD)) :
+                  ""
+
+    is_root() && @info "Saving data to $file_prefix"
 
     outputs = merge(model.velocities, model.tracers)
 
@@ -250,11 +258,11 @@ function build_numerical_wave_tank(arch;
 
     simulation.output_writers[:avg] = JLD2Writer(model, (c=C, u=U); dir, overwrite_existing,
                                                        schedule = TimeInterval(save_interval),
-                                                       filename = file_prefix * "_averages")
+                                                       filename = file_prefix * "_averages" * rank_suffix)
 
     simulation.output_writers[:fast_avg] = JLD2Writer(model, (c=C, u=U); dir, overwrite_existing,
                                                             schedule = TimeInterval(0.02),
-                                                            filename = file_prefix * "_hi_freq_averages")
+                                                            filename = file_prefix * "_hi_freq_averages" * rank_suffix)
 
     Nz = grid.Nz
 
@@ -265,47 +273,47 @@ function build_numerical_wave_tank(arch;
 
     simulation.output_writers[:stats] = JLD2Writer(model, statistics; dir, overwrite_existing,
                                                          schedule = TimeInterval(save_interval),
-                                                         filename = file_prefix * "_statistics")
+                                                         filename = file_prefix * "_statistics" * rank_suffix)
 
     simulation.output_writers[:hi_freq_stats] = JLD2Writer(model, statistics; dir, overwrite_existing,
                                                                  schedule = TimeInterval(0.02),
-                                                                 filename = file_prefix * "_hi_freq_statistics")
+                                                                 filename = file_prefix * "_hi_freq_statistics" * rank_suffix)
 
     simulation.output_writers[:yz_left] = JLD2Writer(model, outputs; dir, overwrite_existing,
                                                            schedule = TimeInterval(save_interval),
-                                                           filename = file_prefix * "_yz_left",
+                                                           filename = file_prefix * "_yz_left" * rank_suffix,
                                                            indices = (1, :, :))
 
     simulation.output_writers[:xz_left] = JLD2Writer(model, outputs; dir, overwrite_existing,
                                                            schedule = TimeInterval(save_interval),
-                                                           filename = file_prefix * "_xz_left",
+                                                           filename = file_prefix * "_xz_left" * rank_suffix,
                                                            indices = (:, 1, :))
 
     simulation.output_writers[:xy_bottom] = JLD2Writer(model, outputs; dir, overwrite_existing,
                                                              schedule = TimeInterval(save_interval),
-                                                             filename = file_prefix * "_xy_bottom",
+                                                             filename = file_prefix * "_xy_bottom" * rank_suffix,
                                                              indices = (:, :, 1))
 
     simulation.output_writers[:yz_right] = JLD2Writer(model, outputs; dir, overwrite_existing,
                                                             schedule = TimeInterval(save_interval),
-                                                            filename = file_prefix * "_yz_right",
+                                                            filename = file_prefix * "_yz_right" * rank_suffix,
                                                             indices = (grid.Nx, :, :))
 
     simulation.output_writers[:xz_right] = JLD2Writer(model, outputs; dir, overwrite_existing,
                                                             schedule = TimeInterval(save_interval),
-                                                            filename = file_prefix * "_xz_right",
+                                                            filename = file_prefix * "_xz_right" * rank_suffix,
                                                             indices = (:, grid.Ny, :))
 
     simulation.output_writers[:xy_top] = JLD2Writer(model, outputs; dir, overwrite_existing,
                                                           schedule = TimeInterval(save_interval),
-                                                          filename = file_prefix * "_xy_top",
+                                                          filename = file_prefix * "_xy_top" * rank_suffix,
                                                           indices = (:, :, grid.Nz))
 
     # 3D state snapshots for using as LES initial conditions.
     # Saved as Float32 without halos to keep file sizes manageable.
     simulation.output_writers[:fields_3d] = JLD2Writer(model, outputs; dir, overwrite_existing,
                                                        schedule = TimeInterval(save_interval_3d),
-                                                       filename = file_prefix * "_3d_fields",
+                                                       filename = file_prefix * "_3d_fields" * rank_suffix,
                                                        array_type = Array{Float32},
                                                        with_halos = false)
 
@@ -314,7 +322,7 @@ function build_numerical_wave_tank(arch;
     simulation.output_writers[:chk] = Checkpointer(model; dir, overwrite_existing,
                                                    schedule = TimeInterval(save_interval_3d),
                                                    cleanup = false,
-                                                   prefix = file_prefix * "_checkpointer")
+                                                   prefix = file_prefix * "_checkpointer" * rank_suffix)
 
     return simulation
 end
