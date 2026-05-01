@@ -30,22 +30,86 @@ stage so the LES doesn't have to wait through it.
 ## Stage A — DNS for initial conditions
 
 Already plumbed in `experiments/constant_waves.jl` (see `dns_plan.md`).
-What's left:
+Two-step rollout — a low-res functional test, then a high-res production
+run that actually resolves the W23 DNS scales.
 
-- **A1** Smoke-test at 128² × 64 with random IC (verify Checkpointer +
-  3D field snapshots write correctly). *(In flight.)*
-- **A2** Production run at 192² × 128 with random IC (eigenmode IC is a
-  refinement we don't need before Stage B starts).
-  - Domain 0.2 × 0.2 × 0.1 m, t = 16 → 20 s, snapshots every 0.5 s.
-  - Wall time: a few minutes on one H100.
-- **A3** Inspect the snapshot library and pick `t*` — the snapshot we
-  carry forward as the LES IC. Target: jets formed, plumes descending,
-  not yet isotropic 3D turbulence. Best guess: `t* ∈ [18, 19] s`. The
-  exact pick will be informed by inspecting `xy_top` and `xz_left`
-  visualizations of each candidate.
+### A1 — Test (single H100, this cluster)
+
+- 192² × 128 (or smaller, e.g. 128² × 64) with random IC.
+- Goal: verify the Checkpointer + 3D fields writer fire, the eigenmode-
+  optional branch works, output files load cleanly with `set!`.
+- Wall time: a few minutes.
+- *Not* a physics-quality DNS — this is a plumbing test only.
+
+### A2 — Production DNS (multi-GPU, DeltaAI / GH200)
+
+- **Resolution: 768² × 512** (matches the W23 DNS).
+- Domain: 0.2 × 0.2 × 0.1 m, vertically stretched (refined near surface).
+- Wind, wave, and Stokes-drift parameters identical to W23
+  (α = 1.2e-5, ε = 0.1, λ = 3 cm).
+- Initial condition: laminar Ekman-Stokes profile at t₀ = 16 s plus
+  random noise, OR with eigenmode perturbation if the corresponding
+  `linear_instability_analysis/*.jld2` is computed at the matching
+  resolution.
+- Stop time: **t = 18 s** initially (saves ~half the cost vs t = 20 s
+  while still containing the jets/plumes regime). Extend to 20 or 22 s
+  if the chosen `t*` ends up needing more headroom.
+- Snapshots every 0.5 s, both as `JLD2Writer(..., array_type=Float32,
+  with_halos=false)` and as full Checkpointer files.
+
+#### Cost on multi-GPU
+
+Single-H100 throughput estimate at 768² × 512 with Centered(2) advection
+is ~1 s/iter. With Δt ≈ 0.9 ms set by CFL on the smallest cell, the
+iteration counts and wall-time estimates are:
+
+| Window       | Iters  | 1 H100 wall  | 4× GH200 wall (est.) |
+|--------------|--------|--------------|----------------------|
+| t = 16 → 18 s | ~2700  | ~45 min      | ~15 min              |
+| t = 16 → 20 s | ~5000  | ~80 min      | ~25 min              |
+| t = 16 → 22 s | ~7000  | ~115 min     | ~40 min              |
+
+The 4-GPU number assumes ~3× scaling — limited by the all-to-all
+communication in the FFT-based pressure solver. Better than 3× would
+be a pleasant surprise; worse is possible if internode bandwidth is
+the bottleneck. Confirm with a 1-iteration benchmark before committing
+to the full run.
+
+#### Multi-GPU setup
+
+The relevant Oceananigans pieces:
+
+```julia
+using MPI; MPI.Init()
+using Oceananigans.DistributedComputations: Distributed, Partition
+
+arch = Distributed(GPU(); partition = Partition(2, 2, 1))
+grid = RectilinearGrid(arch, size=(Nx, Ny, Nz), ...)
+model = NonhydrostaticModel(grid; ...)
+```
+
+Launched via `mpirun -n 4 julia --project ...` or Slurm's `srun -n 4 ...`.
+
+#### Output combining
+
+Each rank writes its own JLD2 (`..._rank0.jld2`, ...). Since the LES
+restart workflow expects a single file, we combine eagerly: a small
+`analysis/combine_dns_snapshots.jl` runs after the DNS, reads each rank
+file's interior, places it in the global array using the partition
+metadata embedded by Oceananigans v0.107+, and writes a merged
+`..._merged_t<...>.jld2`. The merged file is what the LES ingests via
+`set!(les_model, ...)`.
+
+### A3 — Snapshot selection
+
+Inspect `xy_top` and `xz_left` visualizations of each saved snapshot;
+pick `t*` matching jets-formed, pre-isotropic. Best guess: `t* ∈
+[18, 19] s`. Commit a small file (e.g. `experiments/dns_t_star.txt`)
+naming the chosen iteration so Stage B is reproducible.
 
 Outputs of Stage A: one `..._3d_fields.jld2` snapshot per 0.5 s in
-`(u, v, w, c)`, plus full Checkpointer files for restart.
+`(u, v, w, c)`, plus full Checkpointer files for restart, plus the
+merged single-file IC at `t*`.
 
 ## Stage B — Extended LES from DNS state
 
