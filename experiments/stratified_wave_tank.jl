@@ -116,7 +116,7 @@ function build_stratified_wave_tank(arch;
     end
 
     wᵢ(x, y, z) = W′ * randn()
-    bᵢ(x, y, z) = -Δb/2 * (1 + tanh((z - zₕ) / δ_thermo))
+    bᵢ(x, y, z) = -Δb/2 * (1 - tanh((z - zₕ) / δ_thermo))
 
     Random.seed!(123)
     set!(model, u=Uᵢ, v=wᵢ, w=wᵢ, b=bᵢ)
