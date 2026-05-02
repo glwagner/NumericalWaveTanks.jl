@@ -1,0 +1,21 @@
+#!/bin/bash
+#SBATCH --job-name=dns-prod
+#SBATCH --output=dns_production-%j.log
+#SBATCH --time=01:00:00
+#SBATCH --partition=gpu-prod
+#SBATCH --nodelist=gpu-prod-st-gpu-prod-2
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --gres=gpu:h100:1
+
+set -e
+cd /shared/home/greg/NumericalWaveTanks.jl
+
+echo "=== node $(hostname) ==="
+nvidia-smi --query-gpu=index,name,memory.total --format=csv
+
+echo "=== julia version ==="
+julia --version
+
+echo "=== running production DNS 768²×512 to t=22 with ε=0.14 (W23 production case) ==="
+julia --project=. experiments/constant_waves.jl 768 768 512 0.2 0.2 0.1 0.14 1.2 16.0 0.01 22.0

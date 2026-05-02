@@ -60,8 +60,8 @@ function build_numerical_wave_tank(arch;
                                    t₀ = 0.0,
                                    W′ = 1e-4,
                                    stop_time = 22.0,
-                                   save_interval = 0.2,
-                                   save_interval_3d = 0.5,
+                                   save_interval = 0.5,
+                                   save_interval_3d = 1.0,
                                    overwrite_existing = true,
                                    name = "constant_waves")
 
@@ -256,73 +256,41 @@ function build_numerical_wave_tank(arch;
     C = Field(Average(model.tracers.c, dims=(1, 2)))
     U = Field(Average(u, dims=(1, 2)))
 
-    simulation.output_writers[:avg] = JLD2Writer(model, (c=C, u=U); dir, overwrite_existing,
-                                                       schedule = TimeInterval(save_interval),
-                                                       filename = file_prefix * "_averages" * rank_suffix)
-
-    simulation.output_writers[:fast_avg] = JLD2Writer(model, (c=C, u=U); dir, overwrite_existing,
-                                                            schedule = TimeInterval(0.02),
-                                                            filename = file_prefix * "_hi_freq_averages" * rank_suffix)
-
     Nz = grid.Nz
 
-    statistics = (u_max = model -> maximum(abs, view(interior(model.velocities.u), :, :, Nz)), 
+    statistics = (u_max = model -> maximum(abs, view(interior(model.velocities.u), :, :, Nz)),
                   u_min = model -> minimum(abs, view(interior(model.velocities.u), :, :, Nz)),
                   v_max = model -> maximum(abs, view(interior(model.velocities.v), :, :, Nz)),
                   w_max = model -> maximum(abs, model.velocities.w))
 
+    # All output writers default to Float32 (Oceananigans JLD2Writer default).
+    # Outputs kept minimal: horizontally-averaged profiles, surface-layer
+    # statistics, one xz slice for picking t*, and the 3D snapshots used as
+    # LES initial conditions. No Checkpointer (Float64, halos, ~6 GB/save at
+    # 768²×512 — wasteful for our IC use-case).
+
+    simulation.output_writers[:avg] = JLD2Writer(model, (c=C, u=U); dir, overwrite_existing,
+                                                 schedule = TimeInterval(save_interval),
+                                                 filename = file_prefix * "_averages" * rank_suffix,
+                                                 array_type = Array{Float32})
+
     simulation.output_writers[:stats] = JLD2Writer(model, statistics; dir, overwrite_existing,
-                                                         schedule = TimeInterval(save_interval),
-                                                         filename = file_prefix * "_statistics" * rank_suffix)
-
-    simulation.output_writers[:hi_freq_stats] = JLD2Writer(model, statistics; dir, overwrite_existing,
-                                                                 schedule = TimeInterval(0.02),
-                                                                 filename = file_prefix * "_hi_freq_statistics" * rank_suffix)
-
-    simulation.output_writers[:yz_left] = JLD2Writer(model, outputs; dir, overwrite_existing,
-                                                           schedule = TimeInterval(save_interval),
-                                                           filename = file_prefix * "_yz_left" * rank_suffix,
-                                                           indices = (1, :, :))
+                                                   schedule = TimeInterval(save_interval),
+                                                   filename = file_prefix * "_statistics" * rank_suffix,
+                                                   array_type = Array{Float32})
 
     simulation.output_writers[:xz_left] = JLD2Writer(model, outputs; dir, overwrite_existing,
-                                                           schedule = TimeInterval(save_interval),
-                                                           filename = file_prefix * "_xz_left" * rank_suffix,
-                                                           indices = (:, 1, :))
+                                                     schedule = TimeInterval(save_interval),
+                                                     filename = file_prefix * "_xz_left" * rank_suffix,
+                                                     indices = (:, 1, :),
+                                                     array_type = Array{Float32})
 
-    simulation.output_writers[:xy_bottom] = JLD2Writer(model, outputs; dir, overwrite_existing,
-                                                             schedule = TimeInterval(save_interval),
-                                                             filename = file_prefix * "_xy_bottom" * rank_suffix,
-                                                             indices = (:, :, 1))
-
-    simulation.output_writers[:yz_right] = JLD2Writer(model, outputs; dir, overwrite_existing,
-                                                            schedule = TimeInterval(save_interval),
-                                                            filename = file_prefix * "_yz_right" * rank_suffix,
-                                                            indices = (grid.Nx, :, :))
-
-    simulation.output_writers[:xz_right] = JLD2Writer(model, outputs; dir, overwrite_existing,
-                                                            schedule = TimeInterval(save_interval),
-                                                            filename = file_prefix * "_xz_right" * rank_suffix,
-                                                            indices = (:, grid.Ny, :))
-
-    simulation.output_writers[:xy_top] = JLD2Writer(model, outputs; dir, overwrite_existing,
-                                                          schedule = TimeInterval(save_interval),
-                                                          filename = file_prefix * "_xy_top" * rank_suffix,
-                                                          indices = (:, :, grid.Nz))
-
-    # 3D state snapshots for using as LES initial conditions.
-    # Saved as Float32 without halos to keep file sizes manageable.
+    # 3D state snapshots for use as LES initial conditions. Float32, no halos.
     simulation.output_writers[:fields_3d] = JLD2Writer(model, outputs; dir, overwrite_existing,
                                                        schedule = TimeInterval(save_interval_3d),
                                                        filename = file_prefix * "_3d_fields" * rank_suffix,
                                                        array_type = Array{Float32},
                                                        with_halos = false)
-
-    # Full-state checkpointer for bit-exact restart (also lets the run be resumed).
-    # `cleanup = false` keeps every checkpoint so any one can be picked as an LES IC.
-    simulation.output_writers[:chk] = Checkpointer(model; dir, overwrite_existing,
-                                                   schedule = TimeInterval(save_interval_3d),
-                                                   cleanup = false,
-                                                   prefix = file_prefix * "_checkpointer" * rank_suffix)
 
     return simulation
 end
