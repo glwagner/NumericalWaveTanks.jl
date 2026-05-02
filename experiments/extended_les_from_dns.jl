@@ -119,22 +119,24 @@ function build_extended_les(arch;
     u_dns, v_dns, w_dns, c_dns = dns.u, dns.v, dns.w, dns.c
 
     # Wrappers that interpolate DNS values when above the cut, return zero below.
-    # `interpolate(field, x, y, z)` does trilinear interpolation on the DNS grid.
+    # `interpolate((x, y, z), field)` does trilinear interpolation on the
+    # field's own grid (the DNS grid in this case). The Float64 cast is
+    # because the DNS file stores Float32 but the LES model uses Float64.
     function u_ic(x, y, z)
         z < z_dns_cut && return 0.0
-        return Float64(interpolate(u_dns, x, y, z))
+        return Float64(interpolate((x, y, z), u_dns))
     end
     function v_ic(x, y, z)
         z < z_dns_cut && return 0.0
-        return Float64(interpolate(v_dns, x, y, z))
+        return Float64(interpolate((x, y, z), v_dns))
     end
     function w_ic(x, y, z)
         z < z_dns_cut && return 0.0
-        return Float64(interpolate(w_dns, x, y, z))
+        return Float64(interpolate((x, y, z), w_dns))
     end
     function c_ic(x, y, z)
         z < z_dns_cut && return 0.0
-        return Float64(interpolate(c_dns, x, y, z))
+        return Float64(interpolate((x, y, z), c_dns))
     end
 
     @info "Setting LES IC from DNS snapshot (this takes a minute on CPU interpolation)"
