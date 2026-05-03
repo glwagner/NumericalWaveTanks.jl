@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=dns-prod
 #SBATCH --output=dns_production-%j.log
-#SBATCH --time=01:00:00
+#SBATCH --time=02:00:00
 #SBATCH --partition=gpu-prod
 #SBATCH --nodelist=gpu-prod-st-gpu-prod-2
 #SBATCH --nodes=1
@@ -17,5 +17,6 @@ nvidia-smi --query-gpu=index,name,memory.total --format=csv
 echo "=== julia version ==="
 julia --version
 
-echo "=== running production DNS 768²×512 to t=22 with ε=0.14 (W23 production case) ==="
-julia --project=. experiments/constant_waves.jl 768 768 512 0.2 0.2 0.1 0.14 1.2 16.0 0.01 22.0
+echo "=== running production DNS 768²×512 in 0.1×0.1×0.05 m to t=22 with W23 paper params ==="
+echo "    ε = 0.11, U' (noise stddev) = 5 cm/s ⇒ script W' = 0.005"
+julia --project=. experiments/constant_waves.jl 768 768 512 0.1 0.1 0.05 0.11 1.2 16.0 0.005 22.0

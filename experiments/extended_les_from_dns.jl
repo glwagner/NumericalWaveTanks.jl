@@ -64,10 +64,10 @@ function build_extended_les(arch;
                             Nx = 192,
                             Ny = 192,
                             Nz = 256,
-                            Lx = 0.2,
-                            Ly = 0.2,
+                            Lx = 0.1,               # match W23 DNS horizontal extent
+                            Ly = 0.1,
                             Lz = 0.5,
-                            ϵ = 0.1,
+                            ϵ = 0.11,               # W23 paper value
                             k = 2π/0.03,
                             ν = 1.05e-6,
                             κ = κ_rhodamine,
