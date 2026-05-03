@@ -63,10 +63,10 @@ function build_extended_les(arch;
                             snap_idx = 4,           # default: t=19 if DNS saved every 1 s from t=16
                             Nx = 192,
                             Ny = 192,
-                            Nz = 256,
+                            Nz = 128,               # 192³-equivalent at trimmed Lz
                             Lx = 0.1,               # match W23 DNS horizontal extent
                             Ly = 0.1,
-                            Lz = 0.5,
+                            Lz = 0.25,              # signal lives in upper ~15 cm; 0.5 m was wasteful
                             ϵ = 0.11,               # W23 paper value
                             k = 2π/0.03,
                             ν = 1.05e-6,
