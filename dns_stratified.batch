@@ -1,0 +1,23 @@
+#!/bin/bash
+#SBATCH --job-name=dns-strat
+#SBATCH --output=dns_stratified-%j.log
+#SBATCH --time=02:00:00
+#SBATCH --partition=gpu-prod
+#SBATCH --nodelist=gpu-prod-st-gpu-prod-2
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --gres=gpu:h100:1
+
+set -e
+cd /shared/home/greg/NumericalWaveTanks.jl
+
+echo "=== node $(hostname) ==="
+nvidia-smi --query-gpu=index,name,memory.total --format=csv
+
+echo "=== julia version ==="
+julia --version
+
+echo "=== running stratified DNS 768²×512 in 0.1×0.1×0.05 m, ε=0.11, zₕ=-3 cm to t=22 ==="
+julia --project=. experiments/stratified_dns.jl \
+    768 768 512 0.1 0.1 0.05 0.11 1.2 16.0 0.005 22.0 \
+    1000 1035 -0.03 0.005 0.0
