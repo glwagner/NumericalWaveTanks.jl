@@ -27,7 +27,7 @@ DT=${DT:-0.02}
 HALF_DT=$(python3 -c "print(${DT}/2)")
 NUMERICS=${NUMERICS:-weno}
 RUN="julia --project=. experiments/anti_stokes/run_moving_packet.jl case=$CASE level=$LEVEL numerics=$NUMERICS"
-GEN="julia --project=. experiments/anti_stokes/generate_turbulence.jl case=$CASE level=$LEVEL amplitude=${AMPLITUDE:-1.6}"
+GEN="julia --project=. experiments/anti_stokes/generate_turbulence.jl case=$CASE level=$LEVEL amplitude=${AMPLITUDE:-1.6} L_factor=${L_FACTOR:-1.15}"
 ID=$SLURM_ARRAY_TASK_ID
 
 generate_ic () {

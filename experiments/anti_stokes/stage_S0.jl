@@ -19,6 +19,7 @@ level = getarg(args, "level", "S0")
 case_name = getarg(args, "case", "1.D")
 seed = getarg(args, "seed", 1)
 amplitude = parse_amplitude(getarg(args, "amplitude", "1.6"))
+L_factor = getarg(args, "L_factor", 1.15)
 skip = split(getarg(args, "skip", ""), ',')  # comma-separated list of step numbers to skip
 
 timings = Dict{String, Float64}()
@@ -40,7 +41,7 @@ step!("packet_null_dt0.010", 3, () -> run_member(; case_name, member="packet_nul
 step!("packet_null_S0x", 4, () -> run_member(; case_name, member="packet_null", level=level * "x", arch, root))
 
 step!("initial_condition", 5,
-      () -> generate_initial_condition(; case_name, level, seed, arch, root, amplitude, overwrite=true))
+      () -> generate_initial_condition(; case_name, level, seed, arch, root, amplitude, L_factor, overwrite=true))
 
 step!("turbulence_control", 6, () -> run_member(; case_name, member="turbulence_control", level, seed, arch, root))
 step!("packet_turbulence", 7, () -> run_member(; case_name, member="packet_turbulence", level, seed, arch, root))
