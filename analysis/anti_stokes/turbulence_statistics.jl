@@ -111,6 +111,6 @@ end
 vlines!(ax_f, [0]; color=:black)
 axislegend(ax_f; position=:rb, labelsize=11)
 
-output = get(args, "output", joinpath(figure_directory(), "turbulence_statistics_$(ct.meta["level"])_seed$(ct.meta["seed"]).png"))
+output = get(args, "output", joinpath(figure_directory(), "turbulence_statistics_$(case_dirname(c))_$(ct.meta["level"])_seed$(ct.meta["seed"]).png"))
 save(output, fig)
 @info "Saved $output"

@@ -4,7 +4,7 @@
 ##### mean with its standard error, the depth-integrated transport, the Reynolds-stress
 ##### change, and the wake-age average, for one or more resolution levels / numerics.
 #####
-##### Usage: julia --project=. analysis/anti_stokes/ensemble_profile.jl level=M0 seeds=1,2,3,4
+##### Usage: julia --project=. analysis/anti_stokes/ensemble_profile.jl case=1.D level=M0 seeds=1,2,3,4
 #####            [level2=M1 seeds2=1,2,3,4 level3=M2 seeds3=1,...,8] [numerics=weno] [dt=0.02] [root=<dir>] [output=<png>]
 #####
 
@@ -15,60 +15,14 @@ args = parse_key_value_args(ARGS)
 root = getarg(args, "root", default_data_root())
 numerics = getarg(args, "numerics", "weno")
 Δt = getarg(args, "dt", 0.02)
-case = anti_stokes_case("1.D")
-
-parse_seeds(s) = parse.(Int, split(s, ','))
-
-"""
-    ensemble(level, seeds; numerics, Δt)
-
-Per-seed FOV profiles (after − before) of the null-corrected ΔU and of Δ⟨u'w'⟩, plus the
-wake-age (3–4σ₀) surface residual, for one level.
-"""
-function ensemble(level, seeds; numerics, Δt)
-    null = run_directory(root, case, level, "packet_null"; seed=0, Δt, numerics)
-    quiescent = run_directory(root, case, level, "quiescent_control"; seed=0, Δt, numerics)
-    isdir(quiescent) || (quiescent = nothing)
-    profiles, Δuw_profiles, wakes, transports, composites = [], [], Float64[], Float64[], []
-    z, k = nothing, nothing
-    for seed in seeds
-        pk_dir = run_directory(root, case, level, "packet_turbulence"; seed, Δt, numerics)
-        ct_dir = run_directory(root, case, level, "turbulence_control"; seed, Δt, numerics)
-        ΔU, pk, ct = paired_residual(pk_dir, ct_dir, null, quiescent)
-        t, x, Δz = times(pk), xnodes_faces(pk), Δz_centers(pk)
-        z, k = znodes_centers(pk), k₀(pk)
-        τ, i, p = τ₀(pk), fov_index(pk), run_packet(pk)
-        before = window_mean(ΔU, t, 0, τ)[i, :]
-        after  = window_mean(ΔU, t, 7τ, 8τ)[i, :]
-        push!(profiles, after .- before)
-        push!(transports, sum((after .- before) .* Δz))
-        m_pk, m_ct = central_moments(pk), central_moments(ct)
-        Δuw = m_pk.uw .- m_ct.uw
-        push!(Δuw_profiles, window_mean(Δuw, t, 7τ, 8τ)[i, :] .- window_mean(Δuw, t, 0, τ)[i, :])
-        xc_end = packet_center(t[end], p)   # outside @. so the NamedTuple p is not broadcast
-        age = @. mod(xc_end - x, pk.meta["Lx"])
-        wake = findall(a -> 3p.σ₀ <= a <= 4p.σ₀, age)
-        push!(wakes, mean(ΔU[wake, end, end]) - before[end])
-        ages, C, _ = wake_age_composite(ΔU, x, t, p; age_edges=default_age_edges(τ))
-        push!(composites, composite_profile(ages, C, τ, 2.125, 3.875))
-    end
-    P = hcat(profiles...)
-    S = hcat(Δuw_profiles...)
-    W = hcat(composites...)
-    n = length(seeds)
-    return (; level, seeds, z, k, profiles = P, Δuw = S, composites = W,
-              mean = vec(mean(P; dims=2)), stderr = vec(std(P; dims=2)) ./ sqrt(n),
-              composite_mean = vec(mean(W; dims=2)), composite_stderr = vec(std(W; dims=2)) ./ sqrt(n),
-              Δuw_mean = vec(mean(S; dims=2)), Δuw_stderr = vec(std(S; dims=2)) ./ sqrt(n),
-              wakes, transports)
-end
+case = anti_stokes_case(getarg(args, "case", "1.D"))
 
 levels = [(getarg(args, "level", "M0"), parse_seeds(getarg(args, "seeds", "1,2,3,4")))]
 for n in 2:4
     haskey(args, "level$n") && push!(levels, (args["level$n"], parse_seeds(getarg(args, "seeds$n", getarg(args, "seeds", "1,2,3,4")))))
 end
 
-results = [ensemble(level, seeds; numerics, Δt) for (level, seeds) in levels]
+results = [ensemble(case, root, level, seeds; numerics, Δt) for (level, seeds) in levels]
 
 for r in results
     hr("Ensemble $(r.level), seeds $(r.seeds), numerics $numerics, Δt = $Δt")
@@ -94,7 +48,7 @@ end
 
 set_theme!(Theme(fontsize=18))
 fig = Figure(size=(1500, 800))
-Label(fig[0, 1:3], "Case 1.D ensemble, null-corrected post-packet residual at the FOV (after − before), $numerics, Δt = $Δt s", fontsize=20)
+Label(fig[0, 1:3], "Case $(case.name) ensemble, null-corrected post-packet residual at the FOV (after − before), $numerics, Δt = $Δt s", fontsize=20)
 colors = Makie.wong_colors()
 
 ax1 = Axis(fig[1, 1]; xlabel="ΔU (mm/s)", ylabel="k₀ z", title="ΔU(z): seeds (thin) and ensemble mean ± s.e.")
@@ -125,6 +79,6 @@ for ax in (ax1, ax2, ax3)
     axislegend(ax; position=:rb)
 end
 
-output = get(args, "output", joinpath(figure_directory(), "ensemble_profile_" * join(first.(levels), "_") * "_$(numerics).png"))
+output = get(args, "output", joinpath(figure_directory(), "ensemble_profile_$(case_dirname(case))_" * join(first.(levels), "_") * "_$(numerics).png"))
 save(output, fig)
 @info "Saved $output"

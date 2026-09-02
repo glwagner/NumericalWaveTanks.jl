@@ -236,6 +236,57 @@ function pair_report(packet_dir, control_dir, null_dir=nothing, quiescent_dir=no
     return (; z, profile, composite_after, ages, composite = C, Δuw_profile, integral = I, noise_floor = maximum(abs, before))
 end
 
+#####
+##### Ensemble over seeds (used by ensemble_profile.jl and compare_cases.jl)
+#####
+
+parse_seeds(s) = parse.(Int, split(s, ','))
+
+"""
+    ensemble(case, root, level, seeds; numerics="weno", Δt=0.02)
+
+Per-seed FOV profiles (after − before) of the null-corrected ΔU and of Δ⟨u'w'⟩, plus the
+wake-age (3–4σ₀) surface residual, for one level.
+"""
+function ensemble(case, root, level, seeds; numerics="weno", Δt=0.02)
+    null = run_directory(root, case, level, "packet_null"; seed=0, Δt, numerics)
+    quiescent = run_directory(root, case, level, "quiescent_control"; seed=0, Δt, numerics)
+    isdir(quiescent) || (quiescent = nothing)
+    profiles, Δuw_profiles, wakes, transports, composites = [], [], Float64[], Float64[], []
+    z, k = nothing, nothing
+    for seed in seeds
+        pk_dir = run_directory(root, case, level, "packet_turbulence"; seed, Δt, numerics)
+        ct_dir = run_directory(root, case, level, "turbulence_control"; seed, Δt, numerics)
+        ΔU, pk, ct = paired_residual(pk_dir, ct_dir, null, quiescent)
+        t, x, Δz = times(pk), xnodes_faces(pk), Δz_centers(pk)
+        z, k = znodes_centers(pk), k₀(pk)
+        τ, i, p = τ₀(pk), fov_index(pk), run_packet(pk)
+        before = window_mean(ΔU, t, 0, τ)[i, :]
+        after  = window_mean(ΔU, t, 7τ, 8τ)[i, :]
+        push!(profiles, after .- before)
+        push!(transports, sum((after .- before) .* Δz))
+        m_pk, m_ct = central_moments(pk), central_moments(ct)
+        Δuw = m_pk.uw .- m_ct.uw
+        push!(Δuw_profiles, window_mean(Δuw, t, 7τ, 8τ)[i, :] .- window_mean(Δuw, t, 0, τ)[i, :])
+        xc_end = packet_center(t[end], p)   # outside @. so the NamedTuple p is not broadcast
+        age = @. mod(xc_end - x, pk.meta["Lx"])
+        wake = findall(a -> 3p.σ₀ <= a <= 4p.σ₀, age)
+        push!(wakes, mean(ΔU[wake, end, end]) - before[end])
+        ages, C, _ = wake_age_composite(ΔU, x, t, p; age_edges=default_age_edges(τ))
+        push!(composites, composite_profile(ages, C, τ, 2.125, 3.875))
+    end
+    P = hcat(profiles...)
+    S = hcat(Δuw_profiles...)
+    W = hcat(composites...)
+    n = length(seeds)
+    return (; level, seeds, z, k, profiles = P, Δuw = S, composites = W,
+              mean = vec(mean(P; dims=2)), stderr = vec(std(P; dims=2)) ./ sqrt(n),
+              composite_mean = vec(mean(W; dims=2)), composite_stderr = vec(std(W; dims=2)) ./ sqrt(n),
+              Δuw_mean = vec(mean(S; dims=2)), Δuw_stderr = vec(std(S; dims=2)) ./ sqrt(n),
+              wakes, transports)
+end
+
+
 if abspath(PROGRAM_FILE) == @__FILE__
     args = parse_key_value_args(ARGS)
     haskey(args, "quiescent") && quiescent_report(args["quiescent"])

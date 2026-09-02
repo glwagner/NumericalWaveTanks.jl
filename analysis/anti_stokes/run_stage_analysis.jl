@@ -3,7 +3,7 @@
 ##### seed, the ensemble figure, and (for the first seed) the paired figure, Hovmöller,
 ##### turbulence statistics, momentum budget, and the animation if slices were written.
 #####
-##### Usage: julia --project=. analysis/anti_stokes/run_stage_analysis.jl level=M0 seeds=1,2,3,4
+##### Usage: julia --project=. analysis/anti_stokes/run_stage_analysis.jl case=1.D level=M0 seeds=1,2,3,4
 #####            [numerics=weno] [dt=0.02] [level2=M1 seeds2=1,2,3,4] [animation=true] [root=<dir>]
 #####
 
@@ -17,7 +17,8 @@ numerics = getarg(stage_args, "numerics", "weno")
 Δt = getarg(stage_args, "dt", 0.02)
 root = getarg(stage_args, "root", default_data_root())
 make_animation = getarg(stage_args, "animation", true)
-case = anti_stokes_case("1.D")
+case_name = getarg(stage_args, "case", "1.D")
+case = anti_stokes_case(case_name)
 
 dir(member; seed=0, lvl=level, num=numerics, dt=Δt) = run_directory(root, case, lvl, member; seed, Δt=dt, numerics=num)
 
@@ -62,7 +63,7 @@ seed₁ = first(seeds)
 pk₁, ct₁ = dir("packet_turbulence"; seed=seed₁), dir("turbulence_control"; seed=seed₁)
 qkv = isnothing(quiescent) ? () : ("quiescent=$quiescent",)
 
-ens = ["level=$level", "seeds=" * join(seeds, ','), "numerics=$numerics", "dt=$Δt", "root=$root"]
+ens = ["case=$case_name", "level=$level", "seeds=" * join(seeds, ','), "numerics=$numerics", "dt=$Δt", "root=$root"]
 haskey(stage_args, "level2") && append!(ens, ["level2=$(stage_args["level2"])", "seeds2=$(get(stage_args, "seeds2", join(seeds, ',')))"])
 run_script("ensemble_profile.jl", ens...)
 run_script("compare_packet_control.jl", "packet=$pk₁", "control=$ct₁", "null=$null", qkv...)

@@ -17,6 +17,28 @@ include(joinpath(@__DIR__, "..", "experiments", "anti_stokes", "generate_turbule
     @test anti_stokes_case("1.D").name == "1.D"
     @test anti_stokes_case("1D", Float32).k isa Float32
     @test_throws ErrorException anti_stokes_case("9.Z")
+
+    # Other wave-group cases (Ellingsen et al. 2026, Tables 2 and 3)
+    for name in WAVE_GROUP_CASES
+        c = anti_stokes_case(name, Float64)
+        @test c.name == name
+        @test c.h == 0.40
+        @test c.c ≈ sqrt(9.81 / c.k)
+        @test c.σ₀ ≈ c.cᵍ * c.τ₀
+        @test c.Uˢ₀ ≈ c.steepness^2 * c.c
+        # tabulated surface Stokes drift (Table 3, cm/s) within rounding
+        @test 0 < c.Uˢ₀ < 0.06
+        # The packet centre starts 4σ₀ upstream of the observation plane; for the 1.C cases
+        # (σ₀ = 1.52 m) that is 9 cm past the periodic boundary, which the periodic image
+        # sum handles. At t_stop the wrapped leading tail is still ≥ 3.9σ₀ from the plane.
+        p = packet_parameters(c, 12.0, 6.0)
+        @test p.x₀ > -0.1 * c.σ₀
+        @test 6.0 + 12.0 - packet_center(packet_stop_time(p), p) > 3.8 * c.σ₀
+    end
+    @test anti_stokes_case("1.A", Float64).Uˢ₀ ≈ 0.041 atol=0.002
+    @test anti_stokes_case("1.C.1", Float64).Uˢ₀ ≈ 0.023 atol=0.002
+    @test anti_stokes_case("1.C.2", Float64).Uˢ₀ ≈ 0.051 atol=0.002
+    @test anti_stokes_case("1.C.1", Float64).u_rms == anti_stokes_case("1.C.2", Float64).u_rms
 end
 
 @testset "Packet trajectory and observation frame" begin

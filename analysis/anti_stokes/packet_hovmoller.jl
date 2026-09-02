@@ -88,6 +88,6 @@ hm_f = heatmap!(ax_f, t, k .* z, 1e3 .* permutedims(UE[i_fov, :, :]); colormap=:
 vlines!(ax_f, [τ, 3τ, 4τ, 5τ, 7τ]; color=(:black, 0.5), linestyle=:dot)
 Colorbar(fig[3, 3], hm_f)
 
-output = get(args, "output", joinpath(figure_directory(), "packet_hovmoller_$(member)_$(run.meta["level"]).png"))
+output = get(args, "output", joinpath(figure_directory(), "packet_hovmoller_$(case_dirname(run_case(run)))_$(member)_$(run.meta["level"]).png"))
 save(output, fig)
 @info "Saved $output"

@@ -16,6 +16,7 @@ args = parse_key_value_args(ARGS)
 root = getarg(args, "root", default_data_root())
 arch = architecture(getarg(args, "arch", "gpu"))
 level = getarg(args, "level", "S0")
+case_name = getarg(args, "case", "1.D")
 seed = getarg(args, "seed", 1)
 amplitude = parse_amplitude(getarg(args, "amplitude", "1.6"))
 skip = split(getarg(args, "skip", ""), ',')  # comma-separated list of step numbers to skip
@@ -33,16 +34,16 @@ function step!(name, number, f)
     @info @sprintf("===== finished %s in %s =====", name, prettytime(timings[name]))
 end
 
-step!("quiescent_control", 1, () -> run_member(; member="quiescent_control", level, arch, root))
-step!("packet_null", 2, () -> run_member(; member="packet_null", level, arch, root))
-step!("packet_null_dt0.010", 3, () -> run_member(; member="packet_null", level, arch, root, Δt=0.01))
-step!("packet_null_S0x", 4, () -> run_member(; member="packet_null", level=level * "x", arch, root))
+step!("quiescent_control", 1, () -> run_member(; case_name, member="quiescent_control", level, arch, root))
+step!("packet_null", 2, () -> run_member(; case_name, member="packet_null", level, arch, root))
+step!("packet_null_dt0.010", 3, () -> run_member(; case_name, member="packet_null", level, arch, root, Δt=0.01))
+step!("packet_null_S0x", 4, () -> run_member(; case_name, member="packet_null", level=level * "x", arch, root))
 
 step!("initial_condition", 5,
-      () -> generate_initial_condition(; level, seed, arch, root, amplitude, overwrite=true))
+      () -> generate_initial_condition(; case_name, level, seed, arch, root, amplitude, overwrite=true))
 
-step!("turbulence_control", 6, () -> run_member(; member="turbulence_control", level, seed, arch, root))
-step!("packet_turbulence", 7, () -> run_member(; member="packet_turbulence", level, seed, arch, root))
+step!("turbulence_control", 6, () -> run_member(; case_name, member="turbulence_control", level, seed, arch, root))
+step!("packet_turbulence", 7, () -> run_member(; case_name, member="packet_turbulence", level, seed, arch, root))
 
 @info "S0 wall-clock summary:"
 for (name, t) in sort(collect(timings); by=last)
@@ -55,7 +56,7 @@ end
 
 include(joinpath(@__DIR__, "..", "..", "analysis", "anti_stokes", "quick_checks.jl"))
 
-case = anti_stokes_case("1.D")
+case = anti_stokes_case(case_name)
 dir(member; kw...) = run_directory(root, case, level, member; seed, Δt=0.02, numerics="weno", kw...)
 
 report(f, args...) = try
