@@ -1,5 +1,8 @@
 # Moving-wave-packet anti-Stokes campaign
 
+For the full record of how the data were generated, what the goals are, and how to reproduce
+or extend the campaign (written for agents), see [`CAMPAIGN.md`](CAMPAIGN.md).
+
 Numerical reproduction of the wave-group experiments of Ellingsen, Rømcke, Smeltzer, Teixeira,
 van den Bremer, Moen and Hearst, *Turbulence-induced anti-Stokes flow: experiments and theory*,
 J. Fluid Mech. 1029, A6 (2026), starting with Experiment 1, case 1.D.
