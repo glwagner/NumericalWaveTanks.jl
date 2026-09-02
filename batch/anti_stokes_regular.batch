@@ -1,0 +1,47 @@
+#!/bin/bash
+#SBATCH --job-name=as-regular
+#SBATCH --output=logs/anti_stokes_regular-%A_%a.log
+#SBATCH --account=bhcr-dtai-gh
+#SBATCH --partition=ghx4
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=120G
+#SBATCH --gres=gpu:1
+#SBATCH --time=02:30:00
+#SBATCH --array=0,2,11-14
+
+# Regular-wave cases (Experiments 2 and 3), one GPU per array task:
+#    0  waves_null            2  quiescent_control       11–14  seed 1–4: turbulence_control + waves_turbulence
+#   90  calibration: generate the family checkpoint (seed 1, overwrite) and run the control only
+# Environment: CASE (e.g. 2.A.1.3), LEVEL (R1), AMPLITUDE (1.6 or a,b,c), L_FACTOR (1.15), DT (0.02), NUMERICS (weno)
+#   CASE=2.A.1.3 LEVEL=R1 AMPLITUDE=1.5,1.3,1.4 sbatch --array=90 batch/anti_stokes_regular.batch
+#   CASE=2.A.1.3 LEVEL=R1 AMPLITUDE=1.5,1.3,1.4 sbatch batch/anti_stokes_regular.batch
+source batch/env.sh
+
+CASE=${CASE:-2.A.1.3}
+LEVEL=${LEVEL:-R1}
+DT=${DT:-0.02}
+NUMERICS=${NUMERICS:-weno}
+RUN="julia --project=. experiments/anti_stokes/regular_waves.jl case=$CASE level=$LEVEL numerics=$NUMERICS dt=$DT"
+GEN="julia --project=. experiments/anti_stokes/generate_turbulence.jl case=$CASE level=$LEVEL Lx=${LX:-3.2} Ly=${LY:-3.2} amplitude=${AMPLITUDE:-1.6} L_factor=${L_FACTOR:-1.15}"
+ID=$SLURM_ARRAY_TASK_ID
+
+generate_ic () {
+    mkdir -p logs/locks
+    flock logs/locks/ic_regular_${CASE}_${LEVEL}_seed$1.lock $GEN seed=$1 overwrite=${OVERWRITE:-false}
+}
+
+case $ID in
+    0)  $RUN member=waves_null ;;
+    2)  $RUN member=quiescent_control ;;
+    1[1-9])
+        SEED=$((ID - 10))
+        generate_ic $SEED
+        $RUN member=turbulence_control seed=$SEED
+        $RUN member=waves_turbulence seed=$SEED ;;
+    90) OVERWRITE=true generate_ic 1
+        $RUN member=turbulence_control seed=1
+        julia --project=. analysis/anti_stokes/regular_common.jl report=$(julia --project=. -e 'include("experiments/anti_stokes/common.jl"); c = anti_stokes_case(ARGS[1]); print(run_directory(default_data_root(), c, ARGS[2], "turbulence_control"; seed=1, Δt=parse(Float64, ARGS[3]), numerics=ARGS[4], Lx=3.2, Ly=3.2))' $CASE $LEVEL $DT $NUMERICS) ;;
+    *)  echo "No task defined for array index $ID"; exit 1 ;;
+esac

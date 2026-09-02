@@ -35,6 +35,11 @@ const RESOLUTION_LEVELS = Dict(
     "M1"  => (Nx = 1024, Ny = 96,  Nz = 96),   # first resolution comparison
     "M2"  => (Nx = 1536, Ny = 128, Nz = 128),  # quantitative profiles and budgets
     "M3"  => (Nx = 2048, Ny = 192, Nz = 160),  # selected converged cases
+    # Regular-wave boxes (horizontally homogeneous, default 3.2 m × 3.2 m)
+    "RT"  => (Nx = 32,   Ny = 32,  Nz = 16),   # CPU plumbing test
+    "R0"  => (Nx = 128,  Ny = 128, Nz = 64),   # Δ = 25 mm
+    "R1"  => (Nx = 256,  Ny = 256, Nz = 96),   # Δ = 12.5 mm
+    "R2"  => (Nx = 384,  Ny = 384, Nz = 128),  # Δ = 8.3 mm
 )
 
 function level_size(level)
@@ -47,10 +52,12 @@ end
 ##### Experiment members
 #####
 
-const MEMBERS = ("quiescent_control", "packet_null", "turbulence_control", "packet_turbulence")
+const MEMBERS = ("quiescent_control", "packet_null", "turbulence_control", "packet_turbulence",
+                 "waves_null", "waves_turbulence")
 
 has_packet(member) = member in ("packet_null", "packet_turbulence")
-has_turbulence(member) = member in ("turbulence_control", "packet_turbulence")
+has_waves(member) = member in ("waves_null", "waves_turbulence")
+has_turbulence(member) = member in ("turbulence_control", "packet_turbulence", "waves_turbulence")
 
 function validate_member(member)
     member in MEMBERS || error("Unknown member \"$member\". Known members: $(join(MEMBERS, ", "))")
@@ -209,13 +216,15 @@ function default_data_root()
 end
 
 case_dirname(case) = "case_" * replace(case.name, "." => "")
+# Turbulence checkpoints are shared by every wave case of a regular-wave family
+ic_case_dirname(case) = "case_" * replace(String(get(case, :family, case.name)), "." => "")
 level_dir(root, case, level) = joinpath(root, case_dirname(case), level)
 
 domain_tag(Lx, Ly) = (Lx == 12 && Ly == 0.8) ? "" : @sprintf("Lx%g_Ly%g", Lx, Ly)
 
 function initial_condition_path(root, case, level, seed; Lx=12, Ly=0.8, x_topology="periodic")
     parts = filter(!isempty, [@sprintf("seed_%04d", seed), domain_tag(Lx, Ly), topology_tag(x_topology)])
-    return joinpath(level_dir(root, case, level), "initial_conditions", join(parts, "_") * ".jld2")
+    return joinpath(root, ic_case_dirname(case), level, "initial_conditions", join(parts, "_") * ".jld2")
 end
 
 function run_directory(root, case, level, member; seed, Δt, numerics, Lx=12, Ly=0.8, x_topology="periodic", extra="")

@@ -64,6 +64,29 @@ end
     end
 end
 
+@testset "Regular-wave cases (Experiments 2 and 3)" begin
+    # Surface Stokes drift and closed-channel return flow against Table 3 (cm/s and mm/s)
+    table3 = Dict("2.A.1.1" => (1.0, 1.1), "2.A.1.2" => (2.5, 2.5), "2.A.1.3" => (4.1, 4.2),
+                  "2.A.2.1" => (2.0, 1.0), "2.A.2.2" => (3.3, 1.7), "2.A.2.3" => (4.0, 2.1),
+                  "2.B.1.1" => (0.62, 0.6), "2.B.1.2" => (1.8, 1.9), "2.B.1.3" => (3.7, 3.8),
+                  "2.B.2.1" => (1.8, 0.9), "2.B.2.2" => (2.6, 1.4), "2.B.2.3" => (4.0, 2.1),
+                  "3.A.1" => (1.1, 0.8), "3.A.2" => (2.8, 2.2), "3.B.1" => (1.1, 0.8), "3.B.2" => (2.8, 2.2))
+    for name in REGULAR_WAVE_CASES
+        c = anti_stokes_case(name, Float64)
+        @test is_regular(c)
+        @test c.family in keys(REGULAR_WAVE_FAMILIES)
+        us, urf = table3[name]
+        @test 1e2c.Uˢ₀ ≈ us rtol=0.08
+        @test -1e3c.u_rf ≈ urf rtol=0.15
+        @test c.t_FOV ≈ 8.5 / c.U₀
+        @test ic_case_dirname(c) == "case_" * replace(c.family, "." => "")
+    end
+    @test anti_stokes_case("2A13").name == "2.A.1.3"
+    @test anti_stokes_case("3.A.1", Float64).t_FOV ≈ 44.7 atol=0.1
+    @test !is_regular(case_1D())
+    @test ic_case_dirname(case_1D()) == "case_1D"
+end
+
 @testset "Bounded tank: single Gaussian, packet enters and leaves" begin
     case = case_1D(Float64)
     p = packet_parameters(case, 12.0, 6.0; periodic=false)
