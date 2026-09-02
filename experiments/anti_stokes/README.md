@@ -63,6 +63,25 @@ julia --project=. analysis/anti_stokes/run_stage_analysis.jl level=M0 seeds=1,2,
 Output goes to `<root>/case_1D/<level>/<member>/<tag>/` with `root` defaulting to
 `/work/hdd/bhcr/glwagner/anti_stokes` on DeltaAI (or `data/anti_stokes` elsewhere).
 
+## Cases and calibrated turbulence amplitudes (M2)
+
+Measured values from Tables 2 and 3 of the paper; the amplitude multipliers scale the (u, v, w)
+rms of the generated field so that the no-wave control matches the case at t_peak = 4τ₀, and
+`L_factor` scales the integral scale handed to the generator.
+
+| case | k₀ (m⁻¹) | τ₀ (s) | (u, v, w)_rms (mm/s) | L (m) | ϵ | amplitude | L_factor | control at t_peak |
+|---|---|---|---|---|---|---|---|---|
+| 1.A | 9.5 | 2.4 | 7.1, 6.8, 5.8 | 0.051 | 0.20 | 1.21, 1.11, 1.07 | 1.3 | rms ratios (0.99, 1.00, 1.05), L₁₁ = 0.055 m |
+| 1.B | 9.2 | 2.6 | 11, 10, 7.3 | 0.26 | 0.20 | 1.12, 0.80, 1.15 | 1.15 | (1.04, 0.96, 0.97), L₁₁ = 0.23 m |
+| 1.C.1 | 8.9 | 2.9 | 16, 12, 9.2 | 0.32 | 0.15 | 1.18, 0.73, 1.20 | 1.4 | (0.99, 1.02, 1.00), L₁₁ = 0.23 m |
+| 1.C.2 | 9.0 | 2.9 | same as 1.C.1 | 0.32 | 0.22 | 1.18, 0.73, 1.20 | 1.4 | identical checkpoints to 1.C.1 |
+| 1.D | 9.3 | 2.8 | 17, 17, 13 | 0.20 | 0.22 | 1.24, 0.80, 1.20 | 1.15 | (1.01, 1.03, 0.94), L₁₁ = 0.20 m |
+
+The streamwise integral scale saturates near 0.23 m in the 0.8 m × 0.4 m cross-section whatever
+the generator target, because divergence-free modes that are long in x must carry their energy in
+v and w; cases 1.B and 1.C therefore run with L₁₁ 12–30 % below the measured value while matching
+the rms components. Cases 1.C.1 and 1.C.2 share the same checkpoints (same seeds and amplitudes).
+
 ## Notes
 
 * All members of a pair share the grid, fixed timestep, numerics and iteration-based output
