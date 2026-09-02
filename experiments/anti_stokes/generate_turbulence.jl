@@ -161,6 +161,7 @@ function generate_initial_condition(; case_name = "1.D",
                                       FT = Float32,
                                       Lx = 12.0,
                                       Ly = 0.8,
+                                      x_topology = "periodic",
                                       amplitude = 1.6,
                                       projection_iterations = 3,
                                       L_factor = 1.15,
@@ -174,7 +175,7 @@ function generate_initial_condition(; case_name = "1.D",
                                       progress_interval = 20)
 
     case = anti_stokes_case(case_name, FT)
-    path = initial_condition_path(root, case, level, seed; Lx, Ly)
+    path = initial_condition_path(root, case, level, seed; Lx, Ly, x_topology)
     amplitude = parse_amplitude(amplitude)
     rms_target = (u = Float64(case.u_rms), v = Float64(case.v_rms), w = Float64(case.w_rms))
     rms_scaled = (u = amplitude[1] * rms_target.u, v = amplitude[2] * rms_target.v, w = amplitude[3] * rms_target.w)
@@ -187,7 +188,7 @@ function generate_initial_condition(; case_name = "1.D",
     (; Nx, Ny, Nz) = level_size(level)
     Lz = Float64(case.h)
     num = numerics_settings(numerics, FT)
-    grid = build_grid(arch, FT; Nx, Ny, Nz, Lx, Ly, Lz, halo=num.halo)
+    grid = build_grid(arch, FT; Nx, Ny, Nz, Lx, Ly, Lz, halo=num.halo, x_topology)
 
     #####
     ##### Spectral field on the auxiliary uniform box
@@ -231,6 +232,14 @@ function generate_initial_condition(; case_name = "1.D",
     wᵢ[:, :, 1] .= 0
     wᵢ[:, :, end] .= 0
 
+    # With end walls the u field has Nx + 1 faces and must vanish on both walls
+    if !is_periodic_x(x_topology)
+        uᵢ = cat(zeros(eltype(uᵢ), 1, Ny, Nz), uᵢ[2:end, :, :], zeros(eltype(uᵢ), 1, Ny, Nz); dims=1)
+        xf = Array(xnodes(grid, Face()))
+        xtaper = @. tanh(xf / taper_depth) * tanh((Lx - xf) / taper_depth)
+        uᵢ .*= reshape(xtaper, :, 1, 1)
+    end
+
     rms_spectral = (u = rms(uᵢ), v = rms(vᵢ), w = rms(wᵢ))
 
     #####
@@ -273,7 +282,7 @@ function generate_initial_condition(; case_name = "1.D",
     w_out = Array(interior(wf))
     any(isnan, u_out) && error("NaN in preconditioned initial condition")
 
-    metadata = (; case = case_name, level, seed, Nx, Ny, Nz, Lx, Ly, Lz, FT = string(FT),
+    metadata = (; case = case_name, level, seed, Nx, Ny, Nz, Lx, Ly, Lz, x_topology, FT = string(FT),
                   amplitude, projection_iterations, L_factor, k_e, k_cut, cutoff_cells, taper_depth,
                   L_target, L_generated, precondition_time, Δt, numerics,
                   rms_target, rms_scaled, rms_spectral, rms_projected, rms_enforced, rms_final, wall_time,
@@ -307,6 +316,7 @@ if abspath(PROGRAM_FILE) == @__FILE__
                                  FT = float_type(getarg(args, "FT", "Float32")),
                                  Lx = getarg(args, "Lx", 12.0),
                                  Ly = getarg(args, "Ly", 0.8),
+                                 x_topology = getarg(args, "x_topology", "periodic"),
                                  amplitude = parse_amplitude(getarg(args, "amplitude", "1.6")),
                                  projection_iterations = getarg(args, "projection_iterations", 3),
                                  L_factor = getarg(args, "L_factor", 1.15),

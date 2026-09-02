@@ -16,4 +16,4 @@
 source batch/env.sh
 julia --project=. experiments/anti_stokes/generate_turbulence.jl \
     case=${CASE:-1.D} level=${LEVEL:-M0} seed=${SLURM_ARRAY_TASK_ID} \
-    amplitude=${AMPLITUDE:-1.6} L_factor=${L_FACTOR:-1.15} overwrite=${OVERWRITE:-false}
+    amplitude=${AMPLITUDE:-1.6} L_factor=${L_FACTOR:-1.15} x_topology=${X_TOPOLOGY:-periodic} overwrite=${OVERWRITE:-false}

@@ -17,6 +17,7 @@ root = getarg(args, "root", default_data_root())
 arch = architecture(getarg(args, "arch", "gpu"))
 level = getarg(args, "level", "S0")
 case_name = getarg(args, "case", "1.D")
+x_topology = getarg(args, "x_topology", "periodic")
 seed = getarg(args, "seed", 1)
 amplitude = parse_amplitude(getarg(args, "amplitude", "1.6"))
 L_factor = getarg(args, "L_factor", 1.15)
@@ -35,16 +36,16 @@ function step!(name, number, f)
     @info @sprintf("===== finished %s in %s =====", name, prettytime(timings[name]))
 end
 
-step!("quiescent_control", 1, () -> run_member(; case_name, member="quiescent_control", level, arch, root))
-step!("packet_null", 2, () -> run_member(; case_name, member="packet_null", level, arch, root))
-step!("packet_null_dt0.010", 3, () -> run_member(; case_name, member="packet_null", level, arch, root, Δt=0.01))
-step!("packet_null_S0x", 4, () -> run_member(; case_name, member="packet_null", level=level * "x", arch, root))
+step!("quiescent_control", 1, () -> run_member(; case_name, x_topology, member="quiescent_control", level, arch, root))
+step!("packet_null", 2, () -> run_member(; case_name, x_topology, member="packet_null", level, arch, root))
+step!("packet_null_dt0.010", 3, () -> run_member(; case_name, x_topology, member="packet_null", level, arch, root, Δt=0.01))
+step!("packet_null_S0x", 4, () -> run_member(; case_name, x_topology, member="packet_null", level=level * "x", arch, root))
 
 step!("initial_condition", 5,
-      () -> generate_initial_condition(; case_name, level, seed, arch, root, amplitude, L_factor, overwrite=true))
+      () -> generate_initial_condition(; case_name, x_topology, level, seed, arch, root, amplitude, L_factor, overwrite=true))
 
-step!("turbulence_control", 6, () -> run_member(; case_name, member="turbulence_control", level, seed, arch, root))
-step!("packet_turbulence", 7, () -> run_member(; case_name, member="packet_turbulence", level, seed, arch, root))
+step!("turbulence_control", 6, () -> run_member(; case_name, x_topology, member="turbulence_control", level, seed, arch, root))
+step!("packet_turbulence", 7, () -> run_member(; case_name, x_topology, member="packet_turbulence", level, seed, arch, root))
 
 @info "S0 wall-clock summary:"
 for (name, t) in sort(collect(timings); by=last)
@@ -58,7 +59,7 @@ end
 include(joinpath(@__DIR__, "..", "..", "analysis", "anti_stokes", "quick_checks.jl"))
 
 case = anti_stokes_case(case_name)
-dir(member; kw...) = run_directory(root, case, level, member; seed, Δt=0.02, numerics="weno", kw...)
+dir(member; kw...) = run_directory(root, case, level, member; seed, Δt=0.02, numerics="weno", x_topology, kw...)
 
 report(f, args...) = try
     f(args...)
@@ -68,9 +69,9 @@ end
 
 report(quiescent_report, dir("quiescent_control"))
 report(packet_null_report, dir("packet_null"))
-report(packet_null_report, run_directory(root, case, level, "packet_null"; seed, Δt=0.01, numerics="weno"))
-report(packet_null_report, run_directory(root, case, level * "x", "packet_null"; seed, Δt=0.02, numerics="weno"))
+report(packet_null_report, run_directory(root, case, level, "packet_null"; seed, Δt=0.01, numerics="weno", x_topology))
+report(packet_null_report, run_directory(root, case, level * "x", "packet_null"; seed, Δt=0.02, numerics="weno", x_topology))
 report(null_convergence_report, dir("packet_null"),
-       run_directory(root, case, level, "packet_null"; seed, Δt=0.01, numerics="weno"))
+       run_directory(root, case, level, "packet_null"; seed, Δt=0.01, numerics="weno", x_topology))
 report(turbulence_report, dir("turbulence_control"))
 report(pair_report, dir("packet_turbulence"), dir("turbulence_control"), dir("packet_null"), dir("quiescent_control"))

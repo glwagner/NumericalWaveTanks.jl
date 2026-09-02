@@ -61,11 +61,11 @@ lines!(ax_c, stats["t"], 1e3 .* stats["v_rms"]; label="v", color=:seagreen, line
 lines!(ax_c, stats["t"], 1e3 .* stats["w_rms"]; label="w", color=:firebrick, linewidth=2)
 hlines!(ax_c, 1e3 .* [Float64(c.u_rms)]; color=:royalblue, linestyle=:dash)
 hlines!(ax_c, 1e3 .* [Float64(c.w_rms)]; color=:firebrick, linestyle=:dash)
-vlines!(ax_c, [τ, tp, 7τ]; color=(:gray, 0.6))
+vlines!(ax_c, [tp - 3τ, tp, tp + 3τ]; color=(:gray, 0.6))
 axislegend(ax_c; position=:rt)
 
 if isfile(joinpath(control_dir, "snapshots.jld2"))
-    u3, ts = load_snapshot(control_dir, "u", 4τ)
+    u3, ts = load_snapshot(control_dir, "u", tp)
     Nx = size(u3, 1)
     Δx = ct.meta["Lx"] / Nx
     L = integral_scale_profile(u3, Δx)

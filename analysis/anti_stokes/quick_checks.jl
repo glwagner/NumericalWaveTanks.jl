@@ -45,18 +45,19 @@ function packet_null_report(dir)
 
     # 2. Eulerian residual at the FOV
     UE = eulerian_U(run)
-    before = window_mean(UE, t, 0, min(τ, t[end]))
+    w = windows(run)
+    before = window_mean(UE, t, w.before[1], min(w.before[2], t[end]))
     residual_before = maximum(abs, before[i, :])
     @printf("  |⟨u^E⟩| at FOV, before window (max over z): %.3f mm/s\n", 1e3 * residual_before)
-    complete = t[end] >= 7τ - 1e-6
+    complete = t[end] >= w.after[1] - 1e-6
     residual_after = NaN
     if complete
-        after = window_mean(UE, t, 7τ, 8τ)
+        after = window_mean(UE, t, w.after...)
         residual_after = maximum(abs, after[i, :])
         @printf("  |⟨u^E⟩| at FOV, after window  (max over z): %.3f mm/s   [target < 0.1 mm/s]\n", 1e3 * residual_after)
         @printf("  surface ⟨u^E⟩ at FOV, after − before: %.3f mm/s\n", 1e3 * (after[i, end] - before[i, end]))
     else
-        @printf("  run ends at t = %.2f s < 7τ₀: no after window\n", t[end])
+        @printf("  run ends at t = %.2f s before the after window: skipped\n", t[end])
     end
 
     # Far-field residual at the peak (packet centred on the FOV, x = 0 is 6 m away)
@@ -103,7 +104,7 @@ function null_convergence_report(dir₁, dir₂)
     τ, i = τ₀(r₁), fov_index(r₁)
     n_peak = nearest_index(t, t_peak(r₁))
     peak_change = maximum(abs, U₁[:, :, n_peak] .- U₂[:, :, n_peak]) / maximum(abs, U₁[:, :, n_peak])
-    a₁, a₂ = window_mean(U₁, t, 7τ, 8τ)[i, :], window_mean(U₂, t, 7τ, 8τ)[i, :]
+    a₁, a₂ = window_mean(U₁, t, after_window(r₁)...)[i, :], window_mean(U₂, t, after_window(r₁)...)[i, :]
     @printf("  Eulerian response at t_peak: max relative change %.2e\n", peak_change)
     @printf("  post-packet FOV residual: %.4f mm/s vs %.4f mm/s (change %.4f mm/s)\n",
             1e3 * maximum(abs, a₁), 1e3 * maximum(abs, a₂), 1e3 * maximum(abs, a₁ .- a₂))
@@ -154,7 +155,7 @@ function turbulence_report(dir)
 
     L = NaN
     if isfile(joinpath(dir, "snapshots.jld2"))
-        u3, ts = load_snapshot(dir, "u", 4τ₀(run))
+        u3, ts = load_snapshot(dir, "u", tp)
         Δx = run.meta["Lx"] / run.meta["Nx"]
         Lprof = integral_scale_profile(u3, Δx)
         L = Lprof[k_mid]
@@ -178,8 +179,9 @@ function pair_report(packet_dir, control_dir, null_dir=nothing, quiescent_dir=no
     hr("Paired residual at the FOV: $packet_dir")
     isnothing(null_dir) && println("  (no packet-null correction)")
 
-    before = window_mean(ΔU, t, 0, τ)[i, :]
-    after  = window_mean(ΔU, t, 7τ, 8τ)[i, :]
+    w = windows(pk)
+    before = window_mean(ΔU, t, w.before...)[i, :]
+    after  = window_mean(ΔU, t, w.after...)[i, :]
     profile = after .- before
     kmin, kmax = argmin(profile), argmax(profile)
     @printf("  surface ΔU = %.3f mm/s; min %.3f mm/s at k₀z = %.2f; max %.3f mm/s at k₀z = %.2f\n",
@@ -193,10 +195,10 @@ function pair_report(packet_dir, control_dir, null_dir=nothing, quiescent_dir=no
     # excluding the wake (x > x_c − 2σ₀ is the packet/wake region at the end)
     p = run_packet(pk)
     x = xnodes_faces(pk)
-    after_xz = window_mean(ΔU, t, 7τ, 8τ)
-    wake = [xi < packet_center(7τ, p) - 2p.σ₀ && xi > p.x_FOV - 2p.σ₀ for xi in x]  # wake region
+    after_xz = window_mean(ΔU, t, w.after...)
+    wake = [xi < packet_center(w.after[1], p) - 2p.σ₀ && xi > p.x_FOV - 2p.σ₀ for xi in x]  # wake region
     @printf("  wake-averaged surface ΔU (%.1f m < x < %.1f m): %.3f mm/s, x-std %.3f mm/s\n",
-            p.x_FOV - 2p.σ₀, packet_center(7τ, p) - 2p.σ₀,
+            p.x_FOV - 2p.σ₀, packet_center(w.after[1], p) - 2p.σ₀,
             1e3 * mean(after_xz[wake, end]), 1e3 * std(after_xz[wake, end]))
 
     # Wake-age composite: the low-noise estimate
@@ -212,9 +214,9 @@ function pair_report(packet_dir, control_dir, null_dir=nothing, quiescent_dir=no
 
     m_pk, m_ct = central_moments(pk), central_moments(ct)
     Δuw = m_pk.uw .- m_ct.uw
-    Δuw_profile = window_mean(Δuw, t, 7τ, 8τ)[i, :] .- window_mean(Δuw, t, 0, τ)[i, :]
-    Δuw_passage = window_mean(Δuw, t, 3τ, 5τ)[i, :]
-    @printf("  Δ⟨u'w'⟩ during passage (3τ₀–5τ₀): max |Δu'w'| = %.3e m²/s²; after − before: %.3e m²/s²\n",
+    Δuw_profile = window_mean(Δuw, t, w.after...)[i, :] .- window_mean(Δuw, t, w.before...)[i, :]
+    Δuw_passage = window_mean(Δuw, t, w.passage...)[i, :]
+    @printf("  Δ⟨u'w'⟩ during passage (t_peak ± τ₀): max |Δu'w'| = %.3e m²/s²; after − before: %.3e m²/s²\n",
             maximum(abs, Δuw_passage), maximum(abs, Δuw_profile))
 
     # Quasi-equilibrium ratio R = −∂z ΔU / ∂z uˢ (peak Stokes shear) vs anisotropy A = u'²/w'²
@@ -222,8 +224,8 @@ function pair_report(packet_dir, control_dir, null_dir=nothing, quiescent_dir=no
     ∂zΔU = diff(profile) ./ diff(z)
     ∂zuˢ = [2p.k * p.Uˢ₀ * exp(2p.k * zk) for zk in zf[2:end-1]]
     R = -∂zΔU ./ ∂zuˢ
-    uu_ct = window_mean(m_ct.uu, t, 7τ, 8τ)[i, :]
-    ww_ct = window_mean(m_ct.ww, t, 7τ, 8τ)[i, :]
+    uu_ct = window_mean(m_ct.uu, t, w.after...)[i, :]
+    ww_ct = window_mean(m_ct.ww, t, w.after...)[i, :]
     A = uu_ct[2:end] ./ max.(ww_ct[2:end-1], 1e-12)
     println("  top levels:  k₀z     ΔU [mm/s]   Δu'w' [mm²/s²]    R=−∂zΔU/∂zuˢ   A=u'²/w'²")
     for kk in reverse(eachindex(z))[1:min(10, end)]
@@ -261,13 +263,14 @@ function ensemble(case, root, level, seeds; numerics="weno", Δt=0.02)
         t, x, Δz = times(pk), xnodes_faces(pk), Δz_centers(pk)
         z, k = znodes_centers(pk), k₀(pk)
         τ, i, p = τ₀(pk), fov_index(pk), run_packet(pk)
-        before = window_mean(ΔU, t, 0, τ)[i, :]
-        after  = window_mean(ΔU, t, 7τ, 8τ)[i, :]
+        w = windows(pk)
+        before = window_mean(ΔU, t, w.before...)[i, :]
+        after  = window_mean(ΔU, t, w.after...)[i, :]
         push!(profiles, after .- before)
         push!(transports, sum((after .- before) .* Δz))
         m_pk, m_ct = central_moments(pk), central_moments(ct)
         Δuw = m_pk.uw .- m_ct.uw
-        push!(Δuw_profiles, window_mean(Δuw, t, 7τ, 8τ)[i, :] .- window_mean(Δuw, t, 0, τ)[i, :])
+        push!(Δuw_profiles, window_mean(Δuw, t, w.after...)[i, :] .- window_mean(Δuw, t, w.before...)[i, :])
         xc_end = packet_center(t[end], p)   # outside @. so the NamedTuple p is not broadcast
         age = @. mod(xc_end - x, pk.meta["Lx"])
         wake = findall(a -> 3p.σ₀ <= a <= 4p.σ₀, age)

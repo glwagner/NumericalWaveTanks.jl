@@ -39,7 +39,12 @@ run_packet(run)    = run.meta["packet"]
 run_case(run)      = run.meta["case"]
 times(run)         = collect(Float64, run.fts[first(keys(run.fts))].times)
 run_grid(run)      = run.fts[first(keys(run.fts))].grid
-xnodes_faces(run)  = collect(Float64, Array(xnodes(run_grid(run), Face())))
+# With end walls x-face fields carry Nx + 1 points; the last (wall) face is dropped so that
+# face arrays line up with the Nx cell centres as in the periodic layout.
+function xnodes_faces(run)
+    xf = collect(Float64, Array(xnodes(run_grid(run), Face())))
+    return length(xf) == run.meta["Nx"] + 1 ? xf[1:end-1] : xf
+end
 xnodes_centers(run) = collect(Float64, Array(xnodes(run_grid(run), Center())))
 znodes_centers(run) = collect(Float64, Array(znodes(run_grid(run), Center())))
 znodes_faces(run)  = collect(Float64, Array(znodes(run_grid(run), Face())))
@@ -48,13 +53,21 @@ fov_index(run)     = run.meta["i_FOV"]
 τ₀(run)            = Float64(run_case(run).τ₀)
 t_peak(run)        = Float64(run.meta["t_peak"])
 k₀(run)            = Float64(run_case(run).k)
+windows(run)       = analysis_windows(t_peak(run), τ₀(run))
+before_window(run) = windows(run).before
+after_window(run)  = windows(run).after
+passage_window(run) = windows(run).passage
+is_bounded_x(run)  = get(run.meta, "x_topology", "periodic") == "bounded"
 
 """
     xzt(run, name)
 
 The y-averaged field `name` as a `(Nx, Nz, Nt)` array (Nz + 1 for z-face fields).
 """
-xzt(run, name) = Array{Float64}(Array(interior(run.fts[name]))[:, 1, :, :])
+function xzt(run, name)
+    A = Array{Float64}(Array(interior(run.fts[name]))[:, 1, :, :])
+    return size(A, 1) == run.meta["Nx"] + 1 ? A[1:end-1, :, :] : A
+end
 
 """
     eulerian_U(run)
@@ -240,11 +253,12 @@ function wake_age_composite(ΔU, x, t, p; age_edges)
         end
     end
     C ./= max.(N', 1)
+    C[:, N .== 0] .= NaN          # bins with no samples
     ages = 0.5 .* (age_edges[1:end-1] .+ age_edges[2:end])
     return ages, C, N
 end
 
-default_age_edges(τ) = collect(range(-4τ, 8τ; step=τ / 4))
+default_age_edges(τ) = collect(range(-4τ, 16τ; step=τ / 4))
 
 """
     composite_profile(ages, C, τ, a₀, a₁)
@@ -253,7 +267,8 @@ Mean of the composite over age bins with centres in `[a₀, a₁]` (multiples of
 """
 function composite_profile(ages, C, τ, a₀, a₁)
     idx = findall(a -> a₀ * τ - 1e-9 <= a <= a₁ * τ + 1e-9, ages)
-    isempty(idx) && error("No age bins in [$a₀, $a₁] τ₀")
+    idx = filter(i -> !any(isnan, C[:, i]), idx)
+    isempty(idx) && error("No populated age bins in [$a₀, $a₁] τ₀")
     return vec(mean(C[:, idx]; dims=2))
 end
 

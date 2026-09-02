@@ -22,11 +22,12 @@ using Oceananigans
 @inline gaussian′(d, σ)  = -2d / σ^2 * gaussian(d, σ)
 @inline gaussian′′(d, σ) = (4d^2 / σ^4 - 2 / σ^2) * gaussian(d, σ)
 
-# Three nearest periodic images. For Lx / σ₀ ≈ 8.35 the omitted images
-# are far below Float32 precision anywhere in the domain.
-@inline G(ξ, p)   = gaussian(ξ - p.Lx, p.σ₀)   + gaussian(ξ, p.σ₀)   + gaussian(ξ + p.Lx, p.σ₀)
-@inline G′(ξ, p)  = gaussian′(ξ - p.Lx, p.σ₀)  + gaussian′(ξ, p.σ₀)  + gaussian′(ξ + p.Lx, p.σ₀)
-@inline G′′(ξ, p) = gaussian′′(ξ - p.Lx, p.σ₀) + gaussian′′(ξ, p.σ₀) + gaussian′′(ξ + p.Lx, p.σ₀)
+# Three nearest periodic images (p.periodic = 1) or a single Gaussian in a tank with end
+# walls (p.periodic = 0). For Lx / σ₀ ≈ 8.35 the omitted images are far below Float32
+# precision anywhere in the domain.
+@inline G(ξ, p)   = gaussian(ξ, p.σ₀)   + p.periodic * (gaussian(ξ - p.Lx, p.σ₀)   + gaussian(ξ + p.Lx, p.σ₀))
+@inline G′(ξ, p)  = gaussian′(ξ, p.σ₀)  + p.periodic * (gaussian′(ξ - p.Lx, p.σ₀)  + gaussian′(ξ + p.Lx, p.σ₀))
+@inline G′′(ξ, p) = gaussian′′(ξ, p.σ₀) + p.periodic * (gaussian′′(ξ - p.Lx, p.σ₀) + gaussian′′(ξ + p.Lx, p.σ₀))
 
 @inline packet_center(t, p) = p.x₀ + p.cᵍ * t
 @inline packet_coordinate(x, t, p) = x - packet_center(t, p)
@@ -78,16 +79,26 @@ end
 end
 
 """
-    packet_parameters(case, Lx, x_FOV; σ_upstream=4)
+    packet_parameters(case, Lx, x_FOV; σ_upstream=4, periodic=true)
 
-Packet parameters for a case: the packet center starts `σ_upstream` widths upstream
-of the observation plane `x_FOV` in a periodic tank of length `Lx`.
+Packet parameters for a case. In a periodic tank the packet centre starts `σ_upstream`
+widths upstream of the observation plane `x_FOV` and the run ends when it is the same
+distance downstream. In a tank with end walls (`periodic=false`) the centre starts
+`σ_upstream` widths outside the tank at x = −σ_upstream σ₀ and the run ends when it is
+`σ_upstream` widths past the far wall, so the packet propagates into and out of the domain
+with uᴸ = 0 at the walls.
 """
-function packet_parameters(case, Lx, x_FOV; σ_upstream=4)
+function packet_parameters(case, Lx, x_FOV; σ_upstream=4, periodic=true)
     FT = typeof(case.k)
-    x₀ = FT(x_FOV - σ_upstream * case.σ₀)
+    if periodic
+        x₀ = FT(x_FOV - σ_upstream * case.σ₀)
+        x_end = FT(x_FOV + σ_upstream * case.σ₀)
+    else
+        x₀ = FT(-σ_upstream * case.σ₀)
+        x_end = FT(Lx + σ_upstream * case.σ₀)
+    end
     return (; k = case.k, h = case.h, cᵍ = case.cᵍ, Uˢ₀ = case.Uˢ₀, σ₀ = case.σ₀,
-              x₀, Lx = FT(Lx), x_FOV = FT(x_FOV))
+              x₀, x_end, Lx = FT(Lx), x_FOV = FT(x_FOV), periodic = FT(periodic))
 end
 
 """
@@ -102,10 +113,26 @@ function moving_stokes_packet(case, Lx, x_FOV; kw...)
     return stokes_drift, parameters
 end
 
-# Time at which the packet peak crosses x_FOV, and the time at which it has
-# moved the same distance downstream.
+# Time at which the packet peak crosses x_FOV, and the time at which its centre reaches x_end.
 packet_peak_time(p) = (p.x_FOV - p.x₀) / p.cᵍ
-packet_stop_time(p) = 2 * packet_peak_time(p)
+packet_stop_time(p) = (p.x_end - p.x₀) / p.cᵍ
+
+"""
+    analysis_windows(t_peak, τ₀)
+
+Before window `[0, t_peak − 3τ₀]`, passage window `[t_peak − τ₀, t_peak + τ₀]` and after
+window `[t_peak + 3τ₀, t_peak + 4τ₀]`; the Stokes envelope at the plane is ≤ e⁻⁹ of its peak
+throughout the before and after windows.
+"""
+analysis_windows(t_peak, τ₀) = (before = (0.0, t_peak - 3τ₀), passage = (t_peak - τ₀, t_peak + τ₀), after = (t_peak + 3τ₀, t_peak + 4τ₀))
+
+"""
+    snapshot_times(t_peak, τ₀, stop_time; offsets=(-3, -1, 0, 1, 3, 4))
+
+Times of the sparse 3D snapshots: `t_peak + n τ₀` for the offsets that fall in `(0, stop_time]`.
+"""
+snapshot_times(t_peak, τ₀, stop_time; offsets=(-3, -1, 0, 1, 3, 4)) =
+    [t_peak + n * τ₀ for n in offsets if 0 < t_peak + n * τ₀ <= stop_time + 1e-8]
 
 """
     stokes_drift_fields(grid, p, t=0)

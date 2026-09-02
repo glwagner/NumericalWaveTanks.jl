@@ -74,16 +74,32 @@ function stretched_z_faces(Nz, Lz; refinement=1.5, stretching=8)
     return k -> Lz * (ζ₀(k) * Σ(k) - 1)
 end
 
-function build_grid(arch, FT; Nx, Ny, Nz, Lx=12, Ly=0.8, Lz=0.4, halo=3)
+function build_grid(arch, FT; Nx, Ny, Nz, Lx=12, Ly=0.8, Lz=0.4, halo=3, x_topology="periodic")
     z = stretched_z_faces(Nz, Lz)
+    TX = x_topology_type(x_topology)
     return RectilinearGrid(arch, FT;
                            size = (Nx, Ny, Nz),
                            halo = (halo, halo, halo),
                            x = (0, Lx),
                            y = (0, Ly),
                            z,
-                           topology = (Periodic, Periodic, Bounded))
+                           topology = (TX, Periodic, Bounded))
 end
+
+"""
+    x_topology_type(name)
+
+`Periodic` for `"periodic"` (default tank) or `Bounded` for `"bounded"` (impenetrable end
+walls, uᴸ = 0, through which the packet propagates into and out of the tank).
+"""
+function x_topology_type(name)
+    name == "periodic" && return Periodic
+    name == "bounded" && return Bounded
+    error("Unknown x_topology \"$name\" (use periodic or bounded)")
+end
+
+is_periodic_x(name) = x_topology_type(name) === Periodic
+topology_tag(x_topology) = x_topology == "periodic" ? "" : "boundedx"
 
 """
     numerics_settings(name, FT=Float32)
@@ -197,17 +213,19 @@ level_dir(root, case, level) = joinpath(root, case_dirname(case), level)
 
 domain_tag(Lx, Ly) = (Lx == 12 && Ly == 0.8) ? "" : @sprintf("Lx%g_Ly%g", Lx, Ly)
 
-function initial_condition_path(root, case, level, seed; Lx=12, Ly=0.8)
-    parts = filter(!isempty, [@sprintf("seed_%04d", seed), domain_tag(Lx, Ly)])
+function initial_condition_path(root, case, level, seed; Lx=12, Ly=0.8, x_topology="periodic")
+    parts = filter(!isempty, [@sprintf("seed_%04d", seed), domain_tag(Lx, Ly), topology_tag(x_topology)])
     return joinpath(level_dir(root, case, level), "initial_conditions", join(parts, "_") * ".jld2")
 end
 
-function run_directory(root, case, level, member; seed, Δt, numerics, Lx=12, Ly=0.8, extra="")
+function run_directory(root, case, level, member; seed, Δt, numerics, Lx=12, Ly=0.8, x_topology="periodic", extra="")
     parts = [has_turbulence(member) ? @sprintf("seed_%04d", seed) : "quiescent"]
     numerics == "weno" || push!(parts, numerics)
     push!(parts, @sprintf("dt%.3f", Δt))
     tag = domain_tag(Lx, Ly)
     isempty(tag) || push!(parts, tag)
+    ttag = topology_tag(x_topology)
+    isempty(ttag) || push!(parts, ttag)
     isempty(extra) || push!(parts, extra)
     return joinpath(level_dir(root, case, level), member, join(parts, "_"))
 end

@@ -24,9 +24,10 @@ function run_member(; case_name = "1.D",
                       Ly = 0.8,
                       x_FOV = Lx / 2,
                       σ_upstream = 4,
+                      x_topology = "periodic",
                       stop_time = nothing,
                       output_interval = 0.1,
-                      snapshot_widths = (1, 3, 4, 5, 7, 8),
+                      snapshot_offsets = (-3, -1, 0, 1, 3, 4),
                       remove_mean_transport = true,
                       animation_slices = false,
                       root = default_data_root(),
@@ -39,7 +40,7 @@ function run_member(; case_name = "1.D",
     (; Nx, Ny, Nz) = level_size(level)
     num = numerics_settings(numerics, FT)
 
-    dir = run_directory(root, case, level, member; seed, Δt, numerics, Lx, Ly, extra=tag_extra)
+    dir = run_directory(root, case, level, member; seed, Δt, numerics, Lx, Ly, x_topology, extra=tag_extra)
     mkpath(dir)
     @info "Member $member for case $case_name at level $level → $dir"
 
@@ -47,10 +48,10 @@ function run_member(; case_name = "1.D",
     ##### Grid, packet, model
     #####
 
-    grid = build_grid(arch, FT; Nx, Ny, Nz, Lx, Ly, Lz=case.h, halo=num.halo)
+    grid = build_grid(arch, FT; Nx, Ny, Nz, Lx, Ly, Lz=case.h, halo=num.halo, x_topology)
     @info "Grid: $(summary(grid))"
 
-    packet = packet_parameters(case, Lx, x_FOV; σ_upstream)
+    packet = packet_parameters(case, Lx, x_FOV; σ_upstream, periodic=is_periodic_x(x_topology))
     stokes_drift = has_packet(member) ? StokesDrift(; ∂z_uˢ, ∂t_uˢ, ∂x_wˢ, ∂t_wˢ, parameters=packet) : nothing
 
     model = build_model(grid; stokes_drift, advection=num.advection, closure=num.closure)
@@ -78,12 +79,12 @@ function run_member(; case_name = "1.D",
     ic_metadata = nothing
 
     if has_turbulence(member)
-        ic_path = initial_condition_path(root, case, level, seed; Lx, Ly)
+        ic_path = initial_condition_path(root, case, level, seed; Lx, Ly, x_topology)
         isfile(ic_path) || error("Initial condition $ic_path not found. Generate it with\n" *
                                  "  julia --project=. experiments/anti_stokes/generate_turbulence.jl " *
                                  "case=$case_name level=$level seed=$seed")
         uₜ, vₜ, wₜ, ic_metadata = load_initial_condition(ic_path)
-        size(uₜ) == (Nx, Ny, Nz) || error("Initial condition size $(size(uₜ)) does not match grid $((Nx, Ny, Nz))")
+        size(uₜ) == size(interior(u₀)) || error("Initial condition size $(size(uₜ)) does not match the u field $(size(interior(u₀)))")
         ic_checksum = file_sha256(ic_path)
         interior(u₀) .+= on_architecture(arch, FT.(uₜ))
         interior(v₀) .+= on_architecture(arch, FT.(vₜ))
@@ -185,8 +186,8 @@ function run_member(; case_name = "1.D",
                    jld2_kw = JLD2_KW)
 
     # Sparse three-dimensional snapshots at multiples of τ₀ (section 10.3)
-    snapshot_times = [n * τ₀ for n in snapshot_widths if n * τ₀ <= stop_time + 1e-8]
-    snapshot_iterations = [round(Int, t / Δt) for t in snapshot_times]
+    snapshot_times_ = snapshot_times(t_peak, τ₀, stop_time; offsets=snapshot_offsets)
+    snapshot_iterations = [round(Int, t / Δt) for t in snapshot_times_]
 
     simulation.output_writers[:snapshots] =
         JLD2Writer(model, (; u, v, w); dir,
@@ -228,8 +229,8 @@ function run_member(; case_name = "1.D",
     jldsave(joinpath(dir, "metadata.jld2"), false, IOStream;
             case, member, seed, level, Nx, Ny, Nz, Lx, Ly, Lz = Float64(case.h), FT = string(FT),
             packet, has_packet = has_packet(member), has_turbulence = has_turbulence(member),
-            x_FOV, i_FOV, σ_upstream, t_peak, stop_time, τ₀, Δt, output_interval, n_out, remove_mean_transport, animation_slices,
-            snapshot_times, snapshot_iterations, numerics,
+            x_FOV, i_FOV, σ_upstream, x_topology, t_peak, stop_time, τ₀, Δt, output_interval, n_out, remove_mean_transport, animation_slices,
+            snapshot_times = snapshot_times_, snapshot_iterations, numerics,
             advection = summary(model.advection), closure = summary(model.closure),
             oceananigans = oceananigans_version(), commit = git_commit(), dirty = git_dirty(),
             initial_condition = ic_path, initial_condition_sha256 = ic_checksum, ic_metadata,

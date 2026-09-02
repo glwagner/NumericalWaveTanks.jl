@@ -34,8 +34,9 @@ Lx, Nz = pk.meta["Lx"], length(z)
 pk.meta["initial_condition_sha256"] == ct.meta["initial_condition_sha256"] ||
     @warn "Packet and control members do not share an initial-condition checksum"
 
-before = window_mean(ΔU, t, 0, τ)[i, :]
-after  = window_mean(ΔU, t, 7τ, 8τ)[i, :]
+w = windows(pk)
+before = window_mean(ΔU, t, w.before...)[i, :]
+after  = window_mean(ΔU, t, w.after...)[i, :]
 profile = after .- before
 
 # Wake-age estimate at the final time: columns passed 3–4 widths ago
@@ -46,8 +47,8 @@ wake_profile = isempty(wake) ? fill(NaN, Nz) : dropdims(mean(ΔU[wake, :, end]; 
 
 m_pk, m_ct = central_moments(pk), central_moments(ct)
 Δuw = m_pk.uw .- m_ct.uw
-Δuw_before = window_mean(Δuw, t, 0, τ)[i, :]
-Δuw_after  = window_mean(Δuw, t, 7τ, 8τ)[i, :]
+Δuw_before = window_mean(Δuw, t, w.before...)[i, :]
+Δuw_after  = window_mean(Δuw, t, w.after...)[i, :]
 
 transport_t = [sum(ΔU[i, :, n] .* Δz) for n in eachindex(t)]
 
@@ -68,8 +69,8 @@ composite_after = composite_profile(ages, Cw, τ, 2.125, 3.875)
 ∂zΔU = diff(composite_after) ./ diff(z)
 ∂zuˢ = [2p.k * p.Uˢ₀ * exp(2p.k * zk) for zk in zf[2:end-1]]
 R = -∂zΔU ./ ∂zuˢ
-uu_ct = vec(mean(window_mean(m_ct.uu, t, 7τ, 8τ); dims=1))
-ww_ct = vec(mean(window_mean(m_ct.ww, t, 7τ, 8τ); dims=1))
+uu_ct = vec(mean(window_mean(m_ct.uu, t, w.after...); dims=1))
+ww_ct = vec(mean(window_mean(m_ct.ww, t, w.after...); dims=1))
 A = uu_ct[2:end] ./ max.(ww_ct[2:end-1], 1e-12)
 
 set_theme!(Theme(fontsize=18))
@@ -96,8 +97,8 @@ else
 end
 
 ax3 = Axis(fig[2, 1:2]; xlabel="ΔU (mm/s)", ylabel="k₀ z", title="(3) residual at the observation plane")
-lines!(ax3, 1e3 .* before, k .* z; label="before (0 ≤ t ≤ τ₀)", color=:gray)
-lines!(ax3, 1e3 .* after, k .* z; label="after (7τ₀ ≤ t ≤ 8τ₀)", color=:orange)
+lines!(ax3, 1e3 .* before, k .* z; label="before (t ≤ t_peak − 3τ₀)", color=:gray)
+lines!(ax3, 1e3 .* after, k .* z; label="after (t_peak + 3τ₀ ≤ t ≤ t_peak + 4τ₀)", color=:orange)
 lines!(ax3, 1e3 .* profile, k .* z; label="after − before", color=:black, linewidth=3)
 lines!(ax3, 1e3 .* wake_profile, k .* z; label="wake age 3–4σ₀ at t_stop", color=:purple, linestyle=:dash)
 vlines!(ax3, [0]; color=(:black, 0.3))
@@ -108,7 +109,7 @@ ax4 = Axis(fig[2, 3:4]; xlabel="Δ⟨u'w'⟩ (10⁻⁶ m²/s²)", ylabel="k₀ z
 lines!(ax4, 1e6 .* Δuw_before, k .* z; label="before", color=:gray)
 lines!(ax4, 1e6 .* Δuw_after, k .* z; label="after", color=:orange)
 lines!(ax4, 1e6 .* (Δuw_after .- Δuw_before), k .* z; label="after − before", color=:black, linewidth=3)
-lines!(ax4, 1e6 .* window_mean(Δuw, t, 3τ, 5τ)[i, :], k .* z; label="passage (3τ₀–5τ₀)", color=:firebrick, linestyle=:dot)
+lines!(ax4, 1e6 .* window_mean(Δuw, t, w.passage...)[i, :], k .* z; label="passage (t_peak ± τ₀)", color=:firebrick, linestyle=:dot)
 vlines!(ax4, [0]; color=(:black, 0.3))
 ylims!(ax4, -4, 0)
 axislegend(ax4; position=:rb)
@@ -117,7 +118,7 @@ ax5 = Axis(fig[3, 1:2]; xlabel="t (s)", ylabel="mm/s   |   10⁻³ m²/s", title
 lines!(ax5, t, 1e3 .* ΔU[i, end, :]; label="surface ΔU_turb (mm/s)", linewidth=2)
 lines!(ax5, t, 1e3 .* transport_t; label="∫ΔU dz (10⁻³ m²/s)", linewidth=2)
 lines!(ax5, t, 1e3 .* [uˢ(x[i], 0, 0, tn, p) for tn in t]; color=(:gray, 0.6), linestyle=:dash, label="uˢ envelope (mm/s)")
-vspan!(ax5, [0, 7τ], [τ, 8τ]; color=(:green, 0.1))
+vspan!(ax5, [w.before[1], w.after[1]], [w.before[2], w.after[2]]; color=(:green, 0.1))
 axislegend(ax5; position=:lt)
 
 ax6 = Axis(fig[3, 3:4]; xlabel="ratio", ylabel="k₀ z", title="(6) R = −∂zΔU/∂zuˢ_peak (composite, age 2–4 τ₀) vs A = u'²/w'² (control, x-averaged)")

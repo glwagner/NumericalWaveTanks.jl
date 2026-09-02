@@ -18,7 +18,7 @@
 # Generate the checkpoints first (or let each task do it under a lock):
 #   IC=$(sbatch --parsable batch/anti_stokes_generate_ic.batch)
 #   sbatch --dependency=afterok:$IC batch/anti_stokes_marginal.batch
-# Environment: LEVEL (default M0), CASE (1.D), DT (0.02), NUMERICS (weno), AMPLITUDE (1.6)
+# Environment: LEVEL (default M0), CASE (1.D), DT (0.02), NUMERICS (weno), AMPLITUDE (1.6), L_FACTOR, X_TOPOLOGY (periodic|bounded)
 source batch/env.sh
 
 LEVEL=${LEVEL:-M0}
@@ -26,8 +26,9 @@ CASE=${CASE:-1.D}
 DT=${DT:-0.02}
 HALF_DT=$(python3 -c "print(${DT}/2)")
 NUMERICS=${NUMERICS:-weno}
-RUN="julia --project=. experiments/anti_stokes/run_moving_packet.jl case=$CASE level=$LEVEL numerics=$NUMERICS"
-GEN="julia --project=. experiments/anti_stokes/generate_turbulence.jl case=$CASE level=$LEVEL amplitude=${AMPLITUDE:-1.6} L_factor=${L_FACTOR:-1.15}"
+XT=${X_TOPOLOGY:-periodic}
+RUN="julia --project=. experiments/anti_stokes/run_moving_packet.jl case=$CASE level=$LEVEL numerics=$NUMERICS x_topology=$XT"
+GEN="julia --project=. experiments/anti_stokes/generate_turbulence.jl case=$CASE level=$LEVEL amplitude=${AMPLITUDE:-1.6} L_factor=${L_FACTOR:-1.15} x_topology=$XT"
 ID=$SLURM_ARRAY_TASK_ID
 
 generate_ic () {

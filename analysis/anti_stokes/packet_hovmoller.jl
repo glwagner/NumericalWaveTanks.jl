@@ -55,7 +55,7 @@ Label(fig[0, 1:2], "Case $(run_case(run).name), $member, $(run.meta["level"]), �
 ax_a = Axis(fig[1, 1]; xlabel="t (s)", ylabel="uˢ(x_FOV, 0, t) (mm/s)", title="(a) Packet trajectory at the FOV")
 lines!(ax_a, stats["t"], 1e3 .* stats["uˢ_fov"]; label="sampled", linewidth=3)
 lines!(ax_a, stats["t"], 1e3 .* analytic; label="Uˢ₀ exp[−(t − t_peak)²/τ₀²]", linestyle=:dash, color=:black)
-vlines!(ax_a, [τ, 3τ, 4τ, 5τ, 7τ]; color=(:gray, 0.5))
+vlines!(ax_a, tp .+ [-3τ, -τ, 0, τ, 3τ]; color=(:gray, 0.5))
 axislegend(ax_a; position=:lt)
 
 ax_b = Axis(fig[1, 2]; xlabel="x (m)", ylabel="t (s)", title="(b) surface ⟨u^L⟩_y (mm/s)")
@@ -75,9 +75,11 @@ vlines!(ax_d, [-p.σ₀, 0, p.σ₀]; color=:black, linestyle=:dot)
 Colorbar(fig[2, 3], hm_d)
 
 ax_e = Axis(fig[3, 1]; xlabel="⟨u^E⟩_y(x_FOV, z) (mm/s)", ylabel="k₀ z", title="(e) FOV profiles")
-for (n_width, color) in zip((1, 3, 4, 5, 7, 8), Makie.wong_colors())
-    n = nearest_index(t, n_width * τ)
-    lines!(ax_e, 1e3 .* UE[i_fov, :, n], k .* z; label="t = $(n_width)τ₀", color, linewidth=2)
+for (offset, color) in zip((-3, -1, 0, 1, 3, 4), Makie.wong_colors())
+    tn = tp + offset * τ
+    0 <= tn <= t[end] || continue
+    n = nearest_index(t, tn)
+    lines!(ax_e, 1e3 .* UE[i_fov, :, n], k .* z; label="t_peak $(offset >= 0 ? "+" : "−") $(abs(offset))τ₀", color, linewidth=2)
 end
 vlines!(ax_e, [0]; color=:black)
 axislegend(ax_e; position=:rb)
@@ -85,7 +87,7 @@ axislegend(ax_e; position=:rb)
 ax_f = Axis(fig[3, 2]; xlabel="t (s)", ylabel="k₀ z", title="(f) $label at the FOV (mm/s)")
 hm_f = heatmap!(ax_f, t, k .* z, 1e3 .* permutedims(UE[i_fov, :, :]); colormap=:balance,
                 colorrange=1e3 .* symmetric_range(UE[i_fov, :, :]))
-vlines!(ax_f, [τ, 3τ, 4τ, 5τ, 7τ]; color=(:black, 0.5), linestyle=:dot)
+vlines!(ax_f, tp .+ [-3τ, -τ, 0, τ, 3τ]; color=(:black, 0.5), linestyle=:dot)
 Colorbar(fig[3, 3], hm_f)
 
 output = get(args, "output", joinpath(figure_directory(), "packet_hovmoller_$(case_dirname(run_case(run)))_$(member)_$(run.meta["level"]).png"))

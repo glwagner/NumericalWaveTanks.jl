@@ -64,6 +64,39 @@ end
     end
 end
 
+@testset "Bounded tank: single Gaussian, packet enters and leaves" begin
+    case = case_1D(Float64)
+    p = packet_parameters(case, 12.0, 6.0; periodic=false)
+    @test p.periodic == 0
+    @test p.x₀ ≈ -4case.σ₀
+    @test p.x_end ≈ 12 + 4case.σ₀
+    @test packet_peak_time(p) ≈ (6 + 4case.σ₀) / case.cᵍ
+    @test packet_stop_time(p) ≈ (12 + 8case.σ₀) / case.cᵍ
+    # no images: G is the plain Gaussian and is not periodic
+    for ξ in range(-6, 6, length=13)
+        @test G(ξ, p) ≈ exp(-(ξ / case.σ₀)^2)
+    end
+    @test abs(G(0.0, p) - G(12.0, p)) > 0.9
+    # the envelope at the wall when the centre is outside is tiny at the start
+    @test uˢ(0.0, 0.0, 0.0, 0.0, p) ≤ 1.2e-7 * case.Uˢ₀
+    # windows and snapshots are relative to t_peak
+    w = analysis_windows(packet_peak_time(p), case.τ₀)
+    @test w.before[2] ≈ packet_peak_time(p) - 3case.τ₀
+    @test w.after[1] ≈ packet_peak_time(p) + 3case.τ₀
+    @test snapshot_times(4 * 2.8, 2.8, 22.4) ≈ [2.8, 8.4, 11.2, 14.0, 19.6, 22.4]
+    # periodic parameters are unchanged
+    q = packet_parameters(case, 12.0, 6.0)
+    @test q.periodic == 1
+    @test q.x_end ≈ 6 + 4case.σ₀
+    @test packet_stop_time(q) ≈ 2packet_peak_time(q)
+    # discrete divergence on a bounded grid
+    grid = build_grid(CPU(), Float64; Nx=192, Ny=4, Nz=24, Lx=12, Ly=0.8, Lz=case.h, x_topology="bounded")
+    uf, wf = stokes_drift_fields(grid, p, 12.0)
+    fill_halo_regions!(uf); fill_halo_regions!(wf)
+    div = Field(∂x(uf) + ∂z(wf)); compute!(div)
+    @test maximum(abs, interior(div)) < 0.05 * 2p.k * p.Uˢ₀
+end
+
 @testset "Periodicity of the envelope" begin
     p = packet_parameters(case_1D(Float64), 12.0, 6.0)
     # Within |ξ| ≤ 5 m the omitted fourth image contributes < 1e-10; at |ξ| = Lx/2 the

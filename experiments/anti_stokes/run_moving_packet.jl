@@ -8,6 +8,7 @@
 ##### Optional keys: dt=0.02 numerics=weno|amd|weno_nu|weno9 arch=gpu|cpu FT=Float32|Float64
 #####                Lx=12 Ly=0.8 x_fov=6 stop_time=22.4 output_interval=0.1 root=<dir>
 #####                overwrite=true tag=<extra directory suffix> animation=false (x-z and surface slices)
+#####                x_topology=periodic|bounded (bounded: end walls, packet enters and leaves the tank)
 #####
 
 include("moving_packet_experiment.jl")
@@ -29,6 +30,7 @@ run_member(; case_name = getarg(args, "case", "1.D"),
              Ly = getarg(args, "Ly", 0.8),
              x_FOV = getarg(args, "x_fov", Lx / 2),
              σ_upstream = getarg(args, "sigma_upstream", 4),
+             x_topology = getarg(args, "x_topology", "periodic"),
              stop_time,
              output_interval = getarg(args, "output_interval", 0.1),
              animation_slices = getarg(args, "animation", false),

@@ -70,7 +70,7 @@ for (a₀, a₁) in ((-1, 0), (0, 1), (1, 2))
 end
 
 # Single-point FOV comparison for reference (noisy)
-passage = findall(τn -> 3τ - 1e-6 <= τn <= 5τ + 1e-6, t)
+passage = findall(τn -> passage_window(pk)[1] - 1e-6 <= τn <= passage_window(pk)[2] + 1e-6, t)
 @printf("  FOV single point, passage window rms over depth: ∂tΔU %.2e, −∂zΔu'w' %.2e, −∂xΔu'u' %.2e, residual %.2e m/s²\n",
         sqrt(mean(abs2, ∂tΔU[i, :, passage])), sqrt(mean(abs2, ∂zΔuw[i, :, passage])),
         sqrt(mean(abs2, ∂xΔuu[i, :, passage])), sqrt(mean(abs2, residual[i, :, passage])))
