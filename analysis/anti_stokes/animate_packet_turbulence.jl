@@ -108,7 +108,7 @@ Colorbar(fig[5, 2], hm4)
 rowsize!(fig.layout, 5, Relative(0.28))
 
 output = get(args, "output", joinpath(figure_directory(),
-             "packet_turbulence_animation_$(case_dirname(c))_$(pk.meta["level"])_seed$(pk.meta["seed"]).mp4"))
+             "packet_turbulence_animation_$(case_dirname(c))_$(pk.meta["level"])$(is_bounded_x(pk) ? "_boundedx" : "")_seed$(pk.meta["seed"]).mp4"))
 frames = 1:stride:Nt
 @info "Recording $(length(frames)) frames to $output"
 CairoMakie.Makie.record(fig, output, frames; framerate) do frame

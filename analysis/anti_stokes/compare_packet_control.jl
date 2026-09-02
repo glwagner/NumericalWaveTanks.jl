@@ -145,6 +145,6 @@ ylims!(ax8, -4, 0)
 axislegend(ax8; position=:rb)
 
 output = get(args, "output", joinpath(figure_directory(),
-             "paired_residual_$(case_dirname(c))_$(pk.meta["level"])_seed$(pk.meta["seed"])$(isnothing(null_dir) ? "" : "_nullcorrected").png"))
+             "paired_residual_$(case_dirname(c))_$(pk.meta["level"])$(is_bounded_x(pk) ? "_boundedx" : "")_seed$(pk.meta["seed"])$(isnothing(null_dir) ? "" : "_nullcorrected").png"))
 save(output, fig)
 @info "Saved $output"

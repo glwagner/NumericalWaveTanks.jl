@@ -19,8 +19,9 @@ root = getarg(stage_args, "root", default_data_root())
 make_animation = getarg(stage_args, "animation", true)
 case_name = getarg(stage_args, "case", "1.D")
 case = anti_stokes_case(case_name)
+x_topology = getarg(stage_args, "x_topology", "periodic")
 
-dir(member; seed=0, lvl=level, num=numerics, dt=Δt) = run_directory(root, case, lvl, member; seed, Δt=dt, numerics=num)
+dir(member; seed=0, lvl=level, num=numerics, dt=Δt) = run_directory(root, case, lvl, member; seed, Δt=dt, numerics=num, x_topology)
 
 function safely(f, description)
     try
@@ -63,7 +64,7 @@ seed₁ = first(seeds)
 pk₁, ct₁ = dir("packet_turbulence"; seed=seed₁), dir("turbulence_control"; seed=seed₁)
 qkv = isnothing(quiescent) ? () : ("quiescent=$quiescent",)
 
-ens = ["case=$case_name", "level=$level", "seeds=" * join(seeds, ','), "numerics=$numerics", "dt=$Δt", "root=$root"]
+ens = ["case=$case_name", "level=$level", "seeds=" * join(seeds, ','), "numerics=$numerics", "dt=$Δt", "root=$root", "x_topology=$x_topology"]
 haskey(stage_args, "level2") && append!(ens, ["level2=$(stage_args["level2"])", "seeds2=$(get(stage_args, "seeds2", join(seeds, ',')))"])
 run_script("ensemble_profile.jl", ens...)
 run_script("compare_packet_control.jl", "packet=$pk₁", "control=$ct₁", "null=$null", qkv...)

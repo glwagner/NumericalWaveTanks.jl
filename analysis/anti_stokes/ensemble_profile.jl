@@ -15,6 +15,7 @@ args = parse_key_value_args(ARGS)
 root = getarg(args, "root", default_data_root())
 numerics = getarg(args, "numerics", "weno")
 Δt = getarg(args, "dt", 0.02)
+x_topology = getarg(args, "x_topology", "periodic")
 case = anti_stokes_case(getarg(args, "case", "1.D"))
 
 levels = [(getarg(args, "level", "M0"), parse_seeds(getarg(args, "seeds", "1,2,3,4")))]
@@ -22,7 +23,7 @@ for n in 2:4
     haskey(args, "level$n") && push!(levels, (args["level$n"], parse_seeds(getarg(args, "seeds$n", getarg(args, "seeds", "1,2,3,4")))))
 end
 
-results = [ensemble(case, root, level, seeds; numerics, Δt) for (level, seeds) in levels]
+results = [ensemble(case, root, level, seeds; numerics, Δt, x_topology) for (level, seeds) in levels]
 
 for r in results
     hr("Ensemble $(r.level), seeds $(r.seeds), numerics $numerics, Δt = $Δt")
@@ -79,6 +80,6 @@ for ax in (ax1, ax2, ax3)
     axislegend(ax; position=:rb)
 end
 
-output = get(args, "output", joinpath(figure_directory(), "ensemble_profile_$(case_dirname(case))_" * join(first.(levels), "_") * "_$(numerics).png"))
+output = get(args, "output", joinpath(figure_directory(), "ensemble_profile_$(case_dirname(case))_" * join(first.(levels), "_") * "_$(numerics)$(isempty(topology_tag(x_topology)) ? "" : "_" * topology_tag(x_topology)).png"))
 save(output, fig)
 @info "Saved $output"

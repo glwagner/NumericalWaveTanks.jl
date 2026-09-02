@@ -22,16 +22,17 @@ seeds = parse_seeds(getarg(args, "seeds", "1,2,3,4"))
 numerics = getarg(args, "numerics", "weno")
 Δt = getarg(args, "dt", 0.02)
 root = getarg(args, "root", default_data_root())
+x_topology = getarg(args, "x_topology", "periodic")
 
-null = run_directory(root, case, level, "packet_null"; seed=0, Δt, numerics)
-quiescent = run_directory(root, case, level, "quiescent_control"; seed=0, Δt, numerics)
+null = run_directory(root, case, level, "packet_null"; seed=0, Δt, numerics, x_topology)
+quiescent = run_directory(root, case, level, "quiescent_control"; seed=0, Δt, numerics, x_topology)
 isdir(quiescent) || (quiescent = nothing)
 
 composites, anisotropies = [], []
 ages = z = zf = Δz = p = τ = k = nothing
 for seed in seeds
-    pk_dir = run_directory(root, case, level, "packet_turbulence"; seed, Δt, numerics)
-    ct_dir = run_directory(root, case, level, "turbulence_control"; seed, Δt, numerics)
+    pk_dir = run_directory(root, case, level, "packet_turbulence"; seed, Δt, numerics, x_topology)
+    ct_dir = run_directory(root, case, level, "turbulence_control"; seed, Δt, numerics, x_topology)
     ΔU, pk, ct = paired_residual(pk_dir, ct_dir, null, quiescent)
     global p, τ, k = run_packet(pk), τ₀(pk), k₀(pk)
     global z, zf, Δz = znodes_centers(pk), znodes_faces(pk), Δz_centers(pk)
@@ -114,6 +115,6 @@ xlims!(ax3, -3, 3)
 ylims!(ax3, -0.5, 3)
 axislegend(ax3; position=:rt)
 
-output = get(args, "output", joinpath(figure_directory(), "lagrangian_mean_$(case_dirname(case))_$(level).png"))
+output = get(args, "output", joinpath(figure_directory(), "lagrangian_mean_$(case_dirname(case))_$(level)$(isempty(topology_tag(x_topology)) ? "" : "_" * topology_tag(x_topology)).png"))
 save(output, fig)
 @info "Saved $output"

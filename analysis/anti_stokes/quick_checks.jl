@@ -250,15 +250,15 @@ parse_seeds(s) = parse.(Int, split(s, ','))
 Per-seed FOV profiles (after − before) of the null-corrected ΔU and of Δ⟨u'w'⟩, plus the
 wake-age (3–4σ₀) surface residual, for one level.
 """
-function ensemble(case, root, level, seeds; numerics="weno", Δt=0.02)
-    null = run_directory(root, case, level, "packet_null"; seed=0, Δt, numerics)
-    quiescent = run_directory(root, case, level, "quiescent_control"; seed=0, Δt, numerics)
+function ensemble(case, root, level, seeds; numerics="weno", Δt=0.02, x_topology="periodic")
+    null = run_directory(root, case, level, "packet_null"; seed=0, Δt, numerics, x_topology)
+    quiescent = run_directory(root, case, level, "quiescent_control"; seed=0, Δt, numerics, x_topology)
     isdir(quiescent) || (quiescent = nothing)
     profiles, Δuw_profiles, wakes, transports, composites = [], [], Float64[], Float64[], []
     z, k = nothing, nothing
     for seed in seeds
-        pk_dir = run_directory(root, case, level, "packet_turbulence"; seed, Δt, numerics)
-        ct_dir = run_directory(root, case, level, "turbulence_control"; seed, Δt, numerics)
+        pk_dir = run_directory(root, case, level, "packet_turbulence"; seed, Δt, numerics, x_topology)
+        ct_dir = run_directory(root, case, level, "turbulence_control"; seed, Δt, numerics, x_topology)
         ΔU, pk, ct = paired_residual(pk_dir, ct_dir, null, quiescent)
         t, x, Δz = times(pk), xnodes_faces(pk), Δz_centers(pk)
         z, k = znodes_centers(pk), k₀(pk)

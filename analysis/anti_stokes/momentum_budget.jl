@@ -107,6 +107,6 @@ lines!(ax_s, ages ./ τ, 1e3 .* [sum(Cu[:, a] .* Δz) for a in axes(Cu, 2)] ./ s
 vlines!(ax_s, [0]; color=(:black, 0.5), linestyle=:dot)
 axislegend(ax_s; position=:rt)
 
-output = get(args, "output", joinpath(figure_directory(), "momentum_budget_$(case_dirname(run_case(pk)))_$(pk.meta["level"])_seed$(pk.meta["seed"]).png"))
+output = get(args, "output", joinpath(figure_directory(), "momentum_budget_$(case_dirname(run_case(pk)))_$(pk.meta["level"])$(is_bounded_x(pk) ? "_boundedx" : "")_seed$(pk.meta["seed"]).png"))
 save(output, fig)
 @info "Saved $output"
