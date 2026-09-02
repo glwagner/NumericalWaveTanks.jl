@@ -78,7 +78,7 @@ fig = Figure(size=(1800, 2000))
 Label(fig[0, 1:4], @sprintf("Case %s, %s, seed %d: %s − %s%s", c.name, pk.meta["level"], pk.meta["seed"],
                             pk.meta["member"], ct.meta["member"], isnothing(null_dir) ? "" : ", null-corrected"), fontsize=22)
 
-xc = [mod(packet_center(tn, p), Lx) for tn in t]
+xc = is_bounded_x(pk) ? [packet_center(tn, p) for tn in t] : [mod(packet_center(tn, p), Lx) for tn in t]
 
 ax1 = Axis(fig[1, 1]; xlabel="x (m)", ylabel="t (s)", title="(1) surface ΔU_turb (mm/s)")
 hm1 = heatmap!(ax1, x, t, 1e3 .* ΔU[:, end, :]; colormap=:balance, colorrange=1e3 .* symmetric_range(ΔU[:, end, :]))
