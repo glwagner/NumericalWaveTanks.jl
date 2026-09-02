@@ -222,6 +222,19 @@ Open assumptions to revisit: v_rms = u_rms (planar PIV), L = 0.15 m for Experime
 t_FOV = 8.5 m / U₀ (28.3 s for Experiment 2, 44.7 s for Experiment 3), Lagrangian initialization
 with waves present from t = 0.
 
+**Turbulence protocol for Experiments 2/3 (important).** Freely decaying box turbulence cannot
+reproduce the measured rms after 28–45 s of decay: two calibration rounds showed the rms at
+t_FOV is decay-saturated (doubling the initial amplitude left it unchanged at ~0.6 of the 2.A
+target and ~0.4 of the 3.A target, while L₁₁ grew to 2–3 times the measured value). The flume
+values (u_rms ≈ 25 mm/s at U₀ = 0.30 m/s in 0.80 m; ≈ 12 mm/s at 0.19 m/s in 0.50 m) are
+consistent with u_rms ≈ 2u* of the bottom boundary layer, i.e. turbulence maintained by the
+channel walls rather than decaying grid turbulence. The first-pass protocol therefore matches the
+measured rms and L₁₁ at wave onset (amplitude ≈ 1.1–1.2, L_factor 1.0), integrates for the
+laboratory interaction time, and reports the response as a function of time since onset
+together with the decaying turbulence intensity (`regular_report` prints both at 0.1–1.0 t_FOV).
+The faithful fix is statistically stationary turbulence (forced homogeneous turbulence or a
+wall-driven channel), which is the natural next extension.
+
 ### Plotting recipes
 
 All scripts take `key=value` arguments and write PNGs to `figures/anti_stokes/` with the case,

@@ -132,6 +132,12 @@ function regular_report(r)
     @printf("  shear ratio R = −∂zΔU/∂zuˢ over the Stokes layer: %.2f;  control anisotropy A = u'²/w'²: %.2f (R = 1 homogenized Lagrangian mean, R = A full quasi-equilibrium)\n",
             mean(r.R[topf]), mean(r.A[top]))
     @printf("  Δ⟨u'w'⟩ surface-adjacent: %.3e ± %.3e m²/s²\n", r.Δuw_mean[kk-1], r.Δuw_stderr[kk-1])
+    println("  spin-up of the surface response (turbulence decays from the calibrated state at wave onset):")
+    for f in (0.1, 0.25, 0.5, 0.75, 1.0)
+        n = argmin(abs.(r.t .- f * r.t_FOV))
+        @printf("    t = %5.1f s (%.2f t_FOV): surface ΔU = %7.3f ± %.3f mm/s, ΔU/Uˢ₀ = %.3f\n",
+                r.t[n], f, 1e3r.surface[n], 1e3r.surface_stderr[n], r.surface[n] / Float64(c.Uˢ₀))
+    end
     return nothing
 end
 
@@ -152,8 +158,14 @@ function regular_turbulence_report(dir)
     println("\n", "="^78, "\n", "Regular-wave turbulence control: $dir", "\n", "="^78)
     @printf("  volume rms at t_FOV = %.2f s: (%.4f, %.4f, %.4f) m/s; target (%.4f, %.4f, %.4f); ratio (%.2f, %.2f, %.2f)\n",
             stats["t"][n], measured..., target..., (measured ./ target)...)
-    @printf("  volume rms at t = 0: (%.4f, %.4f, %.4f); at t_end = %.2f s: (%.4f, %.4f, %.4f)\n",
-            stats["u_rms"][1], stats["v_rms"][1], stats["w_rms"][1], stats["t"][end], stats["u_rms"][end], stats["v_rms"][end], stats["w_rms"][end])
+    @printf("  volume rms at t = 0: (%.4f, %.4f, %.4f) ratio (%.2f, %.2f, %.2f); at t_end = %.2f s: (%.4f, %.4f, %.4f)\n",
+            stats["u_rms"][1], stats["v_rms"][1], stats["w_rms"][1], stats["u_rms"][1] / target[1], stats["v_rms"][1] / target[2], stats["w_rms"][1] / target[3],
+            stats["t"][end], stats["u_rms"][end], stats["v_rms"][end], stats["w_rms"][end])
+    for f in (0.25, 0.5, 0.75)
+        m = argmin(abs.(stats["t"] .- f * tf))
+        @printf("  volume rms at %.2f t_FOV = %.1f s: (%.4f, %.4f, %.4f) ratio (%.2f, %.2f, %.2f)\n", f, stats["t"][m],
+                stats["u_rms"][m], stats["v_rms"][m], stats["w_rms"][m], stats["u_rms"][m] / target[1], stats["v_rms"][m] / target[2], stats["w_rms"][m] / target[3])
+    end
     ic = run.meta["ic_metadata"]
     amplitude = isnothing(ic) ? (NaN, NaN, NaN) : parse_amplitude(ic.amplitude)
     suggested = amplitude .* (target ./ measured)
