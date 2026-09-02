@@ -35,7 +35,12 @@ function load_run(dir; fields=("U", "V", "W", "UU", "VV", "WW", "UW"))
     return Run(dir, meta, fts)
 end
 
-run_packet(run)    = run.meta["packet"]
+# Packet parameters, back-filling fields added after the first runs were written
+function run_packet(run)
+    p = run.meta["packet"]
+    haskey(p, :periodic) && return p
+    return merge(p, (; x_end = p.x_FOV + (p.x_FOV - p.x₀), periodic = one(p.Lx)))
+end
 run_case(run)      = run.meta["case"]
 times(run)         = collect(Float64, run.fts[first(keys(run.fts))].times)
 run_grid(run)      = run.fts[first(keys(run.fts))].grid
@@ -272,6 +277,10 @@ function composite_profile(ages, C, τ, a₀, a₁)
     return vec(mean(C[:, idx]; dims=2))
 end
 
-symmetric_range(A; q=0.99) = (lim = quantile(abs.(vec(A)), q); lim == 0 ? (-1e-9, 1e-9) : (-lim, lim))
+function symmetric_range(A; q=0.99)
+    values = filter(isfinite, abs.(vec(A)))
+    lim = isempty(values) ? 0.0 : quantile(values, q)
+    return lim == 0 ? (-1e-9, 1e-9) : (-lim, lim)
+end
 
 figure_directory() = mkpath(normpath(joinpath(@__DIR__, "..", "..", "figures", "anti_stokes")))

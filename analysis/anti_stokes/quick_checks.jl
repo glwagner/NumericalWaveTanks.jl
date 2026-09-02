@@ -62,7 +62,7 @@ function packet_null_report(dir)
 
     # Far-field residual at the peak (packet centred on the FOV, x = 0 is 6 m away)
     n_peak = nearest_index(t, tp)
-    t[n_peak] ≈ tp || @printf("  (run does not reach t_peak; using t = %.2f s for the following)\n", t[n_peak])
+    abs(t[n_peak] - tp) <= 0.51 * (t[2] - t[1]) || @printf("  (run does not reach t_peak; using t = %.2f s for the following)\n", t[n_peak])
     far = UE[1, :, n_peak]
     @printf("  |⟨u^E⟩| at x = 0 (far field) at t_peak (max over z): %.3f mm/s\n", 1e3 * maximum(abs, far))
 

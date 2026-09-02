@@ -84,10 +84,13 @@ lines!(ax1, 1e3 .* Uˢ[:, ia0], kz; color=:gray, linewidth=3, label="uˢ (prescr
 band!(ax1, Point2f.(1e3 .* (ΔU_mean[:, ia0] .- ΔU_err[:, ia0]), kz), Point2f.(1e3 .* (ΔU_mean[:, ia0] .+ ΔU_err[:, ia0]), kz); color=(:firebrick, 0.25))
 lines!(ax1, 1e3 .* ΔU_mean[:, ia0], kz; color=:firebrick, linewidth=3, label="ΔU (Eulerian, null-corrected)")
 lines!(ax1, 1e3 .* Uᴸ[:, ia0], kz; color=:royalblue, linewidth=3, label="uˢ + ΔU (Lagrangian-mean change)")
-Ā = mean(A_mean[findall(zz -> zz > -1 / k, z)])
-lines!(ax1, 1e3 .* (1 - Ā) .* Uˢ[:, ia0], kz; color=:black, linestyle=:dash, label="(1 − A) uˢ: full quasi-equilibrium with A = u'²/w'²")
+# Interior anisotropy (below the surface blocking layer) for the quasi-equilibrium reference
+Ā = mean(A_mean[findall(zz -> -2 / k < zz < -0.5 / k, z)])
+lines!(ax1, 1e3 .* (1 - Ā) .* Uˢ[:, ia0], kz; color=:black, linestyle=:dash,
+       label=@sprintf("(1 − A) uˢ: full quasi-equilibrium, interior A = %.1f", Ā))
 vlines!(ax1, [0]; color=(:black, 0.3))
 ylims!(ax1, -4, 0)
+xlims!(ax1, 1e3 * min(1.2 * (1 - Ā) * p.Uˢ₀, -0.02), 1e3 * 1.1 * p.Uˢ₀)
 axislegend(ax1; position=:rb, labelsize=13)
 
 ax2 = Axis(fig[1, 2]; xlabel="age (x_c − x)/cᵍ (τ₀)", ylabel="mm/s", title="(2) surface values vs age")
@@ -103,7 +106,7 @@ ax3 = Axis(fig[1, 3]; xlabel="age (τ₀)", ylabel="ratio", title="(3) shear rat
 lines!(ax3, ages ./ τ, [mean(R[top, ia]) for ia in eachindex(ages)]; color=:firebrick, linewidth=3, label="R = −∂zΔU / ∂zuˢ")
 lines!(ax3, ages ./ τ, [mean(Rᴸ[top, ia]) for ia in eachindex(ages)]; color=:royalblue, linewidth=3, label="∂zuᴸ / ∂zuˢ = 1 − R")
 hlines!(ax3, [1, Ā]; color=:black, linestyle=:dash)
-text!(ax3, -2.9, Ā + 0.05; text="A = u'²/w'² (full quasi-equilibrium)", fontsize=13)
+text!(ax3, -2.9, Ā + 0.05; text="interior A = u'²/w'² (full quasi-equilibrium)", fontsize=13)
 text!(ax3, -2.9, 1.05; text="1 (homogenized Lagrangian mean)", fontsize=13)
 hlines!(ax3, [0]; color=(:black, 0.3))
 vlines!(ax3, [0]; color=(:black, 0.3), linestyle=:dot)
