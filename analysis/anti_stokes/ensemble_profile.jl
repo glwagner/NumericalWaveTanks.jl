@@ -5,7 +5,7 @@
 ##### change, and the wake-age average, for one or more resolution levels / numerics.
 #####
 ##### Usage: julia --project=. analysis/anti_stokes/ensemble_profile.jl level=M0 seeds=1,2,3,4
-#####            [level2=M1 seeds2=1,2,3,4] [numerics=weno] [dt=0.02] [root=<dir>] [output=<png>]
+#####            [level2=M1 seeds2=1,2,3,4 level3=M2 seeds3=1,...,8] [numerics=weno] [dt=0.02] [root=<dir>] [output=<png>]
 #####
 
 using CairoMakie
@@ -64,7 +64,9 @@ function ensemble(level, seeds; numerics, Δt)
 end
 
 levels = [(getarg(args, "level", "M0"), parse_seeds(getarg(args, "seeds", "1,2,3,4")))]
-haskey(args, "level2") && push!(levels, (args["level2"], parse_seeds(getarg(args, "seeds2", getarg(args, "seeds", "1,2,3,4")))))
+for n in 2:4
+    haskey(args, "level$n") && push!(levels, (args["level$n"], parse_seeds(getarg(args, "seeds$n", getarg(args, "seeds", "1,2,3,4")))))
+end
 
 results = [ensemble(level, seeds; numerics, Δt) for (level, seeds) in levels]
 

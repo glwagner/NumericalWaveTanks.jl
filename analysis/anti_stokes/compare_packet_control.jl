@@ -59,16 +59,18 @@ if !isnothing(null_dir)
     isnothing(quiescent_dir) || (U_null_surface .-= xzt(load_run(quiescent_dir; fields=("U",)), "U")[:, end, :])
 end
 
-# Quasi-equilibrium ratios (after window), using the peak Stokes shear as normalization
-∂zΔU = diff(profile) ./ diff(z)
-∂zuˢ = [2p.k * p.Uˢ₀ * exp(2p.k * zk) for zk in zf[2:end-1]]
-R = -∂zΔU ./ ∂zuˢ
-uu_ct = window_mean(m_ct.uu, t, 7τ, 8τ)[i, :]
-ww_ct = window_mean(m_ct.ww, t, 7τ, 8τ)[i, :]
-A = uu_ct[2:end] ./ max.(ww_ct[2:end-1], 1e-12)
-
 # Wake-age composite (low-noise estimate using the whole wake)
 ages, Cw, Nw = wake_age_composite(ΔU, x, t, p; age_edges=default_age_edges(τ))
+composite_after = composite_profile(ages, Cw, τ, 2.125, 3.875)
+
+# Quasi-equilibrium ratio R = −∂zΔU / ∂zuˢ_peak from the composite profile (age 2–4 τ₀) against
+# the anisotropy A = u'²/w'² of the control, x-averaged over the after window
+∂zΔU = diff(composite_after) ./ diff(z)
+∂zuˢ = [2p.k * p.Uˢ₀ * exp(2p.k * zk) for zk in zf[2:end-1]]
+R = -∂zΔU ./ ∂zuˢ
+uu_ct = vec(mean(window_mean(m_ct.uu, t, 7τ, 8τ); dims=1))
+ww_ct = vec(mean(window_mean(m_ct.ww, t, 7τ, 8τ); dims=1))
+A = uu_ct[2:end] ./ max.(ww_ct[2:end-1], 1e-12)
 
 set_theme!(Theme(fontsize=18))
 fig = Figure(size=(1800, 2000))
@@ -118,8 +120,8 @@ lines!(ax5, t, 1e3 .* [uˢ(x[i], 0, 0, tn, p) for tn in t]; color=(:gray, 0.6), 
 vspan!(ax5, [0, 7τ], [τ, 8τ]; color=(:green, 0.1))
 axislegend(ax5; position=:lt)
 
-ax6 = Axis(fig[3, 3:4]; xlabel="ratio", ylabel="k₀ z", title="(6) R = −∂zΔU / ∂zuˢ_peak vs A = u'²/w'² (after window)")
-lines!(ax6, R, k .* zf[2:end-1]; label="R", color=:black, linewidth=3)
+ax6 = Axis(fig[3, 3:4]; xlabel="ratio", ylabel="k₀ z", title="(6) R = −∂zΔU/∂zuˢ_peak (composite, age 2–4 τ₀) vs A = u'²/w'² (control, x-averaged)")
+lines!(ax6, R, k .* zf[2:end-1]; label="R (composite)", color=:black, linewidth=3)
 lines!(ax6, A, k .* zf[2:end-1]; label="A (control)", color=:red)
 xlims!(ax6, -1, 5)
 ylims!(ax6, -4, 0)
