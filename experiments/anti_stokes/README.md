@@ -90,7 +90,9 @@ flume turbulence is likely wall-maintained). 2.A and 2.B: (1.15, 1.15, 1.10), L_
 
 Stationary alternative (`FORCING=band`): horizontal band-pass forcing of u and v over
 k_h ∈ [0.5, 1.5] × 0.75/L with gains tuned in closed loop during a 16-eddy-turnover spin-up and
-frozen for the members; the rms is then held at the case values for the whole run.
+frozen for the members; the rms is then held at the case values for the whole run (forced R1
+controls: horizontal rms 0.99–1.09× target through t_FOV, w 0.80–1.08× the measured value,
+open-loop gains 0.008–0.043 s⁻¹).
 
 The streamwise integral scale saturates near 0.23 m in the 0.8 m × 0.4 m cross-section whatever
 the generator target, because divergence-free modes that are long in x must carry their energy in

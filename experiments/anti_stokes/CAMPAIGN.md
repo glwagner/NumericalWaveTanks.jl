@@ -151,9 +151,16 @@ metadata with amplitudes, k_e, rms before/after projection and preconditioning).
 7. **Analysis** on compute nodes: `sbatch batch/anti_stokes_analysis.batch case=<c> level=M2
    seeds=1,2,3,4 [x_topology=bounded] [animation=true]`, plus `script=compare_cases.jl ...`,
    `script=lagrangian_mean.jl ...`.
-8. **Experiments 2/3** (in progress when this was written): see §6.
+8. **Experiments 2/3, decaying turbulence**: onset-matched checkpoints (task 90 of
+   `batch/anti_stokes_regular.batch`), production `--array=11-14` for the 16 cases, family
+   analyses with `regular_waves_analysis.jl`.
+9. **Experiments 2/3, stationary turbulence** (2026-09-02): `batch/anti_stokes_forced_test.batch`
+   (unit tests + RT plumbing), then `FORCING=band --array=90` spin-ups per family (16 eddy
+   turnovers; a first 8-eddy round with last-quarter gains drifted 9–23 % and was deleted),
+   production `FORCING=band --array=11-14` with `afterok` on the spin-up, and analyses queued with
+   `afterok` on the production jobs (`extra=forced`).
 
-GPU cost so far: about 10 GPU-hours. A member costs 1.5 min (S0) to 2.4 min (M2), 6 min for the
+GPU cost so far: about 33 GPU-hours. A member costs 1.5 min (S0) to 2.4 min (M2), 6 min for the
 46 s bounded runs; compilation adds ~1.5 min per Julia process.
 
 ## 5. Results to date (for context; the PR description has the full tables)
@@ -172,6 +179,19 @@ GPU cost so far: about 10 GPU-hours. A member costs 1.5 min (S0) to 2.4 min (M2)
   mean is close to homogenized after ~30 s of steady waves over energetic turbulence and still
   rising at t_FOV; full quasi-equilibrium (R = A ≈ 3–6) is not reached. ΔU/Uˢ₀ decreases with
   steepness in every family. The wave-only null reproduces Table 3's return flow u_rf.
+
+* Regular waves with statistically stationary (band-forced) turbulence (R1, four seeds,
+  `_forced` tag): Experiment 2 is unchanged within seed scatter (2.B) or up by ≤ 0.08 (2.A:
+  ΔU/Uˢ₀ 0.73–0.96, R 0.89–1.14) although the turbulence is 1.6–2× stronger at t_FOV, so the
+  Exp. 2 response is capped by the homogenized Lagrangian mean (R ≈ 1). Experiment 3 nearly
+  doubles (3.A.2 0.86, 3.B.2 0.59) and the weak-wave cases overshoot the Stokes drift (3.A.1
+  −1.41 with R 1.63; 3.B.1 −1.03 with R 1.24), with R tracking the interior anisotropy A ≈ 1.5–2
+  through the lower Stokes layer: the quasi-equilibrium regime R = A is selected when
+  u_rms/Uˢ₀ ≳ 1 and the interaction time is long. The response is still growing at t_FOV in every
+  family. Forced controls hold the horizontal rms within 1–9 % of target; w settles at 0.8–1.1 of
+  the measured value; the control anisotropy at the surface is larger than in the decaying runs
+  (9–18 against 3–6) because only horizontal components are forced. Figures
+  `regular_waves_{2A,2B,3A,3B}_R1_weno_forced.png`. Cost of the whole forced round ≈ 10.5 GPU-h.
 
 ## 6. Reproducing and extending
 
