@@ -166,6 +166,12 @@ GPU cost so far: about 10 GPU-hours. A member costs 1.5 min (S0) to 2.4 min (M2)
   depth orders with the integral scale; steepness ratio 1.65 ± 0.05 vs 2.15 for ϵ².
 * Lagrangian mean is not homogenized within one group: 7 % of the Stokes shear is cancelled at
   the packet centre, ~50 % by +0.9 τ₀; the current keeps growing 1–2 τ₀ after the packet.
+* Regular waves (Experiments 2/3, R1, four seeds, onset-matched turbulence): at t_FOV the surface
+  Eulerian change is 0.67–0.92 of Uˢ₀ for 2.A, 0.53–0.77 for 2.B, 0.52–0.75 for 3.A and
+  0.41–0.67 for 3.B, with shear ratios R = 0.5–1.1 through the Stokes layer, i.e. the Lagrangian
+  mean is close to homogenized after ~30 s of steady waves over energetic turbulence and still
+  rising at t_FOV; full quasi-equilibrium (R = A ≈ 3–6) is not reached. ΔU/Uˢ₀ decreases with
+  steepness in every family. The wave-only null reproduces Table 3's return flow u_rf.
 
 ## 6. Reproducing and extending
 

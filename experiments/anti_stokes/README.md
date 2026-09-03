@@ -80,6 +80,12 @@ rms of the generated field so that the no-wave control matches the case at t_pea
 | 1.C.2 | 9.0 | 2.9 | same as 1.C.1 | 0.32 | 0.22 | 1.18, 0.73, 1.20 | 1.4 | identical checkpoints to 1.C.1 |
 | 1.D | 9.3 | 2.8 | 17, 17, 13 | 0.20 | 0.22 | 1.24, 0.80, 1.20 | 1.15 | (1.01, 1.03, 0.94), L₁₁ = 0.20 m |
 
+Regular-wave families (Experiments 2 and 3, R1 box): amplitudes are matched at wave onset because
+freely decaying box turbulence cannot hold the measured rms over the 28–45 s flume fetch (the
+flume turbulence is likely wall-maintained). 2.A and 2.B: (1.15, 1.15, 1.10), L_factor 1.0 → rms
+1.14× target at t = 0, ≈ 1.0× at 7 s, 0.46×/0.63× at t_FOV = 28.3 s. 3.A and 3.B: (1.20, 1.20,
+1.10), L_factor 1.0 → 1.17× at t = 0, 0.65×/0.76× at 11 s, 0.26×/0.32× at t_FOV = 44.7 s.
+
 The streamwise integral scale saturates near 0.23 m in the 0.8 m × 0.4 m cross-section whatever
 the generator target, because divergence-free modes that are long in x must carry their energy in
 v and w; cases 1.B and 1.C therefore run with L₁₁ 12–30 % below the measured value while matching
