@@ -4,7 +4,7 @@ using Oceananigans.BoundaryConditions: fill_halo_regions!
 using Statistics
 using Random
 
-include(joinpath(@__DIR__, "..", "experiments", "anti_stokes", "generate_turbulence.jl"))
+include(joinpath(@__DIR__, "..", "experiments", "anti_stokes", "forced_turbulence.jl"))
 
 @testset "Case 1.D derived quantities" begin
     case = case_1D(Float64)
@@ -85,6 +85,49 @@ end
     @test anti_stokes_case("3.A.1", Float64).t_FOV ≈ 44.7 atol=0.1
     @test !is_regular(case_1D())
     @test ic_case_dirname(case_1D()) == "case_1D"
+end
+
+@testset "Band forcing for stationary turbulence" begin
+    grid = build_grid(CPU(), Float64; Nx=32, Ny=32, Nz=8, Lx=3.2, Ly=3.2, Lz=0.8)
+    mask = band_mask(grid, 2.5, 7.5)
+    @test size(mask) == (32, 32, 1)
+    @test mask[1, 1, 1] == 0
+    @test mask[2, 1, 1] == 0                       # k = 1.96 m⁻¹ is below the band
+    @test mask[3, 1, 1] == 1                       # k = 3.93 m⁻¹ is inside
+    @test mask[32, 1, 1] == 0 && mask[31, 1, 1] == 1  # symmetric in ±k
+    @test 20 < sum(mask) < 200
+    case = anti_stokes_case("2.A.1.3", Float64)
+    k_lo, k_hi = forcing_band(case)
+    @test k_lo ≈ 0.5 * 0.75 / 0.15 && k_hi ≈ 1.5 * 0.75 / 0.15
+    Fu, Fv = XFaceField(grid), YFaceField(grid)
+    model = build_model(grid; forcing=(; u=Fu, v=Fv))
+    bf = BandForcing(model; targets=(0.02, 0.02), k_lo, k_hi, γ_ref=reference_gain(case), gain=3.0, closed_loop=true)
+    bf.Fu, bf.Fv = Fu, Fv
+    Random.seed!(1)
+    set!(model; u=(x, y, z) -> 0.02 * randn(), v=(x, y, z) -> 0.02 * randn())
+    update_forcing!(bf, model)
+    @test all(isfinite, interior(Fu)) && all(isfinite, interior(Fv))
+    @test abs(mean(interior(Fu))) < 1e-3 * maximum(abs, interior(Fu))   # horizontal mean is not forced
+    @test maximum(abs, interior(Fu)) > 0
+    @test all(bf.γ .>= 0)
+    # the controller: energy below target raises the gain, above target lowers it, and the integral advances
+    bf.I .= 0
+    set!(model; u=(x, y, z) -> 0.01 * randn(), v=(x, y, z) -> 0.01 * randn())
+    update_forcing!(bf, model; Δt=1.0)
+    @test all(bf.γ .> bf.γ_ref) && all(bf.I .> 0)
+    bf.I .= 0
+    set!(model; u=(x, y, z) -> 0.04 * randn(), v=(x, y, z) -> 0.04 * randn())
+    update_forcing!(bf, model; Δt=1.0)
+    @test all(bf.γ .== 0) && all(bf.I .<= 0)
+    I_before = copy(bf.I)
+    update_forcing!(bf, model; Δt=1.0)
+    @test bf.I == I_before                      # anti-windup: clamped at zero, the integral is frozen
+    # a time step with the forcing runs
+    simulation = Simulation(model; Δt=0.01, stop_iteration=2, verbose=false)
+    simulation.callbacks[:forcing] = Callback(forcing_callback(bf), IterationInterval(1))
+    run!(simulation)
+    @test length(bf.history) >= 1
+    @test all(isfinite, interior(model.velocities.u))
 end
 
 @testset "Bounded tank: single Gaussian, packet enters and leaves" begin

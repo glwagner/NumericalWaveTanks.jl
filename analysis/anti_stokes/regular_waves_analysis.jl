@@ -22,6 +22,7 @@ numerics = getarg(args, "numerics", "weno")
 Lx = getarg(args, "Lx", 3.2)
 Ly = getarg(args, "Ly", 3.2)
 root = getarg(args, "root", default_data_root())
+extra = getarg(args, "extra", "")
 
 case_names = if haskey(args, "case")
     [args["case"]]
@@ -35,7 +36,7 @@ results = []
 for name in case_names
     case = anti_stokes_case(name)
     try
-        r = regular_ensemble(case, root, level, seeds; numerics, Δt, Lx, Ly)
+        r = regular_ensemble(case, root, level, seeds; numerics, Δt, Lx, Ly, extra)
         regular_report(r)
         push!(results, r)
     catch err
@@ -46,7 +47,7 @@ isempty(results) && error("No cases could be analysed")
 
 set_theme!(Theme(fontsize=18))
 fig = Figure(size=(1800, 1400))
-Label(fig[0, 1:2], "Regular waves, $label at $level: null-corrected Eulerian change at the FOV, mean ± s.e. over $(length(seeds)) seeds", fontsize=22)
+Label(fig[0, 1:2], "Regular waves, $label at $level$(isempty(extra) ? "" : " ($extra turbulence)"): null-corrected Eulerian change at the FOV, mean ± s.e. over $(length(seeds)) seeds", fontsize=22)
 colors = Makie.wong_colors()
 
 ax1 = Axis(fig[1, 1]; xlabel="ΔU (mm/s)", ylabel="k₀ z", title="(1) ΔU(z) at t_FOV; grey dashed: −uˢ(z)")
@@ -71,7 +72,7 @@ for (j, r) in enumerate(results)
 end
 r₁ = results[1]
 kz₁ = r₁.k .* r₁.z
-ū = -mean(exp.(2r₁.k .* r₁.z) .* Δz_centers(load_regular_run(run_directory(root, r₁.case, level, "waves_turbulence"; seed=first(seeds), Δt, numerics, Lx, Ly); fields=("U",)))) / Float64(r₁.case.h)
+ū = -mean(exp.(2r₁.k .* r₁.z) .* Δz_centers(load_regular_run(run_directory(root, r₁.case, level, "waves_turbulence"; seed=first(seeds), Δt, numerics, Lx, Ly, extra); fields=("U",)))) / Float64(r₁.case.h)
 lines!(ax2, -exp.(2r₁.k .* r₁.z) .- ū, kz₁; color=:black, linestyle=:dash, label="−e^{2k₀z} − ⟨e^{2k₀z}⟩")
 for ax in (ax1, ax2)
     vlines!(ax, [0]; color=(:black, 0.3))
@@ -86,6 +87,6 @@ xlims!(ax4, -1, 5)
 ylims!(ax4, -4, 0)
 axislegend(ax4; position=:rb, labelsize=12)
 
-output = get(args, "output", joinpath(figure_directory(), "regular_waves_" * replace(label, "." => "") * "_$(level)_$(numerics).png"))
+output = get(args, "output", joinpath(figure_directory(), "regular_waves_" * replace(label, "." => "") * "_$(level)_$(numerics)$(isempty(extra) ? "" : "_" * extra).png"))
 save(output, fig)
 @info "Saved $output"

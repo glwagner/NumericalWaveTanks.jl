@@ -18,7 +18,7 @@
 #####   ΔU(z, t) = (U_waves+turb − U_turb) − (U_waves+null − U_null).
 #####
 
-include("generate_turbulence.jl")
+include("forced_turbulence.jl")
 
 @inline regular_∂z_uˢ(z, t, p) = 2 * p.k * p.Uˢ₀ * exp(2 * p.k * z)
 @inline regular_uˢ(z, p) = p.Uˢ₀ * exp(2 * p.k * z)
@@ -36,6 +36,7 @@ function run_regular_member(; case_name = "2.A.1.3",
                               stop_time = nothing,
                               output_interval = 0.1,
                               remove_mean_transport = true,
+                              forcing = "none",
                               root = default_data_root(),
                               overwrite = true,
                               progress_interval = 50,
@@ -48,7 +49,10 @@ function run_regular_member(; case_name = "2.A.1.3",
     (; Nx, Ny, Nz) = level_size(level)
     num = numerics_settings(numerics, FT)
 
-    dir = run_directory(root, case, level, member; seed, Δt, numerics, Lx, Ly, extra=tag_extra)
+    forcing in ("none", "band") || error("forcing must be none or band")
+    forced = forcing == "band" && has_turbulence(member)
+    extra = join(filter(!isempty, [forced ? "forced" : "", tag_extra]), "_")
+    dir = run_directory(root, case, level, member; seed, Δt, numerics, Lx, Ly, extra)
     mkpath(dir)
     @info "Regular-wave member $member for case $case_name at level $level → $dir"
 
@@ -57,7 +61,9 @@ function run_regular_member(; case_name = "2.A.1.3",
 
     waves = (; k = case.k, Uˢ₀ = case.Uˢ₀)
     stokes_drift = has_waves(member) ? UniformStokesDrift(; ∂z_uˢ = regular_∂z_uˢ, parameters = waves) : nothing
-    model = build_model(grid; stokes_drift, advection=num.advection, closure=num.closure)
+    Fu, Fv = XFaceField(grid), YFaceField(grid)
+    model = build_model(grid; stokes_drift, advection=num.advection, closure=num.closure,
+                        forcing = forced ? (; u = Fu, v = Fv) : NamedTuple())
 
     t_FOV = Float64(case.t_FOV)
     isnothing(stop_time) && (stop_time = 1.25 * t_FOV)
@@ -73,10 +79,10 @@ function run_regular_member(; case_name = "2.A.1.3",
 
     ic_path, ic_checksum, ic_metadata = "", "", nothing
     if has_turbulence(member)
-        ic_path = initial_condition_path(root, case, level, seed; Lx, Ly)
+        ic_path = initial_condition_path(root, case, level, seed; Lx, Ly, extra = forced ? "forced" : "")
         isfile(ic_path) || error("Initial condition $ic_path not found. Generate it with\n" *
-                                 "  julia --project=. experiments/anti_stokes/generate_turbulence.jl " *
-                                 "case=$case_name level=$level seed=$seed Lx=$Lx Ly=$Ly")
+                                 "  julia --project=. experiments/anti_stokes/" * (forced ? "forced_turbulence.jl" : "generate_turbulence.jl") *
+                                 " case=$case_name level=$level seed=$seed Lx=$Lx Ly=$Ly")
         uₜ, vₜ, wₜ, ic_metadata = load_initial_condition(ic_path)
         size(uₜ) == size(interior(u₀)) || error("Initial condition size $(size(uₜ)) does not match the grid")
         ic_checksum = file_sha256(ic_path)
@@ -104,6 +110,15 @@ function run_regular_member(; case_name = "2.A.1.3",
 
     simulation = Simulation(model; Δt, stop_time, verbose=false)
     simulation.callbacks[:progress] = Callback(make_progress(), IterationInterval(progress_interval))
+
+    bf = nothing
+    if forced
+        bf = stationary_forcing(model, ic_metadata)
+        bf.Fu, bf.Fv = Fu, Fv
+        update_forcing!(bf, model)
+        simulation.callbacks[:forcing] = Callback(forcing_callback(bf), IterationInterval(1))
+        @info @sprintf("Open-loop band forcing: k ∈ [%.2f, %.2f] m⁻¹, γ = (%.3f, %.3f) s⁻¹", ic_metadata.k_lo, ic_metadata.k_hi, bf.γ...)
+    end
 
     u, v, w = model.velocities
     n_out = max(1, round(Int, output_interval / Δt))
@@ -147,6 +162,7 @@ function run_regular_member(; case_name = "2.A.1.3",
     jldsave(joinpath(dir, "metadata.jld2"), false, IOStream;
             case, member, seed, level, Nx, Ny, Nz, Lx, Ly, Lz = Float64(case.h), FT = string(FT),
             waves, has_waves = has_waves(member), has_turbulence = has_turbulence(member), regular = true,
+            forcing, forced, forcing_gains = forced ? Tuple(bf.γ) : nothing,
             t_FOV, stop_time, Δt, output_interval, n_out, remove_mean_transport,
             snapshot_times = snapshot_times_, snapshot_iterations, numerics,
             advection = summary(model.advection), closure = summary(model.closure),
@@ -163,7 +179,8 @@ function run_regular_member(; case_name = "2.A.1.3",
         any(isnan, Array(interior(field))) && error("NaN detected in $name")
     end
     jldsave(joinpath(dir, "run_summary.jld2"); iterations = iteration(simulation), final_time = time(simulation),
-            wall_time, rms_initial = rms₀, rms_final = component_rms(model), completed = string(now()))
+            wall_time, rms_initial = rms₀, rms_final = component_rms(model), completed = string(now()),
+            forcing_history = forced ? bf.history : nothing)
     @info @sprintf("Completed %s: %d iterations to t = %.3f s in %s", member, iteration(simulation), time(simulation), prettytime(wall_time))
     return simulation, dir
 end
@@ -183,6 +200,7 @@ if abspath(PROGRAM_FILE) == @__FILE__
                          Ly = getarg(args, "Ly", 3.2),
                          stop_time,
                          output_interval = getarg(args, "output_interval", 0.1),
+                         forcing = getarg(args, "forcing", "none"),
                          root = getarg(args, "root", default_data_root()),
                          overwrite = getarg(args, "overwrite", true),
                          progress_interval = getarg(args, "progress_interval", 50),

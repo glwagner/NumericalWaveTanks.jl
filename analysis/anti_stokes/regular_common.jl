@@ -85,7 +85,7 @@ Per-seed FOV-window profiles of ΔU and Δ⟨u'w'⟩, their ensemble means and s
 the ensemble-mean surface time series, the control anisotropy, and the shear ratio
 R = −∂zΔU / ∂zuˢ.
 """
-function regular_ensemble(case, root, level, seeds; numerics="weno", Δt=0.02, Lx=3.2, Ly=3.2)
+function regular_ensemble(case, root, level, seeds; numerics="weno", Δt=0.02, Lx=3.2, Ly=3.2, extra="")
     null = run_directory(root, case, level, "waves_null"; seed=0, Δt, numerics, Lx, Ly)
     quiescent = run_directory(root, case, level, "quiescent_control"; seed=0, Δt, numerics, Lx, Ly)
     isdir(quiescent) || (quiescent = nothing)
@@ -94,8 +94,8 @@ function regular_ensemble(case, root, level, seeds; numerics="weno", Δt=0.02, L
     z = zf = t = uˢ = nothing
     tfov = k = 0.0
     for seed in seeds
-        wv_dir = run_directory(root, case, level, "waves_turbulence"; seed, Δt, numerics, Lx, Ly)
-        ct_dir = run_directory(root, case, level, "turbulence_control"; seed, Δt, numerics, Lx, Ly)
+        wv_dir = run_directory(root, case, level, "waves_turbulence"; seed, Δt, numerics, Lx, Ly, extra)
+        ct_dir = run_directory(root, case, level, "turbulence_control"; seed, Δt, numerics, Lx, Ly, extra)
         ΔU, wv, ct = regular_residual(wv_dir, ct_dir, null, quiescent)
         t = times(wv); z = znodes_centers(wv); zf = znodes_faces(wv); tfov = t_fov(wv); k = k₀(wv)
         uˢ = stokes_profile(wv)
@@ -112,7 +112,7 @@ function regular_ensemble(case, root, level, seeds; numerics="weno", Δt=0.02, L
     mean_profile = vec(mean(P; dims=2))
     ∂zΔU = diff(mean_profile) ./ diff(z)
     ∂zuˢ = [2k * Float64(case.Uˢ₀) * exp(2k * zk) for zk in zf[2:end-1]]
-    return (; case, level, seeds, z, zf, t, k, uˢ, t_FOV = tfov,
+    return (; case, level, seeds, extra, z, zf, t, k, uˢ, t_FOV = tfov,
               profiles = P, mean = mean_profile, stderr = vec(std(P; dims=2)) ./ sqrt(n),
               Δuw = S, Δuw_mean = vec(mean(S; dims=2)), Δuw_stderr = vec(std(S; dims=2)) ./ sqrt(n),
               surface = vec(mean(Σ; dims=2)), surface_stderr = vec(std(Σ; dims=2)) ./ sqrt(n),
@@ -124,7 +124,7 @@ function regular_report(r)
     top = findall(zz -> zz > -1 / r.k, r.z)
     topf = findall(zz -> zz > -1 / r.k, r.zf[2:end-1])
     c = r.case
-    println("\n", "="^78, "\n", "Case $(c.name) ($(c.family), ϵ = $(c.steepness), k = $(c.k) m⁻¹), $(r.level), seeds $(r.seeds)", "\n", "="^78)
+    println("\n", "="^78, "\n", "Case $(c.name) ($(c.family), ϵ = $(c.steepness), k = $(c.k) m⁻¹), $(r.level)$(isempty(r.extra) ? "" : " [" * r.extra * "]"), seeds $(r.seeds)", "\n", "="^78)
     @printf("  Uˢ₀ = %.2f mm/s, u_rf = %.2f mm/s, t_FOV = %.1f s\n", 1e3c.Uˢ₀, 1e3c.u_rf, r.t_FOV)
     @printf("  surface ΔU at the FOV: %.3f ± %.3f mm/s (per seed %s)  →  ΔU/Uˢ₀ = %.3f\n",
             1e3r.mean[kk], 1e3r.stderr[kk], join([@sprintf("%.2f", 1e3v) for v in r.profiles[kk, :]], ", "), r.mean[kk] / Float64(c.Uˢ₀))

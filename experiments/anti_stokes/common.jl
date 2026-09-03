@@ -138,12 +138,13 @@ end
 Clean Craik–Leibovich model: no wind stress, no buoyancy, no Coriolis, no tracers,
 no Stokes-streaming forcing. The packet's time dependence lives in `stokes_drift`.
 """
-function build_model(grid; stokes_drift=nothing, advection=WENO(order=5), closure=nothing)
+function build_model(grid; stokes_drift=nothing, advection=WENO(order=5), closure=nothing, forcing=NamedTuple())
     return NonhydrostaticModel(grid;
                                advection,
                                timestepper = :RungeKutta3,
                                closure,
                                stokes_drift,
+                               forcing,
                                buoyancy = nothing,
                                coriolis = nothing,
                                tracers = ())
@@ -222,8 +223,8 @@ level_dir(root, case, level) = joinpath(root, case_dirname(case), level)
 
 domain_tag(Lx, Ly) = (Lx == 12 && Ly == 0.8) ? "" : @sprintf("Lx%g_Ly%g", Lx, Ly)
 
-function initial_condition_path(root, case, level, seed; Lx=12, Ly=0.8, x_topology="periodic")
-    parts = filter(!isempty, [@sprintf("seed_%04d", seed), domain_tag(Lx, Ly), topology_tag(x_topology)])
+function initial_condition_path(root, case, level, seed; Lx=12, Ly=0.8, x_topology="periodic", extra="")
+    parts = filter(!isempty, [@sprintf("seed_%04d", seed), domain_tag(Lx, Ly), topology_tag(x_topology), extra])
     return joinpath(root, ic_case_dirname(case), level, "initial_conditions", join(parts, "_") * ".jld2")
 end
 

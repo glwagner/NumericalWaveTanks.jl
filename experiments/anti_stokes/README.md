@@ -33,6 +33,8 @@ The turbulence-induced residual is
 | `moving_packet.jl` | periodic Gaussian packet, solenoidal `wˢ`, derivatives for `StokesDrift` |
 | `common.jl` | resolution ladder (S0–M3), grid, model, numerics options, CLI parsing, directory layout, metadata |
 | `generate_turbulence.jl` | projected von Kármán initial turbulence, integral-scale calibration, per-component rms, preconditioning, checkpoint |
+| `forced_turbulence.jl` | statistically stationary turbulence for the regular-wave cases: horizontal band-pass forcing of u and v, closed-loop spin-up checkpoint, open-loop gains for the members |
+| `regular_waves.jl` | `run_regular_member`: regular-wave (Experiments 2/3) members with decaying (`forcing=none`) or stationary (`forcing=band`) turbulence |
 | `moving_packet_experiment.jl` | `run_member`: initialization, output writers (y-averaged moments, virtual PIV plane, 3D snapshots, animation slices), metadata |
 | `run_moving_packet.jl` | command-line entry point |
 | `stage_S0.jl` | all S0 members in one session plus acceptance report |
@@ -85,6 +87,10 @@ freely decaying box turbulence cannot hold the measured rms over the 28–45 s f
 flume turbulence is likely wall-maintained). 2.A and 2.B: (1.15, 1.15, 1.10), L_factor 1.0 → rms
 1.14× target at t = 0, ≈ 1.0× at 7 s, 0.46×/0.63× at t_FOV = 28.3 s. 3.A and 3.B: (1.20, 1.20,
 1.10), L_factor 1.0 → 1.17× at t = 0, 0.65×/0.76× at 11 s, 0.26×/0.32× at t_FOV = 44.7 s.
+
+Stationary alternative (`FORCING=band`): horizontal band-pass forcing of u and v over
+k_h ∈ [0.5, 1.5] × 0.75/L with gains tuned in closed loop during an 8-eddy-turnover spin-up and
+frozen for the members; the rms is then held at the case values for the whole run.
 
 The streamwise integral scale saturates near 0.23 m in the 0.8 m × 0.4 m cross-section whatever
 the generator target, because divergence-free modes that are long in x must carry their energy in

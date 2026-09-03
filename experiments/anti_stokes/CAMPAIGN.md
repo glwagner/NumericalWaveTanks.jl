@@ -238,8 +238,31 @@ channel walls rather than decaying grid turbulence. The first-pass protocol ther
 measured rms and L₁₁ at wave onset (amplitude ≈ 1.1–1.2, L_factor 1.0), integrates for the
 laboratory interaction time, and reports the response as a function of time since onset
 together with the decaying turbulence intensity (`regular_report` prints both at 0.1–1.0 t_FOV).
-The faithful fix is statistically stationary turbulence (forced homogeneous turbulence or a
-wall-driven channel), which is the natural next extension.
+The faithful fix is statistically stationary turbulence, implemented as the second protocol.
+
+**Stationary (band-forced) turbulence protocol, `forcing=band`.** `forced_turbulence.jl` forces
+the horizontal velocity fluctuations at large horizontal scales, F_u = γ_u ℬ[u], F_v = γ_v ℬ[v],
+where ℬ is a horizontal band-pass filter over k_h ∈ [0.5, 1.5] k_e with k_e = 0.75/L (batched 2D
+FFTs, applied at every level; the horizontal mean k_h = 0 is never forced, w is not forced). A
+checkpoint is produced by a closed-loop spin-up of 8 eddy turnovers (L/u_rms) in which the gains
+hold the volume rms of u and v at the case values with a proportional–integral law on the
+relative energy error e = (target² − rms²)/target²: γ_i = max(0, γ_ref (1 + 3e) + I_i),
+dI_i/dt = κ e, with γ_ref = u_rms/L and κ = γ_ref per eddy turnover (integral frozen while the
+gain is clamped at zero). The gains are then frozen at their average over the last quarter of the
+spin-up (`γ_open` in the checkpoint metadata) and the experiment members run in open loop, so the
+forcing is the same function of the flow in the wave and control members and cannot mask a
+wave-induced change of the turbulence. Forced members and checkpoints carry the `_forced` tag
+(`extra="forced"` in `run_directory`/`initial_condition_path`; `extra=forced` in the analysis CLI).
+
+```bash
+# spin up the family checkpoint (seed 1) and run the forced control with the report
+CASE=2.A.1.3 LEVEL=R1 FORCING=band sbatch --array=90 batch/anti_stokes_regular.batch
+# production with stationary turbulence (checkpoints per seed are spun up on demand under flock)
+CASE=2.A.1.3 LEVEL=R1 FORCING=band sbatch batch/anti_stokes_regular.batch
+sbatch batch/anti_stokes_analysis.batch script=regular_waves_analysis.jl family=2.A level=R1 seeds=1,2,3,4 extra=forced
+# plumbing test (unit tests + RT-level spin-up, members and report on a GPU, scratch data root)
+sbatch batch/anti_stokes_forced_test.batch
+```
 
 ### Plotting recipes
 
