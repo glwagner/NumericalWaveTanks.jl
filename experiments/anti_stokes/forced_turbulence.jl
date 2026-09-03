@@ -142,7 +142,7 @@ end
 reference_gain(case) = Float64(case.u_rms) / Float64(case.L)
 
 """
-    generate_stationary_checkpoint(; case_name, level, seed, arch, FT, Lx, Ly, spinup_eddies=8, root, overwrite=false, ...)
+    generate_stationary_checkpoint(; case_name, level, seed, arch, FT, Lx, Ly, spinup_eddies=16, root, overwrite=false, ...)
 
 Spin up statistically stationary turbulence with closed-loop band forcing for
 `spinup_eddies × L / u_rms` seconds and save the velocity fields together with the spin-up
@@ -155,7 +155,7 @@ function generate_stationary_checkpoint(; case_name = "2.A.1.3",
                                           FT = Float32,
                                           Lx = 3.2,
                                           Ly = 3.2,
-                                          spinup_eddies = 8.0,
+                                          spinup_eddies = 16.0,
                                           gain = 3.0,
                                           band = (0.5, 1.5),
                                           Δt = 0.02,
@@ -225,9 +225,10 @@ function generate_stationary_checkpoint(; case_name = "2.A.1.3",
                    T_spin, k_lo, k_hi, targets..., γ_ref)
     run!(simulation)
 
-    # Open-loop gains: average over the last quarter of the spin-up
+    # Open-loop gains: average over the last eighth of the spin-up (two eddy turnovers), after the
+    # controller has settled; a gain error δγ/γ shifts the open-loop equilibrium energy by 2δγ/γ
     H = bf.history
-    late = filter(h -> h[1] >= 0.75T_spin, H)
+    late = filter(h -> h[1] >= 0.875T_spin, H)
     γ_open = (mean(getindex.(late, 2)), mean(getindex.(late, 3)))
     rms_late = (mean(getindex.(late, 4)), mean(getindex.(late, 5)), mean(getindex.(late, 6)))
     @info @sprintf("Stationary state: rms (%.4f, %.4f, %.4f) vs targets (%.4f, %.4f, w free); γ_open = (%.3f, %.3f)",
@@ -264,7 +265,7 @@ if abspath(PROGRAM_FILE) == @__FILE__
                                      FT = float_type(getarg(args, "FT", "Float32")),
                                      Lx = getarg(args, "Lx", 3.2),
                                      Ly = getarg(args, "Ly", 3.2),
-                                     spinup_eddies = getarg(args, "spinup_eddies", 8.0),
+                                     spinup_eddies = getarg(args, "spinup_eddies", 16.0),
                                      gain = getarg(args, "gain", 3.0),
                                      Δt = getarg(args, "dt", 0.02),
                                      numerics = getarg(args, "numerics", "weno"),

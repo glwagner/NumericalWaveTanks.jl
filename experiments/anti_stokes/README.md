@@ -89,7 +89,7 @@ flume turbulence is likely wall-maintained). 2.A and 2.B: (1.15, 1.15, 1.10), L_
 1.10), L_factor 1.0 → 1.17× at t = 0, 0.65×/0.76× at 11 s, 0.26×/0.32× at t_FOV = 44.7 s.
 
 Stationary alternative (`FORCING=band`): horizontal band-pass forcing of u and v over
-k_h ∈ [0.5, 1.5] × 0.75/L with gains tuned in closed loop during an 8-eddy-turnover spin-up and
+k_h ∈ [0.5, 1.5] × 0.75/L with gains tuned in closed loop during a 16-eddy-turnover spin-up and
 frozen for the members; the rms is then held at the case values for the whole run.
 
 The streamwise integral scale saturates near 0.23 m in the 0.8 m × 0.4 m cross-section whatever

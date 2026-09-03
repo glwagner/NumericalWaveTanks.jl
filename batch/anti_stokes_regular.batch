@@ -28,7 +28,7 @@ NUMERICS=${NUMERICS:-weno}
 FORCING=${FORCING:-none}
 RUN="julia --project=. experiments/anti_stokes/regular_waves.jl case=$CASE level=$LEVEL numerics=$NUMERICS dt=$DT forcing=$FORCING"
 if [ "$FORCING" = "band" ]; then
-    GEN="julia --project=. experiments/anti_stokes/forced_turbulence.jl case=$CASE level=$LEVEL Lx=${LX:-3.2} Ly=${LY:-3.2} spinup_eddies=${SPINUP:-8} gain=${GAIN:-3}"
+    GEN="julia --project=. experiments/anti_stokes/forced_turbulence.jl case=$CASE level=$LEVEL Lx=${LX:-3.2} Ly=${LY:-3.2} spinup_eddies=${SPINUP:-16} gain=${GAIN:-3}"
     ICTAG=_forced
 else
     GEN="julia --project=. experiments/anti_stokes/generate_turbulence.jl case=$CASE level=$LEVEL Lx=${LX:-3.2} Ly=${LY:-3.2} amplitude=${AMPLITUDE:-1.6} L_factor=${L_FACTOR:-1.15}"

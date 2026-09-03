@@ -244,12 +244,13 @@ The faithful fix is statistically stationary turbulence, implemented as the seco
 the horizontal velocity fluctuations at large horizontal scales, F_u = γ_u ℬ[u], F_v = γ_v ℬ[v],
 where ℬ is a horizontal band-pass filter over k_h ∈ [0.5, 1.5] k_e with k_e = 0.75/L (batched 2D
 FFTs, applied at every level; the horizontal mean k_h = 0 is never forced, w is not forced). A
-checkpoint is produced by a closed-loop spin-up of 8 eddy turnovers (L/u_rms) in which the gains
+checkpoint is produced by a closed-loop spin-up of 16 eddy turnovers (L/u_rms) in which the gains
 hold the volume rms of u and v at the case values with a proportional–integral law on the
 relative energy error e = (target² − rms²)/target²: γ_i = max(0, γ_ref (1 + 3e) + I_i),
 dI_i/dt = κ e, with γ_ref = u_rms/L and κ = γ_ref per eddy turnover (integral frozen while the
-gain is clamped at zero). The gains are then frozen at their average over the last quarter of the
-spin-up (`γ_open` in the checkpoint metadata) and the experiment members run in open loop, so the
+gain is clamped at zero). The gains are then frozen at their average over the last eighth of the
+spin-up (an 8-eddy spin-up with a last-quarter average left the open-loop rms drifting up 9–23 %
+by t_FOV because the gain had not settled) (`γ_open` in the checkpoint metadata) and the experiment members run in open loop, so the
 forcing is the same function of the flow in the wave and control members and cannot mask a
 wave-induced change of the turbulence. Forced members and checkpoints carry the `_forced` tag
 (`extra="forced"` in `run_directory`/`initial_condition_path`; `extra=forced` in the analysis CLI).
