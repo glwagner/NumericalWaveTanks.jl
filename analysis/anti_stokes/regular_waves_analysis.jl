@@ -64,7 +64,9 @@ for (j, r) in enumerate(results)
     lines!(ax2, r.mean ./ Uˢ₀, kz; color=colors[mod1(j, 7)], linewidth=3, label=c.name)
     band!(ax3, r.t ./ r.t_FOV, (r.surface .- r.surface_stderr) ./ Uˢ₀, (r.surface .+ r.surface_stderr) ./ Uˢ₀; color=(colors[mod1(j, 7)], 0.2))
     lines!(ax3, r.t ./ r.t_FOV, r.surface ./ Uˢ₀; color=colors[mod1(j, 7)], linewidth=2, label=c.name)
-    lines!(ax4, r.R, r.k .* r.zf[2:end-1]; color=colors[mod1(j, 7)], linewidth=3, label=c.name)
+    kzf = r.k .* r.zf[2:end-1]
+    shallow = kzf .> -2.0          # R is ill-defined where ∂zuˢ vanishes
+    lines!(ax4, r.R[shallow], kzf[shallow]; color=colors[mod1(j, 7)], linewidth=3, label=c.name)
     lines!(ax4, r.A, kz; color=colors[mod1(j, 7)], linestyle=:dot)
 end
 r₁ = results[1]
