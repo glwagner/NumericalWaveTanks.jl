@@ -1,0 +1,26 @@
+#!/bin/bash
+#SBATCH --job-name=as-analysis
+#SBATCH --output=logs/anti_stokes_analysis-%j.log
+#SBATCH --account=bhcr-dtai-gh
+#SBATCH --partition=ghx4
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=200G
+#SBATCH --gres=gpu:1
+#SBATCH --time=02:00:00
+
+# Post-processing on a compute node (never on the login node: its 38 GB user cap and
+# 1000-task limit are shared with the interactive session). Arguments are passed to
+# the one-session stage driver, e.g.
+#   sbatch batch/anti_stokes_analysis.batch case=1.D level=M2 seeds=1,2,3,4 x_topology=bounded animation=true
+#   sbatch batch/anti_stokes_analysis.batch script=lagrangian_mean.jl case=1.D level=M2 seeds=1,2,3,4
+# A leading script=<name> runs analysis/anti_stokes/<name> instead of the stage driver.
+source batch/env.sh
+export JULIA_NUM_THREADS=8
+SCRIPT=run_stage_analysis.jl
+ARGS=()
+for a in "$@"; do
+    case $a in script=*) SCRIPT=${a#script=} ;; *) ARGS+=("$a") ;; esac
+done
+julia --project=. analysis/anti_stokes/$SCRIPT "${ARGS[@]}"

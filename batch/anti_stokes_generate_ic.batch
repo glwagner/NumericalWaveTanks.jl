@@ -1,0 +1,19 @@
+#!/bin/bash
+#SBATCH --job-name=as-ic
+#SBATCH --output=logs/anti_stokes_ic-%A_%a.log
+#SBATCH --account=bhcr-dtai-gh
+#SBATCH --partition=ghx4
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=120G
+#SBATCH --gres=gpu:1
+#SBATCH --time=00:45:00
+#SBATCH --array=1-4
+
+# One ambient-turbulence checkpoint per array task (seed = task id).
+#   LEVEL=M0 AMPLITUDE=1.6 sbatch batch/anti_stokes_generate_ic.batch
+source batch/env.sh
+julia --project=. experiments/anti_stokes/generate_turbulence.jl \
+    case=${CASE:-1.D} level=${LEVEL:-M0} seed=${SLURM_ARRAY_TASK_ID} \
+    amplitude=${AMPLITUDE:-1.6} L_factor=${L_FACTOR:-1.15} x_topology=${X_TOPOLOGY:-periodic} overwrite=${OVERWRITE:-false}

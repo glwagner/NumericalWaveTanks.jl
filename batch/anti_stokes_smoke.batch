@@ -1,0 +1,18 @@
+#!/bin/bash
+#SBATCH --job-name=as-S0
+#SBATCH --output=logs/anti_stokes_S0-%j.log
+#SBATCH --account=bhcr-dtai-gh
+#SBATCH --partition=ghx4
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=120G
+#SBATCH --gres=gpu:1
+#SBATCH --time=03:00:00
+
+# Stage S0 (campaign document, section 12): quiescent control, packet-only null at Δt,
+# Δt/2 and doubled x-resolution, one turbulence checkpoint, one crude turbulent pair,
+# then the Makie-free acceptance report. Extra key=value arguments are passed through,
+# e.g. sbatch batch/anti_stokes_smoke.batch amplitude=1.8 skip=1,2,3,4
+source batch/env.sh
+julia --project=. experiments/anti_stokes/stage_S0.jl "$@"

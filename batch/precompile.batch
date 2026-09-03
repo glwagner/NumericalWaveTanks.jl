@@ -1,0 +1,26 @@
+#!/bin/bash
+#SBATCH --job-name=nwt-precompile
+#SBATCH --output=logs/precompile-%j.log
+#SBATCH --account=bhcr-dtai-gh
+#SBATCH --partition=ghx4
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=120G
+#SBATCH --gres=gpu:1
+#SBATCH --time=01:30:00
+
+# Instantiate and precompile the project on a GPU node (the login node caps user tasks
+# at 1000 and parallel precompilation dies there). GLMakie cannot precompile without a
+# display and is not needed by the experiments, so its failure is tolerated.
+source batch/env.sh
+julia --project=. -e '
+    using Pkg
+    Pkg.instantiate()
+    try
+        Pkg.precompile()
+    catch err
+        @warn "Pkg.precompile reported failures (GLMakie is expected to fail headless)" err
+    end
+    Pkg.status()'
+julia --project=. -e 'using CUDA; CUDA.versioninfo(); using Oceananigans; @info "Oceananigans $(pkgversion(Oceananigans)) loaded"; using CairoMakie; @info "CairoMakie loaded"'

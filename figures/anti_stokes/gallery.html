@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Packet Wake Movies</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root { --bg: #F5F7F8; --ink: #17232E; --muted: #6A7A88; --accent: #1F5FA8; --rule: #D7DEE4; }
+@media (prefers-color-scheme: dark) { :root { --bg: #0E1620; --ink: #E6EDF3; --muted: #97A6B4; --accent: #6EA8E8; --rule: #26323F; } }
+body { background: var(--bg); color: var(--ink); font-family: "Source Sans 3", "Helvetica Neue", Arial, sans-serif; font-size: 17px; line-height: 1.5; margin: 0; }
+main { max-width: 1120px; margin: 0 auto; padding: 40px 24px 64px; display: grid; gap: 36px; }
+header { display: grid; gap: 8px; }
+h1 { font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 40px; line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 26px; margin: 0 0 10px; }
+.grid { font-family: "IBM Plex Mono", Menlo, monospace; font-size: 13px; color: var(--muted); margin-left: 12px; letter-spacing: 0.04em; }
+.eyebrow { font-family: "IBM Plex Mono", Menlo, monospace; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+header p, .movie p { margin: 0; max-width: 72ch; }
+.movie p { color: var(--muted); font-size: 15px; margin-top: 8px; }
+video { width: 100%; height: auto; display: block; border: 1px solid var(--rule); background: #000; }
+.key { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+.key div { border-top: 2px solid var(--accent); padding-top: 10px; }
+.key b { display: block; font-weight: 600; margin-bottom: 4px; }
+.key p { margin: 0; color: var(--muted); font-size: 15px; }
+a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="eyebrow">Ellingsen et al. (2026), Experiment 1 · numerical reproduction · NumericalWaveTanks.jl</div>
+  <h1>Wave packets crossing turbulent tanks</h1>
+  <p>Each movie follows one Stokes-drift packet moving left to right at its group speed through decaying grid turbulence in the 12 m × 0.8 m × 0.4 m tank (periodic in x except where noted). The red dashed line is the observation plane at x = 6 m; the black line follows the packet centre. Panels: prescribed surface Stokes drift; surface vertical velocity w in the packet run; w in the matched no-wave control from the same turbulence; their difference, the packet-induced perturbation; and the x–z slice of the Eulerian streamwise perturbation uᴱ − u_control with the Stokes drift already subtracted, where the anti-Stokes shear layer forms within the Stokes depth (dotted line).</p>
+</header>
+
+<section class="movie">
+  <h2>Case 1.D <span class="grid">M0, 768 × 64 × 64, seed 1</span></h2>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/packet_turbulence_animation_case_1D_M0_seed1_small.mp4"></video>
+  <p>k₀ = 9.3 m⁻¹, τ₀ = 2.8 s, ϵ = 0.22, Uˢ₀ = 50 mm/s; turbulence rms (17, 17, 13) mm/s, L = 0.20 m. Composite residual −11.5 mm/s at M2 (eight seeds).</p>
+</section>
+<section class="movie">
+  <h2>Case 1.D, bounded tank <span class="grid">M2, 1536 × 128 × 128, seed 1, 46 s</span></h2>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/packet_turbulence_animation_case_1D_M2_boundedx_seed1_small.mp4"></video>
+  <p>Impenetrable end walls (uᴸ = 0). The packet starts 4σ₀ outside the tank, enters through the west wall near t ≈ 10 s, crosses the observation plane at 22.9 s and leaves through the east wall near t ≈ 35 s. Composite residual −10.1 mm/s.</p>
+</section>
+<section class="movie">
+  <h2>Case 1.A <span class="grid">M2, 1536 × 128 × 128, seed 1</span></h2>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/packet_turbulence_animation_case_1A_M2_seed1_small.mp4"></video>
+  <p>k₀ = 9.5 m⁻¹, τ₀ = 2.4 s, ϵ = 0.20, Uˢ₀ = 41 mm/s; the weakest, smallest-scale turbulence (7.1, 6.8, 5.8) mm/s, L = 0.05 m. Composite residual −4.4 mm/s, confined to a thin layer.</p>
+</section>
+<section class="movie">
+  <h2>Case 1.B <span class="grid">M2, 1536 × 128 × 128, seed 1</span></h2>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/packet_turbulence_animation_case_1B_M2_seed1_small.mp4"></video>
+  <p>k₀ = 9.2 m⁻¹, τ₀ = 2.6 s, ϵ = 0.20, Uˢ₀ = 41 mm/s; turbulence (11, 10, 7.3) mm/s, L = 0.26 m. Composite residual −6.9 mm/s.</p>
+</section>
+<section class="movie">
+  <h2>Case 1.C.1 <span class="grid">M2, 1536 × 128 × 128, seed 1</span></h2>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/packet_turbulence_animation_case_1C1_M2_seed1_small.mp4"></video>
+  <p>k₀ = 8.9 m⁻¹, τ₀ = 2.9 s, ϵ = 0.15, Uˢ₀ = 24 mm/s; turbulence (16, 12, 9.2) mm/s, L = 0.32 m. The gentler member of the steepness pair; composite residual −8.3 mm/s.</p>
+</section>
+<section class="movie">
+  <h2>Case 1.C.2 <span class="grid">M2, 1536 × 128 × 128, seed 1</span></h2>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/packet_turbulence_animation_case_1C2_M2_seed1_small.mp4"></video>
+  <p>Same turbulence and seed as 1.C.1 with ϵ = 0.22, Uˢ₀ = 51 mm/s. Composite residual −13.7 mm/s: a ratio of 1.65 to 1.C.1 against 2.15 for ϵ².</p>
+</section>
+<section class="key">
+  <div><b>What to watch for</b><p>The difference panel stays blank ahead of the packet and fills behind it: the perturbation is a wake, not a precursor.</p></div>
+  <div><b>Weak vs strong turbulence</b><p>1.A and 1.B (7–11 mm/s rms) produce a slower, weaker response than 1.D and 1.C.2 (13–17 mm/s); the anti-Stokes current scales with turbulence intensity.</p></div>
+  <div><b>Steepness</b><p>1.C.2 (ϵ = 0.22) and its twin 1.C.1 (ϵ = 0.15, same turbulence) give −13.7 and −8.3 mm/s: a ratio of 1.65 against 2.15 for ϵ².</p></div>
+  <div><b>Turbulence scale</b><p>1.A (L = 5 cm) confines the anti-Stokes jet to the upper third of the Stokes layer; 1.C (L = 32 cm) spreads the compensating return down to k₀z ≈ −3.</p></div>
+  <div><b>Links</b><p><a href="https://github.com/glwagner/NumericalWaveTanks.jl/pull/7">Pull request #7</a> · <a href="https://github.com/glwagner/NumericalWaveTanks.jl/tree/glw/anti-stokes/experiments/anti_stokes">experiment code</a></p></div>
+</section>
+</main>
+</body>
+</html>
