@@ -80,11 +80,22 @@ end
 ⟨u^E⟩_y = ⟨u^L⟩_y − uˢ(x, z, t), using the packet parameters stored in the metadata.
 For members without a packet this is just ⟨u^L⟩_y.
 """
+run_uniform(run) = get(run.meta, "uniform", false)
+run_uniform_parameters(run) = run.meta["uniform_parameters"]
+
 function eulerian_U(run)
     U = xzt(run, "U")
+    z, t = znodes_centers(run), times(run)
+    if run_uniform(run)
+        p = run_uniform_parameters(run)
+        for n in eachindex(t), k in eachindex(z)
+            U[:, k, n] .-= uniform_uˢ(z[k], t[n], p)
+        end
+        return U
+    end
     run.meta["has_packet"] || return U
     p = run_packet(run)
-    x, z, t = xnodes_faces(run), znodes_centers(run), times(run)
+    x = xnodes_faces(run)
     for n in eachindex(t), k in eachindex(z), i in eachindex(x)
         U[i, k, n] -= uˢ(x[i], 0, z[k], t[n], p)
     end
@@ -109,6 +120,7 @@ The prescribed uˢ on the same (x-face, z-center, t) points as `xzt(run, "U")`.
 """
 function stokes_U(run)
     x, z, t = xnodes_faces(run), znodes_centers(run), times(run)
+    run_uniform(run) && return [uniform_uˢ(zk, tn, run_uniform_parameters(run)) for xi in x, zk in z, tn in t]
     run.meta["has_packet"] || return zeros(length(x), length(z), length(t))
     p = run_packet(run)
     return [uˢ(xi, 0, zk, tn, p) for xi in x, zk in z, tn in t]

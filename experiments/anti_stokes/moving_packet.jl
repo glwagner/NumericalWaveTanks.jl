@@ -115,6 +115,29 @@ end
 
 # Time at which the packet peak crosses x_FOV, and the time at which its centre reaches x_end.
 packet_peak_time(p) = (p.x_FOV - p.x₀) / p.cᵍ
+
+#####
+##### Horizontally uniform group: the same Gaussian Stokes envelope as a function of time only,
+##### uˢ(z, t) = Uˢ₀ exp(-((t - t_peak)/τ₀)²) e^{2kz}, which is what a fluid column experiences as
+##### the travelling packet passes over it (ξ = cᵍ (t_peak - t) at a fixed column). It is
+##### solenoidal without a vertical component and has no return flow.
+#####
+
+uniform_parameters(case, packet) = (; k = case.k, Uˢ₀ = case.Uˢ₀, τ₀ = case.τ₀, t_peak = packet_peak_time(packet))
+
+@inline uniform_envelope(t, p) = exp(-abs2((t - p.t_peak) / p.τ₀))
+@inline uniform_uˢ(z, t, p) = p.Uˢ₀ * uniform_envelope(t, p) * exp(2p.k * z)
+@inline uniform_∂z_uˢ(z, t, p) = 2p.k * uniform_uˢ(z, t, p)
+@inline uniform_∂t_uˢ(z, t, p) = -2 * (t - p.t_peak) / p.τ₀^2 * uniform_uˢ(z, t, p)
+
+"""
+    shear_profile(z, α, p)
+
+Initial Eulerian current `α Uˢ₀ e^{2kz}` with the shape of the Stokes drift at the group peak.
+With α > 0 its shear is aligned with the Stokes shear, the Craik–Leibovich (CL2) condition for
+Langmuir instability; α = 1 is the Lagrangian initial state uᴸ = u_turb + 2uˢ at the peak.
+"""
+@inline shear_profile(z, α, p) = α * p.Uˢ₀ * exp(2p.k * z)
 packet_stop_time(p) = (p.x_end - p.x₀) / p.cᵍ
 
 """

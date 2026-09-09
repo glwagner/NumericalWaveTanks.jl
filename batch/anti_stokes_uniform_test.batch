@@ -1,0 +1,20 @@
+#!/bin/bash
+#SBATCH --job-name=as-uniform-test
+#SBATCH --output=logs/anti_stokes_uniform_test-%j.log
+#SBATCH --account=bhcr-dtai-gh
+#SBATCH --partition=ghx4
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=120G
+#SBATCH --gres=gpu:1
+#SBATCH --time=01:00:00
+
+# Unit tests plus a short S0 GPU run of the uniform and sheared null members in a scratch root.
+source batch/env.sh
+set -e
+ROOT=${ROOT:-/work/hdd/bhcr/glwagner/anti_stokes_test}
+julia --project=. test/test_moving_packet.jl
+julia --project=. experiments/anti_stokes/run_moving_packet.jl case=1.D level=S0 member=uniform_packet_null stop_time=1 root=$ROOT
+julia --project=. experiments/anti_stokes/run_moving_packet.jl case=1.D level=S0 member=sheared_packet_null stop_time=1 root=$ROOT
+echo UNIFORM_TEST_OK

@@ -53,11 +53,19 @@ end
 #####
 
 const MEMBERS = ("quiescent_control", "packet_null", "turbulence_control", "packet_turbulence",
-                 "waves_null", "waves_turbulence")
+                 "waves_null", "waves_turbulence",
+                 # horizontally uniform group (temporal Gaussian envelope, no propagation)
+                 "uniform_packet_null", "uniform_packet_turbulence",
+                 # uniform group over turbulence with an initial Eulerian shear current aligned with the Stokes shear
+                 "sheared_control", "sheared_packet_null", "sheared_packet_turbulence")
 
-has_packet(member) = member in ("packet_null", "packet_turbulence")
+has_packet(member) = member in ("packet_null", "packet_turbulence")                  # travelling packet
+has_uniform_packet(member) = member in ("uniform_packet_null", "uniform_packet_turbulence",
+                                        "sheared_packet_null", "sheared_packet_turbulence")
+has_shear(member) = startswith(member, "sheared_")
 has_waves(member) = member in ("waves_null", "waves_turbulence")
-has_turbulence(member) = member in ("turbulence_control", "packet_turbulence", "waves_turbulence")
+has_turbulence(member) = member in ("turbulence_control", "packet_turbulence", "waves_turbulence",
+                                    "uniform_packet_turbulence", "sheared_control", "sheared_packet_turbulence")
 
 function validate_member(member)
     member in MEMBERS || error("Unknown member \"$member\". Known members: $(join(MEMBERS, ", "))")

@@ -10,7 +10,7 @@
 ##### output schedule, so that differencing is exact in space and time.
 #####
 
-include("generate_turbulence.jl")
+isdefined(@__MODULE__, :generate_initial_condition) || include("generate_turbulence.jl")
 
 function run_member(; case_name = "1.D",
                       member = "packet_null",
@@ -29,6 +29,7 @@ function run_member(; case_name = "1.D",
                       output_interval = 0.1,
                       snapshot_offsets = (-3, -1, 0, 1, 3, 4),
                       remove_mean_transport = true,
+                      shear_amplitude = 1.0,
                       animation_slices = false,
                       root = default_data_root(),
                       overwrite = true,
@@ -52,7 +53,16 @@ function run_member(; case_name = "1.D",
     @info "Grid: $(summary(grid))"
 
     packet = packet_parameters(case, Lx, x_FOV; σ_upstream, periodic=is_periodic_x(x_topology))
-    stokes_drift = has_packet(member) ? StokesDrift(; ∂z_uˢ, ∂t_uˢ, ∂x_wˢ, ∂t_wˢ, parameters=packet) : nothing
+    uniform = uniform_parameters(case, packet)
+    has_uniform_packet(member) && !is_periodic_x(x_topology) && error("Uniform-group members need x_topology=periodic")
+    α = has_shear(member) ? Float64(shear_amplitude) : 0.0
+    stokes_drift = if has_packet(member)
+        StokesDrift(; ∂z_uˢ, ∂t_uˢ, ∂x_wˢ, ∂t_wˢ, parameters=packet)
+    elseif has_uniform_packet(member)
+        UniformStokesDrift(; ∂z_uˢ = uniform_∂z_uˢ, ∂t_uˢ = uniform_∂t_uˢ, parameters=uniform)
+    else
+        nothing
+    end
 
     model = build_model(grid; stokes_drift, advection=num.advection, closure=num.closure)
     @info "Model: $(summary(model))"
@@ -72,6 +82,8 @@ function run_member(; case_name = "1.D",
     if has_packet(member)
         set!(u₀, (x, y, z) -> uˢ(x, y, z, 0, packet))
         set!(w₀, (x, y, z) -> wˢ(x, y, z, 0, packet))
+    elseif has_uniform_packet(member)
+        set!(u₀, (x, y, z) -> uniform_uˢ(z, 0, uniform))
     end
 
     ic_path = ""
@@ -106,6 +118,15 @@ function run_member(; case_name = "1.D",
         interior(u₀) .-= ū
         interior(v₀) .-= v̄
         @info @sprintf("Removed volume-mean velocity (ū, v̄) = (%.3e, %.3e) m s⁻¹", ū, v̄)
+    end
+
+    # Initial Eulerian shear current (sheared members), added after the mean removal so that the
+    # prescribed profile is not offset by its own depth mean
+    if α != 0
+        u_shear = XFaceField(grid)
+        set!(u_shear, (x, y, z) -> shear_profile(z, α, uniform))
+        interior(u₀) .+= interior(u_shear)
+        @info @sprintf("Added initial Eulerian shear current α Uˢ₀ e^{2kz} with α = %.2f (surface %.2f mm/s)", α, 1e3 * α * Float64(case.Uˢ₀))
     end
 
     set!(model; u=u₀, v=v₀, w=w₀)
@@ -169,7 +190,8 @@ function run_member(; case_name = "1.D",
     U², V², W² = Field(Average(u * u)), Field(Average(v * v)), Field(Average(w * w))
     scalar(f) = first(Array(interior(compute!(f))))
 
-    statistics = (; uˢ_fov = m -> uˢ(x_FOV, 0, 0, m.clock.time, packet),
+    uˢ_at_fov(m) = has_uniform_packet(member) ? uniform_uˢ(0, m.clock.time, uniform) : uˢ(x_FOV, 0, 0, m.clock.time, packet)
+    statistics = (; uˢ_fov = uˢ_at_fov,
                     x_c    = m -> packet_center(m.clock.time, packet),
                     u_mean = m -> scalar(Ū),
                     v_mean = m -> scalar(V̄),
@@ -229,6 +251,7 @@ function run_member(; case_name = "1.D",
     jldsave(joinpath(dir, "metadata.jld2"), false, IOStream;
             case, member, seed, level, Nx, Ny, Nz, Lx, Ly, Lz = Float64(case.h), FT = string(FT),
             packet, has_packet = has_packet(member), has_turbulence = has_turbulence(member),
+            uniform = has_uniform_packet(member), uniform_parameters = uniform, has_shear = has_shear(member), shear_amplitude = α,
             x_FOV, i_FOV, σ_upstream, x_topology, t_peak, stop_time, τ₀, Δt, output_interval, n_out, remove_mean_transport, animation_slices,
             snapshot_times = snapshot_times_, snapshot_iterations, numerics,
             advection = summary(model.advection), closure = summary(model.closure),

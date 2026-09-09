@@ -5,6 +5,7 @@ using Statistics
 using Random
 
 include(joinpath(@__DIR__, "..", "experiments", "anti_stokes", "forced_turbulence.jl"))
+include(joinpath(@__DIR__, "..", "experiments", "anti_stokes", "moving_packet_experiment.jl"))
 
 @testset "Case 1.D derived quantities" begin
     case = case_1D(Float64)
@@ -128,6 +129,41 @@ end
     run!(simulation)
     @test length(bf.history) >= 1
     @test all(isfinite, interior(model.velocities.u))
+end
+
+@testset "Uniform group and shear profile" begin
+    case = anti_stokes_case("1.D", Float64)
+    packet = packet_parameters(case, 12.0, 6.0)
+    p = uniform_parameters(case, packet)
+    @test p.t_peak ≈ 4 * case.τ₀
+    @test uniform_uˢ(0.0, p.t_peak, p) ≈ case.Uˢ₀
+    @test uniform_uˢ(0.0, 0.0, p) < 1e-6 * case.Uˢ₀
+    # the uniform group is the travelling packet seen from a fixed column
+    for t in (p.t_peak - 1.5, p.t_peak + 2.0), z in (0.0, -0.05)
+        @test uniform_uˢ(z, t, p) ≈ uˢ(6.0, 0.0, z, t, packet) rtol=1e-6
+    end
+    # analytic derivatives against finite differences
+    δ = 1e-4
+    for t in (p.t_peak - 2.0, p.t_peak + 1.0), z in (-0.01, -0.1)
+        @test uniform_∂t_uˢ(z, t, p) ≈ (uniform_uˢ(z, t + δ, p) - uniform_uˢ(z, t - δ, p)) / 2δ rtol=1e-5
+        @test uniform_∂z_uˢ(z, t, p) ≈ (uniform_uˢ(z + δ, t, p) - uniform_uˢ(z - δ, t, p)) / 2δ rtol=1e-5
+    end
+    @test shear_profile(0.0, 1.0, p) ≈ case.Uˢ₀
+    @test shear_profile(-1 / (2case.k), 1.0, p) ≈ case.Uˢ₀ / ℯ
+    # CL2 alignment: Eulerian and Stokes shear have the same sign for α > 0
+    @test (shear_profile(-0.01, 1.0, p) - shear_profile(-0.02, 1.0, p)) * uniform_∂z_uˢ(-0.015, p.t_peak, p) > 0
+    @test has_uniform_packet("sheared_packet_turbulence") && has_shear("sheared_control") && !has_packet("uniform_packet_null")
+    @test has_turbulence("sheared_control") && !has_turbulence("sheared_packet_null")
+    # plumbing: the uniform and sheared null members run at T0 on the CPU
+    root = mktempdir()
+    sim_u, dir_u = run_member(; member="uniform_packet_null", level="T0", FT=Float64, arch=CPU(), root, stop_time=0.06, output_interval=0.02, progress_interval=1000)
+    sim_s, dir_s = run_member(; member="sheared_packet_null", level="T0", FT=Float64, arch=CPU(), root, stop_time=0.06, output_interval=0.02, progress_interval=1000)
+    @test isfile(joinpath(dir_u, "y_averages.jld2")) && isfile(joinpath(dir_s, "metadata.jld2"))
+    ms = load(joinpath(dir_s, "metadata.jld2"))
+    @test ms["uniform"] && ms["has_shear"] && ms["shear_amplitude"] == 1.0
+    us = Array(interior(sim_s.model.velocities.u))
+    @test maximum(us) > 0.8 * Float64(case.Uˢ₀)        # the shear current is present at the surface
+    @test maximum(abs, Array(interior(sim_u.model.velocities.u))) < 1e-3 * Float64(case.Uˢ₀)   # uniform null stays at rest before the group
 end
 
 @testset "Bounded tank: single Gaussian, packet enters and leaves" begin
