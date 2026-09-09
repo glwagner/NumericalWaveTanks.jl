@@ -206,6 +206,14 @@ GPU cost so far: about 33 GPU-hours. A member costs 1.5 min (S0) to 2.4 min (M2)
   unsheared), momentum deposited to k₀z ≈ −3, w_rms in the Stokes layer 14.5 vs 11–12 mm/s;
   spanwise w spectra gain energy at the largest scales but no clean roll peak (La_t ≈ 0.6). The
   jet decays 50 → 40 mm/s before the group arrives; the laminar sheared null stays 1-D.
+  Is it Langmuir instability? Seeded laminar runs (M0, `noise=1e-4`, `langmuir_diagnostics.jl`):
+  w grows only when shear and group coexist, peak rate 0.31 s⁻¹ (α = 1) and 0.56 s⁻¹ (α = 2) at the
+  group peak, but the transient group supplies only 1.4 (α = 1) to 2.5 (α = 2) e-foldings of w_rms
+  in total, so CL2 is real yet cannot organize finite-amplitude rolls out of 12 mm/s turbulence.
+  In the turbulent sheared run the surface w is streamwise-elongated only at the peak (elongated-mode
+  fraction 0.37 vs 0.26, L_x/L_y 2.5 vs 1.5, spanwise spacing ≈ 0.1 m ≈ 2δˢ) and isotropizes by
+  age 2τ₀. To see cells: sustain the growth (regular wave train or a 3–4× longer group → 6–9
+  e-foldings), and/or use weaker turbulence (1.A) or stronger shear.
 
 ## 6. Reproducing and extending
 

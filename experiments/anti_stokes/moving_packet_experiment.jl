@@ -30,6 +30,7 @@ function run_member(; case_name = "1.D",
                       snapshot_offsets = (-3, -1, 0, 1, 3, 4),
                       remove_mean_transport = true,
                       shear_amplitude = 1.0,
+                      noise_amplitude = 0.0,
                       animation_slices = false,
                       root = default_data_root(),
                       overwrite = true,
@@ -127,6 +128,15 @@ function run_member(; case_name = "1.D",
         set!(u_shear, (x, y, z) -> shear_profile(z, α, uniform))
         interior(u₀) .+= interior(u_shear)
         @info @sprintf("Added initial Eulerian shear current α Uˢ₀ e^{2kz} with α = %.2f (surface %.2f mm/s)", α, 1e3 * α * Float64(case.Uˢ₀))
+    end
+
+    # Optional white noise (seeded laminar instability experiments; projected by set!)
+    if noise_amplitude > 0
+        rng = Xoshiro(seed)
+        for f in (u₀, v₀)
+            interior(f) .+= on_architecture(arch, FT(noise_amplitude) .* randn(rng, FT, size(interior(f))))
+        end
+        @info @sprintf("Added white noise of amplitude %.2e m s⁻¹ to u and v", noise_amplitude)
     end
 
     set!(model; u=u₀, v=v₀, w=w₀)
@@ -251,7 +261,7 @@ function run_member(; case_name = "1.D",
     jldsave(joinpath(dir, "metadata.jld2"), false, IOStream;
             case, member, seed, level, Nx, Ny, Nz, Lx, Ly, Lz = Float64(case.h), FT = string(FT),
             packet, has_packet = has_packet(member), has_turbulence = has_turbulence(member),
-            uniform = has_uniform_packet(member), uniform_parameters = uniform, has_shear = has_shear(member), shear_amplitude = α,
+            uniform = has_uniform_packet(member), uniform_parameters = uniform, has_shear = has_shear(member), shear_amplitude = α, noise_amplitude,
             x_FOV, i_FOV, σ_upstream, x_topology, t_peak, stop_time, τ₀, Δt, output_interval, n_out, remove_mean_transport, animation_slices,
             snapshot_times = snapshot_times_, snapshot_iterations, numerics,
             advection = summary(model.advection), closure = summary(model.closure),
