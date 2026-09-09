@@ -53,13 +53,13 @@ for seed in seeds
     global kz = k .* z
     global ages = (t .- tp) ./ τ
     # uniform group: paired, null-corrected Eulerian change, x-averaged
-    ΔU, _, _ = paired_residual(un_dir, ct_dir, dir("uniform_packet_null"), quiescent)
+    ΔU, _, _ = paired_residual(un_dir, ct_dir, dir("uniform_packet_null"), quiescent; fields=("U",))
     ΔUz = xmean(ΔU)
     push!(res.ΔU_uniform, ΔUz)
     push!(res.surf_uniform, ΔUz[end, :])
     # travelling packet, same seed: wake-age composite
     if isdir(pk_dir)
-        ΔUp, pk, _ = paired_residual(pk_dir, ct_dir, dir("packet_null"), quiescent)
+        ΔUp, pk, _ = paired_residual(pk_dir, ct_dir, dir("packet_null"), quiescent; fields=("U",))
         edges = collect(range(-4.5τ, 4.5τ; step=τ / 8))
         a, C, _ = wake_age_composite(ΔUp, xnodes_faces(pk), times(pk), run_packet(pk); age_edges=edges)
         push!(res.ΔU_travel, (a ./ τ, C))

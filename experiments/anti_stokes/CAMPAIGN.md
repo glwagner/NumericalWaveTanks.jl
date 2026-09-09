@@ -193,6 +193,20 @@ GPU cost so far: about 33 GPU-hours. A member costs 1.5 min (S0) to 2.4 min (M2)
   (9–18 against 3–6) because only horizontal components are forced. Figures
   `regular_waves_{2A,2B,3A,3B}_R1_weno_forced.png`. Cost of the whole forced round ≈ 10.5 GPU-h.
 
+* Figure 3(a) reproduction (1.D, seven bounded M2 seeds, `figure3_reproduction.jl`): with the
+  paper's intervals (ages −4.5…−3.3τ₀ and 2.0…3.2τ₀) applied to every fluid column, raw
+  U₃ − U₁ = −9.45 ± 0.54 mm/s at the surface (null-corrected −10.25 ± 0.35) against −12.3 mm/s
+  in the paper; at a single fluid-frame plane the raw difference is −2 ± 4 mm/s because the
+  plane sees the same eddies for only ~3 s (the lab plane samples advecting fluid). The digitized
+  paper curves live in `analysis/anti_stokes/data/`.
+* Uniform group (temporal envelope, `uniform_packet_*`): surface ΔU −10.51 ± 0.21 mm/s vs
+  −10.80 ± 0.26 for the travelling packet, identical profiles → the response is local and set by
+  uˢ(z, t) alone. Langmuir-shear variant (`sheared_*`, initial Eulerian current Uˢ₀e^{2kz}):
+  the group's surface deceleration relative to the sheared control is −15 mm/s at age 3τ₀ (vs −10
+  unsheared), momentum deposited to k₀z ≈ −3, w_rms in the Stokes layer 14.5 vs 11–12 mm/s;
+  spanwise w spectra gain energy at the largest scales but no clean roll peak (La_t ≈ 0.6). The
+  jet decays 50 → 40 mm/s before the group arrives; the laminar sheared null stays 1-D.
+
 ## 6. Reproducing and extending
 
 ### Environment
@@ -284,6 +298,24 @@ sbatch batch/anti_stokes_analysis.batch script=regular_waves_analysis.jl family=
 # plumbing test (unit tests + RT-level spin-up, members and report on a GPU, scratch data root)
 sbatch batch/anti_stokes_forced_test.batch
 ```
+
+### Figure 3(a) reproduction, uniform group and Langmuir shear (1.D)
+
+```bash
+# extra bounded seeds for the fixed-plane comparison (seed 5 blew up at this amplitude; seed 9 too)
+CASE=1.D LEVEL=M2 X_TOPOLOGY=bounded AMPLITUDE=2.85,0.99,2.90 L_FACTOR=1.6 sbatch --array=16-18 batch/anti_stokes_marginal.batch
+sbatch batch/anti_stokes_analysis.batch script=figure3_reproduction.jl case=1.D level=M2 seeds=1,2,3,4,6,7,8 x_topology=bounded
+# uniform group + sheared members (reuse the periodic M2 checkpoints and controls), then analysis and y-z movies
+sbatch batch/anti_stokes_uniform_test.batch                      # unit tests + S0 nulls
+CASE=1.D LEVEL=M2 sbatch batch/anti_stokes_uniform.batch          # tasks 0,1 nulls; 11-14 seeds (SHEAR=1.0)
+sbatch batch/anti_stokes_analysis.batch script=uniform_packet.jl case=1.D level=M2 seeds=1,2,3,4
+sbatch batch/anti_stokes_analysis.batch script=animate_yz_plane.jl run=<sheared_packet_turbulence dir> control=<sheared_control dir>
+```
+
+The shear amplitude α (Uᴱ = α Uˢ₀ e^{2kz}) is the `shear=` argument of `run_moving_packet.jl`.
+Web-sized MP4s are made with Makie's bundled ffmpeg on a compute node (`scratchpad/encode.jl`
+pattern: `CairoMakie.Makie.FFMPEG_jll.ffmpeg() do exe; run(`$exe -i in.mp4 -vf scale=1000:-2
+-c:v libx264 -crf 33 -pix_fmt yuv420p out.mp4`) end`); there is no system ffmpeg.
 
 ### Plotting recipes
 

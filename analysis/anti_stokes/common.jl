@@ -222,9 +222,10 @@ end
 ΔU_turb = (U_packet+turb − U_turb) − (U_packet+null − U_null) as an `(Nx, Nz, Nt)` array,
 together with the packet and control `Run`s.
 """
-function paired_residual(packet_dir, control_dir, null_dir=nothing, quiescent_dir=nothing)
-    pk = load_run(packet_dir)
-    ct = load_run(control_dir)
+function paired_residual(packet_dir, control_dir, null_dir=nothing, quiescent_dir=nothing;
+                         fields=("U", "V", "W", "UU", "VV", "WW", "UW"))
+    pk = load_run(packet_dir; fields)
+    ct = load_run(control_dir; fields)
     t = times(pk)
     t ≈ times(ct) || error("Packet and control output times differ")
     ΔU = xzt(pk, "U") .- xzt(ct, "U")

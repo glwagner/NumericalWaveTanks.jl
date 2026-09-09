@@ -30,7 +30,7 @@ a { color: var(--accent); }
 <header>
   <div class="eyebrow">Ellingsen et al. (2026), Experiment 1 · numerical reproduction · NumericalWaveTanks.jl</div>
   <h1>Wave packets crossing turbulent tanks</h1>
-  <p>Each movie follows one Stokes-drift packet moving left to right at its group speed through decaying grid turbulence in the 12 m × 0.8 m × 0.4 m tank (periodic in x except where noted). The red dashed line is the observation plane at x = 6 m; the black line follows the packet centre. Panels: prescribed surface Stokes drift; surface vertical velocity w in the packet run; w in the matched no-wave control from the same turbulence; their difference, the packet-induced perturbation; and the x–z slice of the Eulerian streamwise perturbation uᴱ − u_control with the Stokes drift already subtracted, where the anti-Stokes shear layer forms within the Stokes depth (dotted line).</p>
+  <p>The first six movies each follow one Stokes-drift packet moving left to right at its group speed through decaying grid turbulence in the 12 m × 0.8 m × 0.4 m tank (periodic in x except where noted). The red dashed line is the observation plane at x = 6 m; the black line follows the packet centre. Panels: prescribed surface Stokes drift; surface vertical velocity w in the packet run; w in the matched no-wave control from the same turbulence; their difference, the packet-induced perturbation; and the x–z slice of the Eulerian streamwise perturbation uᴱ − u_control with the Stokes drift already subtracted, where the anti-Stokes shear layer forms within the Stokes depth (dotted line).</p>
 </header>
 
 <section class="movie">
@@ -63,6 +63,30 @@ a { color: var(--accent); }
   <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/packet_turbulence_animation_case_1C2_M2_seed1_small.mp4"></video>
   <p>Same turbulence and seed as 1.C.1 with ϵ = 0.22, Uˢ₀ = 51 mm/s. Composite residual −13.7 mm/s: a ratio of 1.65 to 1.C.1 against 2.15 for ϵ².</p>
 </section>
+<section class="movie">
+  <h2>Uniform group, y–z plane <span class="grid">M2, 1536 × 128 × 128, seed 1</span></h2>
+  <p>The same Gaussian Stokes envelope applied everywhere at once (no propagation, no return flow). Top: vertical velocity w in the y–z plane at x = 6 m; middle: Eulerian streamwise velocity uᴱ = u − uˢ(z, t); bottom: w in the matched no-wave control. The anti-Stokes response is identical to the travelling packet's: −10.5 against −10.8 mm/s at the surface.</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/yz_plane_uniform_packet_turbulence_case_1D_M2_seed1_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Langmuir-shear variant, y–z plane <span class="grid">M2, seed 1, initial current Uˢ₀e^(2kz)</span></h2>
+  <p>Same group over the same turbulence, but the initial Eulerian current has the shape of the Stokes drift, so the Eulerian and Stokes shears are aligned (the Craik–Leibovich CL2 condition). Compared with the sheared control (bottom), the group drives stronger vertical exchange in the Stokes layer and decelerates the surface about 50 % more than without shear.</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/yz_plane_sheared_packet_turbulence_case_1D_M2_seed1_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Figure 3(a) of Ellingsen et al. (2026), reproduced <span class="grid">case 1.D, bounded tank, 7 seeds</span></h2>
+  <p>Left: the paper's U₁ (before the group) and U₃ (after) for case 1.D, digitized from the vector figure. Middle: the LES with the same intervals (−4.5τ to −3.3τ and 2.0τ to 3.2τ about the group peak) applied to every fluid column. Right: ΔU = U₃ − U₁, experiment against LES; the thin line is the LES at a single plane fixed in the fluid, which sees too few eddies, the reason the experiment averaged 60 groups.</p>
+  <img src="https://raw.githubusercontent.com/glwagner/NumericalWaveTanks.jl/glw/anti-stokes/figures/anti_stokes/figure3a_reproduction_1D_M2_bounded.png" alt="Figure 3(a) reproduction" style="width:100%;border:1px solid var(--rule)">
+</section>
+
+<section class="movie">
+  <h2>Uniform group vs travelling packet, and the Langmuir-shear response <span class="grid">case 1.D, M2, 4 seeds</span></h2>
+  <p>Panels: (1) ΔU profiles over ages 2–3.2τ₀, uniform group against the travelling packet's wake-age composite; (2) surface response against group age; (3) the sheared case's Eulerian current with and without the group; (4) the group-induced change of the sheared current against the unsheared response; (5) vertical-velocity rms; (6) spanwise spectra of w at the Stokes depth.</p>
+  <img src="https://raw.githubusercontent.com/glwagner/NumericalWaveTanks.jl/glw/anti-stokes/figures/anti_stokes/uniform_packet_1D_M2_weno.png" alt="Uniform group and Langmuir shear" style="width:100%;border:1px solid var(--rule)">
+</section>
+
 <section class="key">
   <div><b>What to watch for</b><p>The difference panel stays blank ahead of the packet and fills behind it: the perturbation is a wake, not a precursor.</p></div>
   <div><b>Weak vs strong turbulence</b><p>1.A and 1.B (7–11 mm/s rms) produce a slower, weaker response than 1.D and 1.C.2 (13–17 mm/s); the anti-Stokes current scales with turbulence intensity.</p></div>
