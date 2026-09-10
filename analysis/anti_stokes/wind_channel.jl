@@ -29,7 +29,7 @@ z = zf = t = nothing; k = 0.0; τ = 0.0
 for seed in seeds
     dw, dc = dir("wind_sheared_turbulence"; seed), dir("wind_sheared_control"; seed)
     all(isdir, (dw, dc)) || (@warn "seed $seed incomplete"; continue)
-    rw, rc = load_run(dw; fields=("U", "W", "WW", "UW")), load_run(dc; fields=("U", "W", "WW", "UW"))
+    rw, rc = load_run(dw), load_run(dc)     # all fields: central_moments needs them
     global t, z, zf, k = times(rw), znodes_centers(rw), znodes_faces(rw), k₀(rw)
     global τ = rw.meta["wind_stress"]
     push!(U_w, xmean(eulerian_U(rw))); push!(U_c, xmean(xzt(rc, "U")))
