@@ -16,6 +16,7 @@ t_want = getarg(args, "time", 14.0)
 depth = getarg(args, "depth", 0.03)
 xr = parse.(Float64, split(getarg(args, "xrange", "3,8"), ','))
 name = getarg(args, "name", "depth_slice")
+scale = getarg(args, "scale", 1.0)     # px_per_unit of the saved PNG (0.5 halves the file for web pages)
 
 fields = []
 for d in dirs
@@ -55,5 +56,5 @@ end
 Colorbar(fig[1:length(dirs), 3]; colormap = :balance, colorrange = (-1e3wmax, 1e3wmax), label = "w (mm/s)")
 Colorbar(fig[1:length(dirs), 4]; colormap = :balance, colorrange = (-1e3umax, 1e3umax), label = "u′ (mm/s)")
 output = joinpath(figure_directory(), @sprintf("%s_z%.0fcm_t%.0fs.png", name, 100depth, fields[1].t))
-save(output, fig)
+save(output, fig; px_per_unit=scale)
 @info "Saved $output"
