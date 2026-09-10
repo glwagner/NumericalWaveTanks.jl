@@ -160,7 +160,8 @@ end
     # wind stress accelerates the surface layer: laminar wind + shear, no waves needed (control member)
     sim_w, dir_w = run_member(; member="wind_sheared_null", level="T0", FT=Float64, arch=CPU(), root, stop_time=0.06, output_interval=0.02, progress_interval=1000, wind_stress=1e-4, shear_amplitude=0.0)
     uw = Array(interior(sim_w.model.velocities.u))
-    @test mean(uw[:, :, end]) > 0 && mean(uw[:, :, 1]) ≈ 0 atol=1e-9   # the stress accelerates the surface layer only
+    @test mean(uw[:, :, end]) > 0                       # the stress accelerates the surface layer
+    @test isapprox(mean(uw[:, :, 1]), 0; atol=1e-9)      # and nothing else in 0.06 s
     mw = load(joinpath(dir_w, "metadata.jld2")); @test mw["wind_stress"] == 1e-4 && mw["has_wind"]
     @test has_turbulence("sheared_control") && !has_turbulence("sheared_packet_null")
     # plumbing: the uniform and sheared null members run at T0 on the CPU
