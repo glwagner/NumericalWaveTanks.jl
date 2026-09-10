@@ -87,6 +87,24 @@ a { color: var(--accent); }
   <img src="https://raw.githubusercontent.com/glwagner/NumericalWaveTanks.jl/glw/anti-stokes/figures/anti_stokes/uniform_packet_1D_M2_weno.png" alt="Uniform group and Langmuir shear" style="width:100%;border:1px solid var(--rule)">
 </section>
 
+<section class="movie">
+  <h2>Steady wave train + Langmuir shear, y–z plane <span class="grid">M2, seed 1, uˢ = Uˢ₀e^(2kz) from t = 0</span></h2>
+  <p>An infinite wave train with the packet-core Stokes drift switched on at t = 0 over the 1.D turbulence and the initial Eulerian current Uˢ₀e^(2kz). Streamwise Langmuir rolls organize the near-surface vertical velocity during the first few seconds and raise w rms in the Stokes layer by 60 %, then consume the aligned shear that feeds them: by 20 s the surface current has reversed and the field is back to ordinary turbulence. Bottom: the sheared control without waves.</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/yz_plane_steady_sheared_turbulence_case_1D_M2_seed1_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Laminar Craik–Leibovich instability <span class="grid">M2, no turbulence, 10⁻⁴ m/s noise</span></h2>
+  <p>The same steady waves and shear current without turbulence, seeded with white noise: vertical velocity grows at 0.38 s⁻¹ into streamwise rolls that saturate near 2–3 mm/s in the top 5 cm and coarsen in spanwise scale.</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/yz_plane_steady_sheared_null_case_1D_M2_seed0_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Steady wave train in the packet tank: anti-Stokes spin-up and the Langmuir variant <span class="grid">case 1.D, M2, 4 seeds</span></h2>
+  <p>Panels: (1) anti-Stokes ΔU profiles since onset without shear; (2) surface velocities against time, including the wave effect on the sheared current; (3) sheared current profiles with and without waves; (4) w rms; (5) spanwise w spectra; (6) growth of the laminar seeded instability.</p>
+  <img src="https://raw.githubusercontent.com/glwagner/NumericalWaveTanks.jl/glw/anti-stokes/figures/anti_stokes/steady_waves_channel_1D_M2_weno.png" alt="Steady wave train and Langmuir shear" style="width:100%;border:1px solid var(--rule)">
+</section>
+
 <section class="key">
   <div><b>What to watch for</b><p>The difference panel stays blank ahead of the packet and fills behind it: the perturbation is a wake, not a precursor.</p></div>
   <div><b>Weak vs strong turbulence</b><p>1.A and 1.B (7–11 mm/s rms) produce a slower, weaker response than 1.D and 1.C.2 (13–17 mm/s); the anti-Stokes current scales with turbulence intensity.</p></div>

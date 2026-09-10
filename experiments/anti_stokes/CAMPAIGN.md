@@ -214,6 +214,15 @@ GPU cost so far: about 33 GPU-hours. A member costs 1.5 min (S0) to 2.4 min (M2)
   fraction 0.37 vs 0.26, L_x/L_y 2.5 vs 1.5, spanwise spacing ≈ 0.1 m ≈ 2δˢ) and isotropizes by
   age 2τ₀. To see cells: sustain the growth (regular wave train or a 3–4× longer group → 6–9
   e-foldings), and/or use weaker turbulence (1.A) or stronger shear.
+* Steady wave train in the packet tank (`steady_*` members, `batch/anti_stokes_steady.batch`,
+  `steady_waves_channel.jl`; Uˢ₀ = 49.7 mm/s from t = 0, 22.4 s, 4 seeds): anti-Stokes ΔU(0) reaches
+  −26 ± 1 mm/s (0.53 Uˢ₀) at 20 s and is still growing. With the initial current Uˢ₀e^{2kz} the
+  CL2 instability is vigorous (laminar seeded growth 0.38 s⁻¹, ×75 by 20 s; turbulent run: surface
+  w elongation ratio 3.5 vs 2.0 in the control during the first 6 s, w_rms 20 vs 12–13 mm/s at
+  10 s) but self-limiting: the rolls, the turbulence and the anti-Stokes tendency remove the
+  aligned shear (surface current +50 → −15 mm/s by 20 s; control keeps +28), after which the
+  anisotropy returns to the control value. Persistent Langmuir cells need a sustained shear source
+  (wind stress; not implemented), a larger Uˢ₀ (`stokes_factor`), or weaker turbulence.
 
 ## 6. Reproducing and extending
 
@@ -320,7 +329,10 @@ sbatch batch/anti_stokes_analysis.batch script=uniform_packet.jl case=1.D level=
 sbatch batch/anti_stokes_analysis.batch script=animate_yz_plane.jl run=<sheared_packet_turbulence dir> control=<sheared_control dir>
 ```
 
-The shear amplitude α (Uᴱ = α Uˢ₀ e^{2kz}) is the `shear=` argument of `run_moving_packet.jl`.
+The shear amplitude α (Uᴱ = α Uˢ₀ e^{2kz}) is the `shear=` argument of `run_moving_packet.jl`;
+`stokes_factor=` scales Uˢ₀ (≡ raising ε), `noise=` adds white noise for seeded laminar runs.
+Steady wave train: `CASE=1.D LEVEL=M2 sbatch batch/anti_stokes_steady.batch`, then
+`script=steady_waves_channel.jl` and `script=langmuir_diagnostics.jl runs=<dirs>` (surface w anisotropy).
 Web-sized MP4s are made with Makie's bundled ffmpeg on a compute node (`scratchpad/encode.jl`
 pattern: `CairoMakie.Makie.FFMPEG_jll.ffmpeg() do exe; run(`$exe -i in.mp4 -vf scale=1000:-2
 -c:v libx264 -crf 33 -pix_fmt yuv420p out.mp4`) end`); there is no system ffmpeg.

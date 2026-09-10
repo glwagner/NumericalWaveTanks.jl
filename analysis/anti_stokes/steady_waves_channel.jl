@@ -87,24 +87,24 @@ end
 
 set_theme!(Theme(fontsize=17))
 fig = Figure(size=(2000, 1300))
-Label(fig[0, 1:3], "Case $case_name at $level: steady wave train (Uˢ₀ = $(round(1e3Uˢ₀, digits=1)) mm/s, k = $k m⁻¹) switched on at t = 0 over the 1.D turbulence, without and with the initial current Uˢ₀e^{2kz}; $n seeds", fontsize=21)
+Label(fig[0, 1:3], "Case $case_name at $level: steady wave train (Uˢ₀ = $(round(1e3Uˢ₀, digits=1)) mm/s, k = $(round(k, digits=1)) m⁻¹) switched on at t = 0 over the 1.D turbulence, without and with the initial current Uˢ₀e^{2kz}; $n seeds", fontsize=21)
 colors = Makie.wong_colors()
 
-ax1 = Axis(fig[1, 1]; xlabel="ΔU (mm/s)", ylabel="k₀ z", title="(1) steady waves, no shear: null-corrected ΔU(z) since onset (dashed: −uˢ)")
+ax1 = Axis(fig[1, 1]; xlabel="ΔU (mm/s)", ylabel="k₀ z", title="(1) steady waves, no shear: ΔU(z) since onset (dashed: −uˢ)")
 for (j, t₀) in enumerate(times_out)
     lines!(ax1, 1e3 .* ΔUw[:, nearest_index(t, t₀)], kz; color=colors[j], linewidth=3, label="t = $(t₀) s")
 end
 lines!(ax1, -1e3 .* Uˢ₀ .* exp.(2kz), kz; color=(:gray, 0.6), linestyle=:dash)
 vlines!(ax1, [0]; color=(:black, 0.3)); ylims!(ax1, -4, 0); axislegend(ax1; position=:lb, labelsize=13)
 
-ax2 = Axis(fig[1, 2]; xlabel="t (s)", ylabel="mm/s", title="(2) surface Eulerian velocity: waves-only ΔU (blue), sheared current with (solid) and without (dashed) waves")
+ax2 = Axis(fig[1, 2]; xlabel="t (s)", ylabel="mm/s", title="(2) surface Eulerian velocities against time")
 lines!(ax2, t, 1e3 .* ΔUw[end, :]; color=colors[1], linewidth=3, label="ΔU, steady waves over turbulence")
 lines!(ax2, t, 1e3 .* Ush[end, :]; color=colors[2], linewidth=3, label="⟨u⟩ᴱ, sheared + waves")
 lines!(ax2, t, 1e3 .* Usc[end, :]; color=colors[2], linewidth=2, linestyle=:dash, label="⟨u⟩ᴱ, sheared control")
 lines!(ax2, t, 1e3 .* (Ush[end, :] .- Usc[end, :]); color=colors[3], linewidth=3, label="difference (wave effect on the sheared current)")
 hlines!(ax2, [0, -1e3Uˢ₀]; color=(:black, 0.3)); axislegend(ax2; position=:lb, labelsize=12)
 
-ax3 = Axis(fig[1, 3]; xlabel="⟨u⟩ᴱ (mm/s)", ylabel="k₀ z", title="(3) sheared current profiles (solid: with waves; dashed: control)")
+ax3 = Axis(fig[1, 3]; xlabel="⟨u⟩ᴱ (mm/s)", ylabel="k₀ z", title="(3) sheared current: with waves (solid), control (dashed)")
 for (j, t₀) in enumerate(times_out)
     ni = nearest_index(t, t₀)
     lines!(ax3, 1e3 .* Ush[:, ni], kz; color=colors[j], linewidth=2.5, label="t = $(t₀) s")
@@ -113,7 +113,7 @@ end
 lines!(ax3, 1e3 .* Uˢ₀ .* exp.(2kz), kz; color=(:black, 0.4), linestyle=:dot, label="initial current")
 vlines!(ax3, [0]; color=(:black, 0.3)); ylims!(ax3, -4, 0); axislegend(ax3; position=:rb, labelsize=12)
 
-ax4 = Axis(fig[2, 1]; xlabel="w_rms (mm/s)", ylabel="k₀ z", title="(4) vertical-velocity rms at t = 10 s (solid) and 20 s (dashed)")
+ax4 = Axis(fig[2, 1]; xlabel="w_rms (mm/s)", ylabel="k₀ z", title="(4) w_rms at t = 10 s (solid) and 20 s (dashed)")
 for (j, m) in enumerate(members_w)
     Wm = avg(wrms[m]); kzw = k .* zf[1:size(Wm, 1)]
     lines!(ax4, 1e3 .* Wm[:, nearest_index(t, 10.0)], kzw; color=colors[j], linewidth=3, label=m)
@@ -121,7 +121,7 @@ for (j, m) in enumerate(members_w)
 end
 ylims!(ax4, -4, 0); axislegend(ax4; position=:rb, labelsize=12)
 
-ax5 = Axis(fig[2, 2]; xlabel="k_y (m⁻¹)", ylabel="spanwise spectrum of w at z = −δˢ", title="(5) spanwise w spectra, 5 s windows centred on t = 5, 10, 20 s (solid: sheared + waves; dotted: sheared control; dashed: waves only)", xscale=log10, yscale=log10)
+ax5 = Axis(fig[2, 2]; xlabel="k_y (m⁻¹)", ylabel="spanwise spectrum of w at z = −δˢ", title="(5) spanwise w spectra at z = −δˢ (solid: sheared + waves; dotted: sheared control; dashed: waves only)", xscale=log10, yscale=log10)
 for (j, t₀) in enumerate((5.0, 10.0, 20.0))
     for (m, ls) in (("steady_sheared_turbulence", :solid), ("sheared_control", :dot), ("steady_waves_turbulence", :dash))
         Sm = mean(hcat([s[2][t₀] for s in spectra[m]]...); dims=2) |> vec
@@ -132,7 +132,7 @@ end
 vlines!(ax5, [2k]; color=(:black, 0.4), linestyle=:dot, label="2k₀")
 axislegend(ax5; position=:lb, labelsize=12)
 
-ax6 = Axis(fig[2, 3]; xlabel="t (s)", ylabel="w_rms (mm/s)", title="(6) laminar seeded reference (steady_sheared_null, 10⁻⁴ m/s noise): CL2 growth", yscale=log10)
+ax6 = Axis(fig[2, 3]; xlabel="t (s)", ylabel="w_rms (mm/s)", title="(6) laminar seeded reference: CL2 growth of w_rms", yscale=log10)
 if !isnothing(lam_t)
     lines!(ax6, lam_t, 1e3 .* lam_w; color=:black, linewidth=3)
     i1, i2 = nearest_index(lam_t, 4.0), nearest_index(lam_t, 12.0)
