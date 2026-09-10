@@ -19,6 +19,8 @@ stride = getarg(args, "stride", 1)
 depth = getarg(args, "depth", 0.2)
 stills = haskey(args, "stills") ? parse.(Float64, split(args["stills"], ',')) : Float64[]
 
+# suffix of the run directory beyond the standard seed/dt part (e.g. "_ustar4.5_long"), so movies of tagged runs get distinct names
+run_tag(d) = (m = match(r"dt\d\.\d{3}(.*)$", basename(d)); isnothing(m) ? "" : m.captures[1])
 run = load_run(run_dir; fields=("U",))
 c = run_case(run)
 τ, tp, k = τ₀(run), t_peak(run), k₀(run)
@@ -68,7 +70,7 @@ if has_control
 end
 
 output = get(args, "output", joinpath(figure_directory(),
-             "yz_plane_$(run.meta["member"])_$(case_dirname(c))_$(run.meta["level"])_seed$(run.meta["seed"]).mp4"))
+             "yz_plane_$(run.meta["member"])_$(case_dirname(c))_$(run.meta["level"])_seed$(run.meta["seed"])$(run_tag(run_dir)).mp4"))
 @info "Recording $(length(frames)) frames to $output"
 CairoMakie.Makie.record(fig, output, frames; framerate) do frame
     n_obs[] = frame
