@@ -17,6 +17,7 @@ control_dir = get(args, "control", "")
 framerate = getarg(args, "framerate", 15)
 stride = getarg(args, "stride", 1)
 depth = getarg(args, "depth", 0.2)
+stills = haskey(args, "stills") ? parse.(Float64, split(args["stills"], ',')) : Float64[]
 
 run = load_run(run_dir; fields=("U",))
 c = run_case(run)
@@ -75,4 +76,9 @@ end
 n_obs[] = nearest_index(t, tp + τ)
 still = replace(output, ".mp4" => "_age1.png")
 save(still, fig)
+for ts in stills
+    n_obs[] = nearest_index(t, ts)
+    s = replace(output, ".mp4" => @sprintf("_t%.0fs.png", ts))
+    save(s, fig); @info "Saved $s"
+end
 @info "Saved $output and $still"
