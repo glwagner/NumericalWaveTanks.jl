@@ -14,8 +14,9 @@ include("common.jl")
 args = parse_key_value_args(ARGS)
 dirs = String.(split(args["runs"], ','))
 labels = String.(split(get(args, "labels", join(basename.(dirname.(dirs)), "|")), '|'))
-t_snap = getarg(args, "snapshot", 14.0)
+t_snaps = parse.(Float64, split(get(args, "snapshots", string(getarg(args, "snapshot", 14.0))), ','))
 t_max = getarg(args, "tmax", 22.4)
+xr = parse.(Float64, split(getarg(args, "xrange", "3,8"), ','))     # x window shown (m); full strips are too thin for 10 cm cells
 stride = getarg(args, "stride", 2)
 framerate = getarg(args, "framerate", 12)
 name = getarg(args, "name", "surface_view")
@@ -31,19 +32,22 @@ for w in W[2:end]
 end
 nmax = findlast(<=(t_max + 1e-6), t)
 grid = W[1].grid
-x = collect(Float64, Array(xnodes(grid, Center())))
-xf = collect(Float64, Array(xnodes(grid, Face())))
+x_all = collect(Float64, Array(xnodes(grid, Center())))
+xf_all = collect(Float64, Array(xnodes(grid, Face())))
+ix = findall(xx -> xr[1] <= xx <= xr[2], x_all); ixf = findall(xx -> xr[1] <= xx <= xr[2], xf_all)
+x, xf = x_all[ix], xf_all[ixf]
 y = collect(Float64, Array(ynodes(grid, Center())))
 Lx, Ly = grid.Lx, grid.Ly
 
-wfield(i, n) = Float64.(Array(interior(W[i][n]))[:, :, 1])
+wfield(i, n) = Float64.(Array(interior(W[i][n]))[ix, :, 1])
 function ufield(i, n)
     u = Float64.(Array(interior(U[i][n]))[:, :, 1])
-    return u .- mean(u; dims=2)          # remove the y-mean (packet / mean current / Stokes drift)
+    u = u .- mean(u; dims=2)             # remove the y-mean (packet / mean current / Stokes drift)
+    return u[ixf[ixf .<= size(u, 1)], :]
 end
-n_snap = nearest_index(t, t_snap)
-wmax = maximum(quantile(abs.(vec(wfield(i, n_snap))), 0.995) for i in eachindex(dirs))
-umax = maximum(quantile(abs.(vec(ufield(i, n_snap))), 0.995) for i in eachindex(dirs))
+n_ref = nearest_index(t, t_snaps[end])
+wmax = maximum(quantile(abs.(vec(wfield(i, n_ref))), 0.995) for i in eachindex(dirs))
+umax = maximum(quantile(abs.(vec(ufield(i, n_ref))), 0.995) for i in eachindex(dirs))
 
 function draw!(fig, n)
     for (i, lbl) in enumerate(labels)
@@ -59,18 +63,21 @@ function draw!(fig, n)
 end
 
 set_theme!(Theme(fontsize=16))
-fig = Figure(size = (2400, 220 * length(dirs) + 120))
-title = Observable(@sprintf("Surface view, t = %.1f s", t[n_snap]))
-Label(fig[0, 1:4], title; fontsize = 20)
-draw!(fig, n_snap)
-snapshot = joinpath(figure_directory(), "$(name)_snapshot_t$(round(Int, t[n_snap]))s.png")
-save(snapshot, fig)
-@info "Saved $snapshot"
+row_h = round(Int, 1000 * (Ly / (xr[2] - xr[1])) + 40)
+for t_snap in t_snaps
+    n_snap = nearest_index(t, t_snap)
+    fig = Figure(size = (2400, row_h * length(dirs) + 120))
+    Label(fig[0, 1:4], @sprintf("Surface view, x ∈ [%.0f, %.0f] m, t = %.1f s", xr..., t[n_snap]); fontsize = 20)
+    draw!(fig, n_snap)
+    snapshot = joinpath(figure_directory(), "$(name)_snapshot_t$(round(Int, t[n_snap]))s.png")
+    save(snapshot, fig)
+    @info "Saved $snapshot"
+end
 
 # animation: redraw the heatmaps through observables
-fig = Figure(size = (2400, 220 * length(dirs) + 120))
+fig = Figure(size = (2400, row_h * length(dirs) + 120))
 n_obs = Observable(1)
-Label(fig[0, 1:4], @lift(@sprintf("Surface view, t = %.1f s", t[$n_obs])); fontsize = 20)
+Label(fig[0, 1:4], @lift(@sprintf("Surface view, x ∈ [%.0f, %.0f] m, t = %.1f s", xr..., t[$n_obs])); fontsize = 20)
 for (i, lbl) in enumerate(labels)
     axw = Axis(fig[i, 1]; title = i == 1 ? "vertical velocity w (mm/s), one cell below the surface" : "", ylabel = lbl, xlabel = i == length(dirs) ? "x (m)" : "", aspect = DataAspect(), titlesize = 16)
     heatmap!(axw, x, y, @lift(1e3 .* wfield(i, $n_obs)); colormap = :balance, colorrange = (-1e3wmax, 1e3wmax))
