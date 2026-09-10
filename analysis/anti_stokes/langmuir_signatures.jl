@@ -92,6 +92,10 @@ for (j, R) in enumerate(results)
     n = nearest_index(R.t, min(times_req[end], R.t[end]))
     lines!(ax3, 1e6 .* R.P_S[:, n], kz; color=colors[1], linewidth=2.5, label="Stokes: −⟨u′w′⟩∂zuˢ")
     lines!(ax3, 1e6 .* R.P_M[:, n], kz; color=colors[2], linewidth=2.5, label="mean shear: −⟨u′w′⟩∂z⟨uᴱ⟩")
+    # the wind-drift layer in the top cells dwarfs everything else: set the x range from the interior
+    interior_rows = 1:max(1, length(R.z) - 3)
+    pmax = 1e6 * maximum(abs, vcat(R.P_S[interior_rows, n], R.P_M[interior_rows, n]))
+    pmax > 0 && xlims!(ax3, -1.1pmax, 1.1pmax)
     vlines!(ax3, [0]; color=(:black, 0.3)); ylims!(ax3, -4, 0); j == nr && axislegend(ax3; position=:rb, labelsize=11)
 
     ax4 = Axis(fig[4, j]; xlabel="skewness of w (snapshots)", ylabel = j == 1 ? "k₀ z" : "")
