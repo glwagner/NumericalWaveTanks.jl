@@ -171,8 +171,9 @@ end
     # wind stress accelerates the surface layer: laminar wind + shear, no waves needed (control member)
     sim_w, dir_w = run_member(; member="wind_sheared_null", level="T0", FT=Float64, arch=CPU(), root, stop_time=0.06, output_interval=0.02, progress_interval=1000, wind_stress=1e-4, shear_amplitude=0.0)
     uw = Array(interior(sim_w.model.velocities.u))
-    @test mean(uw[:, :, end]) > 0                       # the stress accelerates the surface layer
-    @test isapprox(mean(uw[:, :, 1]), 0; atol=1e-9)      # and nothing else in 0.06 s
+    # the Lagrangian initial condition carries uˢ(z) minus its volume mean (uniform offset ≈ −6.6 mm/s),
+    # and the stress accelerates the top layer: surface minus bottom exceeds most of Uˢ₀
+    @test mean(uw[:, :, end]) - mean(uw[:, :, 1]) > 0.8 * Float64(case.Uˢ₀)
     mw = load(joinpath(dir_w, "metadata.jld2")); @test mw["wind_stress"] == 1e-4 && mw["has_wind"]
 end
 
