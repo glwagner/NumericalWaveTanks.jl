@@ -105,6 +105,36 @@ a { color: var(--accent); }
   <img src="https://raw.githubusercontent.com/glwagner/NumericalWaveTanks.jl/glw/anti-stokes/figures/anti_stokes/steady_waves_channel_1D_M2_weno.png" alt="Steady wave train and Langmuir shear" style="width:100%;border:1px solid var(--rule)">
 </section>
 
+<section class="movie">
+  <h2>Top-down view of the four main cases <span class="grid">M2, seed 1, x ∈ [3, 8] m, 0–22 s</span></h2>
+  <p>Rows: the travelling packet, the steady wave train, steady waves with the initial shear current, and steady waves with shear and a wind stress (u* = 4.5 mm/s). Left: vertical velocity one cell below the surface; right: the streamwise velocity anomaly u′ = u − ⟨u⟩_y in the top cell. Streamwise streaks appear in the sheared case for a few seconds and persist in the wind case.</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/surface_view_4cases_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Wind cases over 60 s <span class="grid">M2, seed 1, u* = 4.5 and 10 mm/s, with and without waves</span></h2>
+  <p>Rows: shear + wind (u* = 4.5 mm/s), the same with waves, shear + wind (u* = 10 mm/s), the same with waves. The stronger stress fills the top cell with fine streaks of its own shear turbulence; the wave effect is clearest at La_t ≈ 0.3 and, for both stresses, a few centimetres below the surface.</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/surface_view_wind_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Steady waves + shear + wind, y–z plane <span class="grid">M2, seed 1, u* = 4.5 mm/s</span></h2>
+  <p>With the surface stress maintaining the aligned shear, a counter-rotating cell pair fills the tank width by 14 s with 40 mm/s downwelling, and the streamwise organization persists to the end of the run instead of decaying with the initial current. Bottom: the wind-only control.</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/yz_plane_wind_sheared_turbulence_case_1D_M2_seed1_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Horizontal slices at 3 cm depth <span class="grid">t = 14 s, five cases</span></h2>
+  <p>Below the wind-drift layer the cells are easier to see: the sheared and wind cases carry streamwise bands of vertical velocity 40–50 % stronger than the packet and plain steady-wave cases.</p>
+  <img src="https://raw.githubusercontent.com/glwagner/NumericalWaveTanks.jl/glw/anti-stokes/figures/anti_stokes/depth_slice_5cases_z3cm_t14s.png" alt="Depth slices, five cases" style="width:100%;border:1px solid var(--rule)">
+</section>
+
+<section class="movie">
+  <h2>Wind case analysis <span class="grid">u* = 4.5 mm/s, four seeds</span></h2>
+  <p>Eulerian current with and without waves, the wave-induced change, vertical-velocity rms, the surface anisotropy of w against time (Langmuir cells → high elongated fraction), and the laminar seeded reference.</p>
+  <img src="https://raw.githubusercontent.com/glwagner/NumericalWaveTanks.jl/glw/anti-stokes/figures/anti_stokes/wind_channel_1D_M2_weno_ustar4.5.png" alt="Wind case analysis" style="width:100%;border:1px solid var(--rule)">
+</section>
+
 <section class="key">
   <div><b>What to watch for</b><p>The difference panel stays blank ahead of the packet and fills behind it: the perturbation is a wake, not a precursor.</p></div>
   <div><b>Weak vs strong turbulence</b><p>1.A and 1.B (7–11 mm/s rms) produce a slower, weaker response than 1.D and 1.C.2 (13–17 mm/s); the anti-Stokes current scales with turbulence intensity.</p></div>

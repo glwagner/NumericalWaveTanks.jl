@@ -222,7 +222,15 @@ GPU cost so far: about 33 GPU-hours. A member costs 1.5 min (S0) to 2.4 min (M2)
   10 s) but self-limiting: the rolls, the turbulence and the anti-Stokes tendency remove the
   aligned shear (surface current +50 → −15 mm/s by 20 s; control keeps +28), after which the
   anisotropy returns to the control value. Persistent Langmuir cells need a sustained shear source
-  (wind stress; not implemented), a larger Uˢ₀ (`stokes_factor`), or weaker turbulence.
+  (wind stress), a larger Uˢ₀ (`stokes_factor`), or weaker turbulence.
+* Fourth case, surface momentum flux (`wind_sheared_*`, `batch/anti_stokes_wind.batch`, `wind_channel.jl`;
+  u*² = 2e-5 → u* 4.5 mm/s, La_t 0.30, and 1e-4 → u* 10 mm/s, La_t 0.45; 60 s, 4 seeds): with the
+  stress the streamwise organization persists (surface elongated fraction 0.40–0.47 with waves vs
+  0.33–0.35 wind-only control, all 60 s); a tank-width cell pair with 40 mm/s downwelling at 14 s;
+  w_rms at 3 cm 14.3 vs 10.2 (u* 4.5) and 16.4 vs 11.3 mm/s (u* 10) with vs without waves. The
+  stronger stress fills the top cell with 3 cm wind-shear streaks that mask the waves' effect at the
+  very surface. Top-down views: `surface_view.jl` (xy_surface, x window, snapshots + animation) and
+  `depth_slice_view.jl` (3D snapshots at depth).
 
 ## 6. Reproducing and extending
 
@@ -331,6 +339,9 @@ sbatch batch/anti_stokes_analysis.batch script=animate_yz_plane.jl run=<sheared_
 
 The shear amplitude α (Uᴱ = α Uˢ₀ e^{2kz}) is the `shear=` argument of `run_moving_packet.jl`;
 `stokes_factor=` scales Uˢ₀ (≡ raising ε), `noise=` adds white noise for seeded laminar runs.
+Wind case: `STRESS=2e-5 TAG=ustar4.5 sbatch batch/anti_stokes_wind.batch` (STOP=60), then
+`script=wind_channel.jl tag=ustar4.5`; surface views: `script=surface_view.jl runs=<dirs> "labels=a|b" snapshots=4,14 xrange=3,8`
+and `script=depth_slice_view.jl runs=<dirs> time=14 depth=0.03`.
 Steady wave train: `CASE=1.D LEVEL=M2 sbatch batch/anti_stokes_steady.batch`, then
 `script=steady_waves_channel.jl` and `script=langmuir_diagnostics.jl runs=<dirs>` (surface w anisotropy).
 Web-sized MP4s are made with Makie's bundled ffmpeg on a compute node (`scratchpad/encode.jl`
