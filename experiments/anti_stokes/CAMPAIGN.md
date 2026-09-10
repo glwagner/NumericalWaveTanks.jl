@@ -231,6 +231,18 @@ GPU cost so far: about 33 GPU-hours. A member costs 1.5 min (S0) to 2.4 min (M2)
   stronger stress fills the top cell with 3 cm wind-shear streaks that mask the waves' effect at the
   very surface. Top-down views: `surface_view.jl` (xy_surface, x window, snapshots + animation) and
   `depth_slice_view.jl` (3D snapshots at depth).
+* Long, data-first runs (`snapshot_offsets=` CLI; `batch/anti_stokes_shear_long.batch`): free shear α = 1
+  and 2 to 60 s (snapshots every 5 s), wind u* 4.5 to 180 s (every 10 s), seed 1 + controls.
+  `langmuir_signatures.jl` (⟨uᴸ⟩/⟨uᴱ⟩ profiles, ⟨w′²⟩/⟨u′²⟩, Stokes vs shear production, w skewness,
+  L_x/L_y of w, Stokes-layer ⟨w′²⟩): the Lagrangian mean is never homogenized in the sheared runs
+  (α = 2: surface ⟨uᴸ⟩ 116 → 31 mm/s over 60 s, shape preserved); anisotropy inverts to 1.3–1.6
+  with waves (0.6–0.7 without) — the cleanest marker; α = 2 gives L_x/L_y 5.1, ⟨w′²⟩ ×2.4,
+  skewness −0.5 to −1 at 5–10 s, all relaxing by 20–30 s. Stress-driven 180 s run (u* 4.5): statistically steady Langmuir state —
+  anisotropy 1.5 → 2.5 (control 0.7), L_x/L_y 4–9 (control 2–3), Stokes-layer ⟨w′²⟩ 40 vs 12 mm²/s²
+  from 100 s on, w skewness −0.5 to −0.8, 10–15 cm bands at 3 cm depth to 180 s; the wind's
+  momentum is exported downward by the cells instead of accumulating in the shear layer.
+  Movie names from `animate_yz_plane.jl` now carry the run tag (an earlier α = 2 render overwrote
+  the untagged α = 1 file; the compact versions of the original survive).
 
 ## 6. Reproducing and extending
 

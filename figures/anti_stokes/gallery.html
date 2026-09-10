@@ -135,6 +135,41 @@ a { color: var(--accent); }
   <img src="https://raw.githubusercontent.com/glwagner/NumericalWaveTanks.jl/glw/anti-stokes/figures/anti_stokes/wind_channel_1D_M2_weno_ustar4.5.png" alt="Wind case analysis" style="width:100%;border:1px solid var(--rule)">
 </section>
 
+<section class="movie">
+  <h2>Stronger free shear (α = 2), y–z plane <span class="grid">M2, seed 1, 60 s, steady waves, initial current 2Uˢ₀e^(2kz)</span></h2>
+  <p>The textbook Langmuir cross-section at 10 s: a counter-rotating cell pair with 50 mm/s downwelling columns carrying high-momentum surface fluid down and low-momentum fluid rising between them. The response peaks at 5–10 s and relaxes by 20–30 s as the aligned shear is consumed. Bottom: the sheared control without waves.</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/yz_plane_steady_sheared_turbulence_case_1D_M2_seed1_shear2_long_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Free shear at α = 1 and 2, top-down <span class="grid">M2, seed 1, 60 s, with and without waves</span></h2>
+  <p>Rows: shear α = 1, waves + shear α = 1, shear α = 2, waves + shear α = 2. Streamwise streaks of vertical velocity appear only with waves and are strongest for the stronger shear.</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/surface_view_shear_long_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Signatures of Langmuir turbulence, free-shear runs <span class="grid">60 s, seed 1</span></h2>
+  <p>Rows: horizontal-mean Lagrangian (solid) and Eulerian (dashed) velocity profiles in time; the anisotropy ⟨w′²⟩/⟨u′²⟩, which inverts above 1 only with waves; Stokes against mean-shear TKE production; skewness of w; and, for all runs, the streamwise elongation of w at 3 cm and the Stokes-layer vertical variance against time.</p>
+  <img src="https://raw.githubusercontent.com/glwagner/NumericalWaveTanks.jl/glw/anti-stokes/figures/anti_stokes/langmuir_signatures_shear_long.png" alt="Langmuir signatures, free shear" style="width:100%;border:1px solid var(--rule)">
+</section>
+
+<section class="movie">
+  <h2>Wind-sustained Langmuir cells, 180 s, y–z plane <span class="grid">M2, seed 1, u* = 4.5 mm/s, steady waves, initial shear</span></h2>
+  <p>With the surface stress feeding the aligned shear, the cells never die: three minutes after onset the vertical velocity a few centimetres down is still organized in depth-filling columns, at nearly twice the amplitude of the wind-only control (bottom).</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/yz_plane_wind_sheared_turbulence_case_1D_M2_seed1_ustar4.5_long_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Wind-sustained Langmuir cells, 180 s, top-down <span class="grid">M2, seed 1, x ∈ [3, 8] m</span></h2>
+  <p>Top row: shear + wind without waves; bottom row: with waves. The wave case keeps streamwise bands of vertical velocity 10–15 cm wide running the length of the window for the whole run; the control shows only the fine streaks of the wind-drift layer.</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/surface_view_wind_long_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Wind case at 180 s, 3 cm depth <span class="grid">seed 1</span></h2>
+  <img src="https://raw.githubusercontent.com/glwagner/NumericalWaveTanks.jl/glw/anti-stokes/figures/anti_stokes/depth_slice_wind_long_z3cm_t180s.png" alt="Wind case at 180 s, 3 cm depth" style="width:100%;border:1px solid var(--rule)">
+</section>
+
 <section class="key">
   <div><b>What to watch for</b><p>The difference panel stays blank ahead of the packet and fills behind it: the perturbation is a wake, not a precursor.</p></div>
   <div><b>Weak vs strong turbulence</b><p>1.A and 1.B (7–11 mm/s rms) produce a slower, weaker response than 1.D and 1.C.2 (13–17 mm/s); the anti-Stokes current scales with turbulence intensity.</p></div>
