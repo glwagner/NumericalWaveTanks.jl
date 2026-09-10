@@ -31,6 +31,7 @@ function run_member(; case_name = "1.D",
                       remove_mean_transport = true,
                       shear_amplitude = 1.0,
                       stokes_factor = 1.0,
+                      wind_stress = 0.0,      # u*² [m² s⁻²], momentum flux into the fluid along +x (the wave direction)
                       noise_amplitude = 0.0,
                       animation_slices = false,
                       root = default_data_root(),
@@ -66,7 +67,13 @@ function run_member(; case_name = "1.D",
         nothing
     end
 
-    model = build_model(grid; stokes_drift, advection=num.advection, closure=num.closure)
+    # Surface momentum flux: Oceananigans' flux is positive upward (out of the domain), so a wind
+    # along +x is a negative flux of u at the top
+    τ = has_wind(member) ? Float64(wind_stress) : 0.0
+    has_wind(member) && τ <= 0 && error("wind members need wind_stress > 0 (u*² in m² s⁻²)")
+    boundary_conditions = τ > 0 ? (; u = FieldBoundaryConditions(top = FluxBoundaryCondition(-FT(τ)))) : NamedTuple()
+    model = build_model(grid; stokes_drift, advection=num.advection, closure=num.closure, boundary_conditions)
+    τ > 0 && @info @sprintf("Surface momentum flux u*² = %.2e m² s⁻² (u* = %.2f mm/s, La_t = √(u*/Uˢ₀) = %.2f)", τ, 1e3sqrt(τ), sqrt(sqrt(τ) / Float64(case.Uˢ₀)))
     @info "Model: $(summary(model))"
 
     τ₀ = Float64(case.τ₀)
@@ -263,7 +270,7 @@ function run_member(; case_name = "1.D",
             case, member, seed, level, Nx, Ny, Nz, Lx, Ly, Lz = Float64(case.h), FT = string(FT),
             packet, has_packet = has_packet(member), has_turbulence = has_turbulence(member),
             uniform = has_uniform_packet(member), uniform_parameters = uniform, steady = is_steady(member), stokes_factor,
-            has_shear = has_shear(member), shear_amplitude = α, noise_amplitude,
+            has_shear = has_shear(member), shear_amplitude = α, noise_amplitude, wind_stress = τ, has_wind = has_wind(member),
             x_FOV, i_FOV, σ_upstream, x_topology, t_peak, stop_time, τ₀, Δt, output_interval, n_out, remove_mean_transport, animation_slices,
             snapshot_times = snapshot_times_, snapshot_iterations, numerics,
             advection = summary(model.advection), closure = summary(model.closure),

@@ -60,17 +60,21 @@ const MEMBERS = ("quiescent_control", "packet_null", "turbulence_control", "pack
                  "sheared_control", "sheared_packet_null", "sheared_packet_turbulence",
                  # steady, horizontally uniform wave train (uˢ = Uˢ₀ e^{2kz} from t = 0) in the packet tank,
                  # without and with the initial Eulerian shear current (Langmuir instability)
-                 "steady_waves_null", "steady_waves_turbulence", "steady_sheared_null", "steady_sheared_turbulence")
+                 "steady_waves_null", "steady_waves_turbulence", "steady_sheared_null", "steady_sheared_turbulence",
+                 # as steady_sheared_* with a constant surface momentum flux (wind stress) along the waves
+                 "wind_sheared_control", "wind_sheared_null", "wind_sheared_turbulence")
 
 has_packet(member) = member in ("packet_null", "packet_turbulence")                  # travelling packet
 has_uniform_packet(member) = member in ("uniform_packet_null", "uniform_packet_turbulence",
                                         "sheared_packet_null", "sheared_packet_turbulence") || is_steady(member)
-is_steady(member) = startswith(member, "steady_")
+is_steady(member) = startswith(member, "steady_") || (startswith(member, "wind_") && !endswith(member, "control"))
+has_wind(member) = startswith(member, "wind_")
 has_shear(member) = occursin("sheared", member)
 has_waves(member) = member in ("waves_null", "waves_turbulence")
 has_turbulence(member) = member in ("turbulence_control", "packet_turbulence", "waves_turbulence",
                                     "uniform_packet_turbulence", "sheared_control", "sheared_packet_turbulence",
-                                    "steady_waves_turbulence", "steady_sheared_turbulence")
+                                    "steady_waves_turbulence", "steady_sheared_turbulence",
+                                    "wind_sheared_control", "wind_sheared_turbulence")
 
 function validate_member(member)
     member in MEMBERS || error("Unknown member \"$member\". Known members: $(join(MEMBERS, ", "))")
@@ -151,13 +155,15 @@ end
 Clean Craik–Leibovich model: no wind stress, no buoyancy, no Coriolis, no tracers,
 no Stokes-streaming forcing. The packet's time dependence lives in `stokes_drift`.
 """
-function build_model(grid; stokes_drift=nothing, advection=WENO(order=5), closure=nothing, forcing=NamedTuple())
+function build_model(grid; stokes_drift=nothing, advection=WENO(order=5), closure=nothing, forcing=NamedTuple(),
+                     boundary_conditions=NamedTuple())
     return NonhydrostaticModel(grid;
                                advection,
                                timestepper = :RungeKutta3,
                                closure,
                                stokes_drift,
                                forcing,
+                               boundary_conditions,
                                buoyancy = nothing,
                                coriolis = nothing,
                                tracers = ())
