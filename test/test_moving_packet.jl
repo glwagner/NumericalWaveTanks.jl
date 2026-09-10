@@ -157,12 +157,6 @@ end
     @test uniform_uˢ(0.0, 0.0, ps) ≈ 2case.Uˢ₀ && uniform_uˢ(0.0, 100.0, ps) ≈ 2case.Uˢ₀ && uniform_∂t_uˢ(0.0, 3.0, ps) == 0
     @test is_steady("steady_sheared_turbulence") && has_shear("steady_sheared_null") && has_uniform_packet("steady_waves_null") && has_turbulence("steady_waves_turbulence")
     @test has_wind("wind_sheared_turbulence") && is_steady("wind_sheared_turbulence") && !is_steady("wind_sheared_control") && !has_uniform_packet("wind_sheared_control") && has_shear("wind_sheared_control")
-    # wind stress accelerates the surface layer: laminar wind + shear, no waves needed (control member)
-    sim_w, dir_w = run_member(; member="wind_sheared_null", level="T0", FT=Float64, arch=CPU(), root, stop_time=0.06, output_interval=0.02, progress_interval=1000, wind_stress=1e-4, shear_amplitude=0.0)
-    uw = Array(interior(sim_w.model.velocities.u))
-    @test mean(uw[:, :, end]) > 0                       # the stress accelerates the surface layer
-    @test isapprox(mean(uw[:, :, 1]), 0; atol=1e-9)      # and nothing else in 0.06 s
-    mw = load(joinpath(dir_w, "metadata.jld2")); @test mw["wind_stress"] == 1e-4 && mw["has_wind"]
     @test has_turbulence("sheared_control") && !has_turbulence("sheared_packet_null")
     # plumbing: the uniform and sheared null members run at T0 on the CPU
     root = mktempdir()
@@ -174,6 +168,12 @@ end
     us = Array(interior(sim_s.model.velocities.u))
     @test maximum(us) > 0.8 * Float64(case.Uˢ₀)        # the shear current is present at the surface
     @test maximum(abs, Array(interior(sim_u.model.velocities.u))) < 1e-3 * Float64(case.Uˢ₀)   # uniform null stays at rest before the group
+    # wind stress accelerates the surface layer: laminar wind + shear, no waves needed (control member)
+    sim_w, dir_w = run_member(; member="wind_sheared_null", level="T0", FT=Float64, arch=CPU(), root, stop_time=0.06, output_interval=0.02, progress_interval=1000, wind_stress=1e-4, shear_amplitude=0.0)
+    uw = Array(interior(sim_w.model.velocities.u))
+    @test mean(uw[:, :, end]) > 0                       # the stress accelerates the surface layer
+    @test isapprox(mean(uw[:, :, 1]), 0; atol=1e-9)      # and nothing else in 0.06 s
+    mw = load(joinpath(dir_w, "metadata.jld2")); @test mw["wind_stress"] == 1e-4 && mw["has_wind"]
 end
 
 @testset "Bounded tank: single Gaussian, packet enters and leaves" begin
