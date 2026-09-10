@@ -57,15 +57,20 @@ const MEMBERS = ("quiescent_control", "packet_null", "turbulence_control", "pack
                  # horizontally uniform group (temporal Gaussian envelope, no propagation)
                  "uniform_packet_null", "uniform_packet_turbulence",
                  # uniform group over turbulence with an initial Eulerian shear current aligned with the Stokes shear
-                 "sheared_control", "sheared_packet_null", "sheared_packet_turbulence")
+                 "sheared_control", "sheared_packet_null", "sheared_packet_turbulence",
+                 # steady, horizontally uniform wave train (uˢ = Uˢ₀ e^{2kz} from t = 0) in the packet tank,
+                 # without and with the initial Eulerian shear current (Langmuir instability)
+                 "steady_waves_null", "steady_waves_turbulence", "steady_sheared_null", "steady_sheared_turbulence")
 
 has_packet(member) = member in ("packet_null", "packet_turbulence")                  # travelling packet
 has_uniform_packet(member) = member in ("uniform_packet_null", "uniform_packet_turbulence",
-                                        "sheared_packet_null", "sheared_packet_turbulence")
-has_shear(member) = startswith(member, "sheared_")
+                                        "sheared_packet_null", "sheared_packet_turbulence") || is_steady(member)
+is_steady(member) = startswith(member, "steady_")
+has_shear(member) = occursin("sheared", member)
 has_waves(member) = member in ("waves_null", "waves_turbulence")
 has_turbulence(member) = member in ("turbulence_control", "packet_turbulence", "waves_turbulence",
-                                    "uniform_packet_turbulence", "sheared_control", "sheared_packet_turbulence")
+                                    "uniform_packet_turbulence", "sheared_control", "sheared_packet_turbulence",
+                                    "steady_waves_turbulence", "steady_sheared_turbulence")
 
 function validate_member(member)
     member in MEMBERS || error("Unknown member \"$member\". Known members: $(join(MEMBERS, ", "))")

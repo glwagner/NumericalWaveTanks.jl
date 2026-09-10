@@ -30,6 +30,7 @@ function run_member(; case_name = "1.D",
                       snapshot_offsets = (-3, -1, 0, 1, 3, 4),
                       remove_mean_transport = true,
                       shear_amplitude = 1.0,
+                      stokes_factor = 1.0,
                       noise_amplitude = 0.0,
                       animation_slices = false,
                       root = default_data_root(),
@@ -54,7 +55,7 @@ function run_member(; case_name = "1.D",
     @info "Grid: $(summary(grid))"
 
     packet = packet_parameters(case, Lx, x_FOV; σ_upstream, periodic=is_periodic_x(x_topology))
-    uniform = uniform_parameters(case, packet)
+    uniform = uniform_parameters(case, packet; steady = is_steady(member), stokes_factor)
     has_uniform_packet(member) && !is_periodic_x(x_topology) && error("Uniform-group members need x_topology=periodic")
     α = has_shear(member) ? Float64(shear_amplitude) : 0.0
     stokes_drift = if has_packet(member)
@@ -261,7 +262,8 @@ function run_member(; case_name = "1.D",
     jldsave(joinpath(dir, "metadata.jld2"), false, IOStream;
             case, member, seed, level, Nx, Ny, Nz, Lx, Ly, Lz = Float64(case.h), FT = string(FT),
             packet, has_packet = has_packet(member), has_turbulence = has_turbulence(member),
-            uniform = has_uniform_packet(member), uniform_parameters = uniform, has_shear = has_shear(member), shear_amplitude = α, noise_amplitude,
+            uniform = has_uniform_packet(member), uniform_parameters = uniform, steady = is_steady(member), stokes_factor,
+            has_shear = has_shear(member), shear_amplitude = α, noise_amplitude,
             x_FOV, i_FOV, σ_upstream, x_topology, t_peak, stop_time, τ₀, Δt, output_interval, n_out, remove_mean_transport, animation_slices,
             snapshot_times = snapshot_times_, snapshot_iterations, numerics,
             advection = summary(model.advection), closure = summary(model.closure),

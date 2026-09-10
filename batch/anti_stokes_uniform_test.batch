@@ -17,4 +17,5 @@ ROOT=${ROOT:-/work/hdd/bhcr/glwagner/anti_stokes_test}
 julia --project=. test/test_moving_packet.jl
 julia --project=. experiments/anti_stokes/run_moving_packet.jl case=1.D level=S0 member=uniform_packet_null stop_time=1 root=$ROOT
 julia --project=. experiments/anti_stokes/run_moving_packet.jl case=1.D level=S0 member=sheared_packet_null stop_time=1 root=$ROOT
+julia --project=. experiments/anti_stokes/run_moving_packet.jl case=1.D level=S0 member=steady_sheared_null noise=1e-4 stop_time=1 root=$ROOT
 echo UNIFORM_TEST_OK

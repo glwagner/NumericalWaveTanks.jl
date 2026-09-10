@@ -123,12 +123,14 @@ packet_peak_time(p) = (p.x_FOV - p.x₀) / p.cᵍ
 ##### solenoidal without a vertical component and has no return flow.
 #####
 
-uniform_parameters(case, packet) = (; k = case.k, Uˢ₀ = case.Uˢ₀, τ₀ = case.τ₀, t_peak = packet_peak_time(packet))
+uniform_parameters(case, packet; steady=false, stokes_factor=1) =
+    (; k = case.k, Uˢ₀ = case.Uˢ₀ * oftype(case.Uˢ₀, stokes_factor), τ₀ = case.τ₀, t_peak = packet_peak_time(packet), steady)
 
-@inline uniform_envelope(t, p) = exp(-abs2((t - p.t_peak) / p.τ₀))
+# steady = true: an infinite wave train switched on at t = 0 (envelope 1); otherwise the group envelope
+@inline uniform_envelope(t, p) = get(p, :steady, false) ? one(t) : exp(-abs2((t - p.t_peak) / p.τ₀))
 @inline uniform_uˢ(z, t, p) = p.Uˢ₀ * uniform_envelope(t, p) * exp(2p.k * z)
 @inline uniform_∂z_uˢ(z, t, p) = 2p.k * uniform_uˢ(z, t, p)
-@inline uniform_∂t_uˢ(z, t, p) = -2 * (t - p.t_peak) / p.τ₀^2 * uniform_uˢ(z, t, p)
+@inline uniform_∂t_uˢ(z, t, p) = get(p, :steady, false) ? zero(uniform_uˢ(z, t, p)) : -2 * (t - p.t_peak) / p.τ₀^2 * uniform_uˢ(z, t, p)
 
 """
     shear_profile(z, α, p)

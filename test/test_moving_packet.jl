@@ -153,6 +153,9 @@ end
     # CL2 alignment: Eulerian and Stokes shear have the same sign for α > 0
     @test (shear_profile(-0.01, 1.0, p) - shear_profile(-0.02, 1.0, p)) * uniform_∂z_uˢ(-0.015, p.t_peak, p) > 0
     @test has_uniform_packet("sheared_packet_turbulence") && has_shear("sheared_control") && !has_packet("uniform_packet_null")
+    ps = uniform_parameters(case, packet; steady=true, stokes_factor=2)
+    @test uniform_uˢ(0.0, 0.0, ps) ≈ 2case.Uˢ₀ && uniform_uˢ(0.0, 100.0, ps) ≈ 2case.Uˢ₀ && uniform_∂t_uˢ(0.0, 3.0, ps) == 0
+    @test is_steady("steady_sheared_turbulence") && has_shear("steady_sheared_null") && has_uniform_packet("steady_waves_null") && has_turbulence("steady_waves_turbulence")
     @test has_turbulence("sheared_control") && !has_turbulence("sheared_packet_null")
     # plumbing: the uniform and sheared null members run at T0 on the CPU
     root = mktempdir()
