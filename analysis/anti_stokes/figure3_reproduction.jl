@@ -73,11 +73,13 @@ for seed in seeds
     tp + interval_1[1] * τ >= t[1] - 1e-6 || @warn "interval 1 starts before the run ($(tp + interval_1[1]τ) s)"
     tp + interval_3[2] * τ <= t[end] + 1e-6 || @warn "interval 3 ends after the run"
     UE = eulerian_U(pk)
-    push!(U1s, interval_mean(UE, t, tp, τ, interval_1)[i, :])
-    push!(U3s, interval_mean(UE, t, tp, τ, interval_3)[i, :])
+    plane_ok = tp + interval_1[1] * τ >= t[1] - 1e-6 && tp + interval_3[2] * τ <= t[end] + 1e-6
+    nanprof = fill(NaN, length(z))
+    push!(U1s, plane_ok ? interval_mean(UE, t, tp, τ, interval_1)[i, :] : nanprof)
+    push!(U3s, plane_ok ? interval_mean(UE, t, tp, τ, interval_3)[i, :] : nanprof)
     # paired, null-corrected reference
     ΔU, _, _ = paired_residual(pk_dir, ct_dir, null_dir, quiescent_dir; fields=("U",))
-    push!(ΔUpaired, interval_mean(ΔU, t, tp, τ, interval_3)[i, :] .- interval_mean(ΔU, t, tp, τ, interval_1)[i, :])
+    push!(ΔUpaired, plane_ok ? interval_mean(ΔU, t, tp, τ, interval_3)[i, :] .- interval_mean(ΔU, t, tp, τ, interval_1)[i, :] : nanprof)
     # the same intervals applied to every fluid column (excluding 1 m next to the end walls)
     x, p = xnodes_faces(pk), run_packet(pk)
     keep = is_bounded_x(pk) ? findall(xi -> 1.0 <= xi <= pk.meta["Lx"] - 1.0, x) : Colon()
@@ -93,10 +95,12 @@ end
 n = length(U1s)
 n > 0 || error("no runs found")
 U1 = hcat(U1s...); U3 = hcat(U3s...); P = hcat(ΔUpaired...)
-U1m, U3m = vec(mean(U1; dims=2)), vec(mean(U3; dims=2))
+nanmean(A) = [(v = filter(!isnan, A[j, :]); isempty(v) ? NaN : mean(v)) for j in 1:size(A, 1)]
+nanse(A) = [(v = filter(!isnan, A[j, :]); length(v) < 2 ? NaN : std(v) / sqrt(length(v))) for j in 1:size(A, 1)]
+U1m, U3m = nanmean(U1), nanmean(U3)
 ΔUraw = U3 .- U1
-ΔUm, ΔUse = vec(mean(ΔUraw; dims=2)), vec(std(ΔUraw; dims=2)) ./ sqrt(n)
-Pm, Pse = vec(mean(P; dims=2)), vec(std(P; dims=2)) ./ sqrt(n)
+ΔUm, ΔUse = nanmean(ΔUraw), nanse(ΔUraw)
+Pm, Pse = nanmean(P), nanse(P)
 U1C, U3C, PC = hcat(U1c...), hcat(U3c...), hcat(ΔUpc...)
 U1Cm, U3Cm = vec(mean(U1C; dims=2)), vec(mean(U3C; dims=2))
 ΔUC = U3C .- U1C
@@ -110,9 +114,18 @@ shallow = kz .>= -1.2
 @info @sprintf("Simulation (%d seeds), all columns: surface ΔU raw = %.2f ± %.2f mm/s, paired = %.2f ± %.2f mm/s; experiment (digitized) ΔU at k₀z = −0.1: %.2f mm/s",
                n, 1e3ΔUCm[end], 1e3ΔUCse[end], 1e3PCm[end], 1e3PCse[end], exp3b[end][3])
 
+# shape comparison: remove the mean over the PIV window k₀z ∈ [−1.2, −0.1] from both
+win = findall(kk -> -1.2 <= kk <= -0.1, kz)
+exp_kz = [r[2] for r in exp3b]; exp_dU = [r[3] for r in exp3b]
+exp_win = findall(kk -> -1.2 <= kk <= -0.1, exp_kz)
+exp_mean = mean(exp_dU[exp_win]); les_mean = 1e3 * mean(ΔUCm[win]); les_pmean = 1e3 * mean(PCm[win])
+zero_crossing(v, kzv) = (j = findfirst(x -> x > 0, v); isnothing(j) || j == 1 ? NaN : kzv[j-1] + (kzv[j] - kzv[j-1]) * (0 - v[j-1]) / (v[j] - v[j-1]))
+@info @sprintf("Window means (k₀z ∈ [−1.2, −0.1]): experiment %.2f mm/s, LES raw %.2f, LES paired %.2f → offset exp − LES = %.2f mm/s", exp_mean, les_mean, les_pmean, exp_mean - les_mean)
+@info @sprintf("Zero crossing of ΔU: experiment k₀z = %.2f, LES raw %.2f, LES paired %.2f", zero_crossing(reverse(exp_dU), reverse(exp_kz)), zero_crossing(1e3ΔUCm, kz), zero_crossing(1e3PCm, kz))
+
 set_theme!(Theme(fontsize=18))
-fig = Figure(size=(1800, 620))
-Label(fig[0, 1:3], "Ellingsen et al. (2026) figure 3(a), case $case_name: U₁ (interval 1, −4.5τ to −3.3τ before the peak) and U₃ (interval 3, 2.0τ to 3.2τ after), " *
+fig = Figure(size=(2400, 620))
+Label(fig[0, 1:4], "Ellingsen et al. (2026) figure 3(a), case $case_name: U₁ (interval 1, −4.5τ to −3.3τ before the peak) and U₃ (interval 3, 2.0τ to 3.2τ after), " *
                    "experiment vs LES ($level, $(is_bounded_x(load_run(run_directory(root, case, level, "packet_null"; seed=0, Δt, numerics, x_topology); fields=("U",))) ? "bounded tank" : "periodic"), $n seeds)", fontsize=20)
 
 ax1 = Axis(fig[1, 1]; xlabel="U (m/s)", ylabel="k₀ z", title="(a) experiment (digitized from the paper)")
@@ -142,6 +155,12 @@ lines!(ax3, -1e3 .* uˢ_surface .* exp.(2kz), kz; color=(:gray, 0.6), linestyle=
 vlines!(ax3, [0]; color=(:black, 0.3))
 xlims!(ax3, -15, 5); ylims!(ax3, -1.2, 0)
 axislegend(ax3; position=:lb, labelsize=13)
+
+ax4 = Axis(fig[1, 4]; xlabel="ΔU − ⟨ΔU⟩_window (mm/s)", ylabel="k₀ z", title="(d) shape: window mean removed from both")
+lines!(ax4, exp_dU .- exp_mean, exp_kz; color=:darkred, linewidth=3, label="experiment")
+lines!(ax4, 1e3 .* ΔUCm .- les_mean, kz; color=:black, linewidth=3, label="LES raw, all columns")
+lines!(ax4, 1e3 .* PCm .- les_pmean, kz; color=:gray40, linewidth=2, linestyle=:dash, label="LES paired")
+vlines!(ax4, [0]; color=(:black, 0.3)); xlims!(ax4, -10, 6); ylims!(ax4, -1.2, 0); axislegend(ax4; position=:lb, labelsize=13)
 
 output = get(args, "output", joinpath(figure_directory(), "figure3a_reproduction_" * replace(case_name, "." => "") * "_$(level)_$(x_topology).png"))
 save(output, fig)
