@@ -1,0 +1,53 @@
+#!/bin/bash
+#SBATCH --job-name=as-M0
+#SBATCH --output=logs/anti_stokes_M0-%A_%a.log
+#SBATCH --account=bhcr-dtai-gh
+#SBATCH --partition=ghx4
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=120G
+#SBATCH --gres=gpu:1
+#SBATCH --time=02:30:00
+#SBATCH --array=0-2,11-14,21
+
+# Stage M0 (campaign document, section 12), one GPU per array task:
+#    0  packet_null, Δt              1  packet_null, Δt/2          2  quiescent_control
+#   11–14  seed 1–4: turbulence_control + packet_turbulence (Δt)
+#   21  seed 1: turbulence_control + packet_turbulence at Δt/2
+# Generate the checkpoints first (or let each task do it under a lock):
+#   IC=$(sbatch --parsable batch/anti_stokes_generate_ic.batch)
+#   sbatch --dependency=afterok:$IC batch/anti_stokes_marginal.batch
+# Environment: LEVEL (default M0), CASE (1.D), DT (0.02), NUMERICS (weno), AMPLITUDE (1.6), L_FACTOR, X_TOPOLOGY (periodic|bounded)
+source batch/env.sh
+
+LEVEL=${LEVEL:-M0}
+CASE=${CASE:-1.D}
+DT=${DT:-0.02}
+HALF_DT=$(python3 -c "print(${DT}/2)")
+NUMERICS=${NUMERICS:-weno}
+XT=${X_TOPOLOGY:-periodic}
+RUN="julia --project=. experiments/anti_stokes/run_moving_packet.jl case=$CASE level=$LEVEL numerics=$NUMERICS x_topology=$XT"
+GEN="julia --project=. experiments/anti_stokes/generate_turbulence.jl case=$CASE level=$LEVEL amplitude=${AMPLITUDE:-1.6} L_factor=${L_FACTOR:-1.15} x_topology=$XT"
+ID=$SLURM_ARRAY_TASK_ID
+
+generate_ic () {
+    mkdir -p logs/locks
+    flock logs/locks/ic_${LEVEL}_seed$1.lock $GEN seed=$1
+}
+
+case $ID in
+    0)  $RUN member=packet_null dt=$DT ;;
+    1)  $RUN member=packet_null dt=$HALF_DT ;;
+    2)  $RUN member=quiescent_control dt=$DT ;;
+    1[1-9])
+        SEED=$((ID - 10))
+        ANIM=$([ "$SEED" -eq 1 ] && echo true || echo false)   # animation slices for seed 1 only
+        generate_ic $SEED
+        $RUN member=turbulence_control seed=$SEED dt=$DT animation=$ANIM
+        $RUN member=packet_turbulence seed=$SEED dt=$DT animation=$ANIM ;;
+    21) generate_ic 1
+        $RUN member=turbulence_control seed=1 dt=$HALF_DT
+        $RUN member=packet_turbulence seed=1 dt=$HALF_DT ;;
+    *)  echo "No task defined for array index $ID"; exit 1 ;;
+esac

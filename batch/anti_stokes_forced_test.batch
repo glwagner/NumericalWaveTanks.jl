@@ -1,0 +1,25 @@
+#!/bin/bash
+#SBATCH --job-name=as-forced-test
+#SBATCH --output=logs/anti_stokes_forced_test-%j.log
+#SBATCH --account=bhcr-dtai-gh
+#SBATCH --partition=ghx4
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=120G
+#SBATCH --gres=gpu:1
+#SBATCH --time=01:00:00
+
+# Plumbing test for the stationary (band-forced) turbulence model: unit tests, then a tiny
+# (RT level) spin-up checkpoint and the two forced members plus the report, on the GPU,
+# in a scratch data root.
+source batch/env.sh
+set -e
+ROOT=${ROOT:-/work/hdd/bhcr/glwagner/anti_stokes_test}
+julia --project=. test/test_moving_packet.jl
+julia --project=. experiments/anti_stokes/forced_turbulence.jl case=2.A.1.3 level=RT seed=1 spinup_eddies=4 root=$ROOT overwrite=true progress_interval=20
+julia --project=. experiments/anti_stokes/regular_waves.jl case=2.A.1.3 level=RT member=turbulence_control seed=1 forcing=band stop_time=2 root=$ROOT
+julia --project=. experiments/anti_stokes/regular_waves.jl case=2.A.1.3 level=RT member=waves_turbulence seed=1 forcing=band stop_time=2 root=$ROOT
+julia --project=. experiments/anti_stokes/regular_waves.jl case=2.A.1.3 level=RT member=waves_null forcing=band stop_time=2 root=$ROOT
+julia --project=. analysis/anti_stokes/regular_common.jl report=$(julia --project=. -e 'include("experiments/anti_stokes/common.jl"); c = anti_stokes_case("2.A.1.3"); print(run_directory(ARGS[1], c, "RT", "turbulence_control"; seed=1, Δt=0.02, numerics="weno", Lx=3.2, Ly=3.2, extra="forced"))' $ROOT)
+echo FORCED_TEST_OK
