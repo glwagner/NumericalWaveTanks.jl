@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Packet Wake Movies</title>
+<!-- WC25 campaign sections (surface stress, Vallis-2D) appended 2026-10-03; original packet-wake content unchanged -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 :root { --bg: #F5F7F8; --ink: #17232E; --muted: #6A7A88; --accent: #1F5FA8; --rule: #D7DEE4; }
@@ -30,6 +31,7 @@ a { color: var(--accent); }
 <header>
   <div class="eyebrow">Ellingsen et al. (2026), Experiment 1 · numerical reproduction · NumericalWaveTanks.jl</div>
   <h1>Wave packets crossing turbulent tanks</h1>
+  <p><a href="#wc25-results">New: WC25 surface-stress and Vallis 2D results</a> · <a href="../wc25_results/WC25-results.pdf">PDF report</a></p>
   <p>The first six movies each follow one Stokes-drift packet moving left to right at its group speed through decaying grid turbulence in the 12 m × 0.8 m × 0.4 m tank (periodic in x except where noted). The red dashed line is the observation plane at x = 6 m; the black line follows the packet centre. Panels: prescribed surface Stokes drift; surface vertical velocity w in the packet run; w in the matched no-wave control from the same turbulence; their difference, the packet-induced perturbation; and the x–z slice of the Eulerian streamwise perturbation uᴱ − u_control with the Stokes drift already subtracted, where the anti-Stokes shear layer forms within the Stokes depth (dotted line).</p>
 </header>
 
@@ -176,6 +178,66 @@ a { color: var(--accent); }
   <div><b>Steepness</b><p>1.C.2 (ϵ = 0.22) and its twin 1.C.1 (ϵ = 0.15, same turbulence) give −13.7 and −8.3 mm/s: a ratio of 1.65 against 2.15 for ϵ².</p></div>
   <div><b>Turbulence scale</b><p>1.A (L = 5 cm) confines the anti-Stokes jet to the upper third of the Stokes layer; 1.C (L = 32 cm) spreads the compensating return down to k₀z ≈ −3.</p></div>
   <div><b>Links</b><p><a href="https://github.com/glwagner/NumericalWaveTanks.jl/pull/7">Pull request #7</a> · <a href="https://github.com/glwagner/NumericalWaveTanks.jl/tree/glw/anti-stokes/experiments/anti_stokes">experiment code</a></p></div>
+</section>
+<header id="wc25-results">
+  <div class="eyebrow">WC25 campaigns · Wagner &amp; Constantinou (2025) extensions · DeltaAI, 2–3 October 2026 · NumericalWaveTanks.jl</div>
+  <h1>Surface stress and the narrow-ring β-plane analogue</h1>
+  <p>Two autonomous campaigns on the WC25 wave-averaged configuration (unit domain, free-slip walls, WENO(9) implicit LES, Lagrangian-mean velocity, Stokes drift from the printed equations). Campaign A applies a constant along-wave surface stress to decaying Lagrangian-shear-free turbulence beneath deep waves and asks when the WC25 depth-alternating jets give way to Langmuir rolls. Campaign B starts the two-dimensional x–z WC25 dynamics from the Vallis &amp; Maltrud (1993) spectral ring, where Dω_y/Dt = (∂zz uˢ) w makes shallow waves an exact β-plane with β = ½. The full write-up with case tables, resource use, caveats and editorial corrections is the <a href="../wc25_results/index.html">results document</a>; the unedited campaign reports are bundled with it. Figures below are static PNGs from the campaign analysis scripts (Julia/CairoMakie), referenced by relative path; 12.94 GPU-hours in total.</p>
+</header>
+
+<section class="movie">
+  <h2>A · Regime diagram in the instantaneous stress ratio <span class="grid">deep waves, 128³, seed 1, t ≤ 1000</span></h2>
+  <img src="../wc25_surface_stress/final_regime.png" alt="Surface-stress regime diagram" style="width:100%;border:1px solid var(--rule)">
+  <p>u*/q′(t) for every stressed case (left), the along/cross fluctuation-enstrophy ratio against that ratio (middle) and the Stokes-layer vertical anisotropy (right). In the cases run, the roll signature (ratio &gt; 1.3, reaching 1.75 and 3.7) appears only for u*/q₀ = 0.03 and 0.1 (La 0.17, 0.31) once u*/q′ ≳ 0.7–1; u*/q₀ = 0.3, 1 and the wave-free controls stay below 1.2. An observation in this sampled sweep, not a universal rule.</p>
+</section>
+
+<section class="movie">
+  <h2>A · Sections at t = 400 <span class="grid">rows: deep r = 0, 0.01, 0.03, 0.1, 0.3, 1; wave-free r = 0, 0.1, 1</span></h2>
+  <img src="../wc25_surface_stress/final_sections_t400.png" alt="Sections at t = 400 for nine cases" style="width:100%;border:1px solid var(--rule)">
+  <p>Columns: cross-wave v (x–z), ω_y with the mean shear removed, w (y–z), ω_x, w at z = 0.9. Zero and weak stress: cross-wave (y-elongated) streaks of w and no surface-attached cells (WC25 regime). u*/q₀ = 0.1: surface-attached counter-rotating cells with downwelling plumes to z ≈ 0.6 and x-elongated w (Langmuir rolls). u*/q₀ ≥ 0.3: the wind layer fills the column and the structures match the wave-free controls at the same stress.</p>
+</section>
+
+<section class="movie">
+  <h2>A · Energy budget and mean-flow share <span class="grid">deep and wave-free, 128³, seed 1</span></h2>
+  <img src="../wc25_surface_stress/final_energy.png" alt="Surface-stress energy budget" style="width:100%;border:1px solid var(--rule)">
+  <p>Without stress the mean-profile share of the relative energy grows from 0.19 (t = 400) to 0.40 (t = 1000) with waves and stays ≤ 0.02 without; the bulk velocity follows τt exactly and the implicit dissipation ε = τ⟨u⟩_top − dK/dt stays positive. Seed 2 and 256³ reproduce the surface jet (−3.5e−3, −3.2e−3 vs −3.2e−3) to 10–20%; two grids agree on the roll-onset ratio (1.02 vs 1.06) while the onset time shifts (82 → 156).</p>
+</section>
+
+<section class="movie">
+  <h2>B · Vallis Fig. 12.4 analogue: vorticity and streamfunction <span class="grid">shallow waves (β = ½), 256², rb = 1, 0 / 40 / 200 turnover times</span></h2>
+  <img src="../wc25_vallis2d/final_panels_shallow.png" alt="Shallow waves: vorticity and streamfunction panels" style="width:100%;border:1px solid var(--rule)">
+  <p>From the isotropic ring at 9 cycles/box, ω_y (top, ±0.02) becomes x-elongated streaks by 40 T_e and bands by 200 T_e; ψ (bottom) organises into x-elongated cells with 4–5 alternations over the depth. Energy conserved to +0.03%, enstrophy to 39%. Exact-zonal energy stays at 5%: zonally elongated structures rather than finite-amplitude jets at rb = β/(q₀K₀²) = 1.</p>
+</section>
+
+<section class="movie">
+  <h2>B · Fig. 12.3 analogue: the spectrum avoids the dumbbell <span class="grid">shallow waves, E(k_x, k_z), 0 / 40 / 200 turnover times</span></h2>
+  <img src="../wc25_vallis2d/final_spectra_shallow.png" alt="Shallow waves: two-dimensional energy spectra" style="width:100%;border:1px solid var(--rule)">
+  <p>Energy leaves the ring, avoids the interior of the dashed Rhines-estimate dumbbell K² = β|cos θ|/q(t) (a velocity-based estimate, not the textbook ε-based Eq. 12.14 contour) and collects at its poles near the k_z axis. Anisotropy index 0.00 → 0.50 → 0.70. A source-matched qualitative comparison, not an exact reproduction.</p>
+</section>
+
+<section class="movie">
+  <h2>B · Same field, three families, 200 turnover times <span class="grid">none · shallow · deep, 256²</span></h2>
+  <img src="../wc25_vallis2d/final_comparison_t200.png" alt="Wave-free, shallow and deep after 200 turnover times" style="width:100%;border:1px solid var(--rule)">
+  <p>No waves: Fig. 11.8 decay with coherent vortices and merger (centroid 2.6 cycles, enstrophy 14%). Shallow: x-elongated bands (5.1 cycles, 39%). Deep (β(z) = 2e^{8(z−1)}): β dynamics confined to the upper third, 2-D vortices below, and a strong x-mean Lagrangian jet (K_jet/K 0.39, max 2.2 q₀) that is realisation-sensitive (seed 2: 0.074 vs ≈ 0.2 at 100 T_e). The deep member's energy drifts +0.6% at 256² and +0.1% at 512² over 200 T_e, a discrete Stokes-term residual that decreases with resolution.</p>
+</section>
+
+<section class="movie">
+  <h2>B · Six-seed ensemble, VM93-inspired parameters <span class="grid">k₀ = 12, σ = 1, rb = 2, 0 / 20 / 60 turnover times</span></h2>
+  <img src="../wc25_vallis2d/final_ensemble_spectra_shallow.png" alt="Six-seed ensemble-mean spectra" style="width:100%;border:1px solid var(--rule)">
+  <p>Ensemble-mean E(k_x, k_z) for shallow waves with parameters inspired by VM93 Fig. 5: a hole around the k_x axis and energy at the poles by 20 T_e, a narrow hourglass along k_z by 60 T_e. Exact-zonal fraction 0.012 ± 0.003 across the six seeds. The wave-free three-seed mean collapses isotropically (<a href="../wc25_vallis2d/final_ensemble_spectra_none.png">figure</a>).</p>
+</section>
+
+<section class="movie">
+  <h2>B · Sensitivity: the rb bracket and every variant at 100 turnover times <span class="grid">shallow unless coloured otherwise, 256²</span></h2>
+  <img src="../wc25_vallis2d/final_variants.png" alt="Vallis-2D sensitivity figure" style="width:100%;border:1px solid var(--rule)">
+  <p>Exact-zonal fraction 0.159 (rb = 0.5), ≈ 0.04 (rb = 1), 0.017 (rb = 2) while the anisotropy index runs the other way; ring width 0.5–2 modes, a second grid, a second seed and the λ = 200 rescaling (q₀ = 0.031, identical physics in the nonlinear WENO regime) sit within the scatter; keeping the k_x = 0 modes adds their 6% almost additively.</p>
+</section>
+
+<section class="key">
+  <div><b>A · Thresholds are observations</b><p>Rolls were seen for u*/q′(t) ≳ 0.7–1 with La ≲ 0.3 in a sweep with one seed at most ratios and two grids at three ratios; no universal or eventual transition is asserted.</p></div>
+  <div><b>B · rb decides</b><p>Jets strengthen as rb = β/(q₀K₀²) falls below 1; at rb ≥ 1 the energy stays in zonally elongated waves at the Rhines-estimate dumbbell poles.</p></div>
+  <div><b>Deep waves differ in both</b><p>A: the counter-wave surface jet and the anti-Stokes Eulerian mean persist at zero stress. B: β dynamics in the upper third only, plus a seed-sensitive x-mean jet; small resolution-dependent energy drift.</p></div>
+  <div><b>Documents</b><p><a href="../wc25_results/index.html">Results document</a> (printable) · <a href="../wc25_results/REPORT_surface_stress.md">surface-stress report</a> · <a href="../wc25_results/REPORT_vallis2d.md">Vallis-2D report</a> · <a href="../wc25_results/job_ledger.md">job ledger</a></p></div>
 </section>
 </main>
 </body>
