@@ -75,6 +75,10 @@ wave-aligned Langmuir structures? Treated as a hypothesis; the stress ratio u*/u
   the zero-stress mean flow (surface jet −3.21e−3 vs −3.24e−3) though K_jet/K_rel is 30 % lower; the transition case r = 0.03
   at 256³ has a 20 % stronger wind layer (surface 1.33e−2 vs 1.11e−2) and a slightly earlier roll onset (⟨ω′ₓ²⟩/⟨ω′ᵧ²⟩ ≈ 1.2 at
   t = 400 in the raw measure); the Langmuir case r = 0.1 at 256³ matches 128³ to within 10 % in u′_rms, u′, surface mean and K.
+  [Correction 2026-10-03, classifier audit: the 1.2 quoted here is the raw volume ratio ⟨ω_x²⟩_V/⟨ω_y²⟩_V of the total
+  vorticity, which includes the mean shear; the primes are wrong. The fluctuation ratio ⟨ω′ₓ²⟩/⟨ω′ᵧ²⟩ (mean shear removed,
+  depth mean over all faces) is 1.658 at 256³ and 1.757 at 128³ at t = 400, with onset t = 270 and 277; the onset is slightly
+  earlier at 256³ (270 versus 277). The 128³ and 256³ ICs are different realizations. See REPORT_resolution.md.]
 * The jets here are 3–10× weaker than WC25's (which start from a spun-up, larger-scale IC) and the band structure is
   dominated by 2–3 bands in a unit box; a domain-sensitivity run (wider/deeper box) was not done.
 * Only one seed at r = 0.01, 0.1, 0.3; the onset time at r = 0.03 (277) is from one seed.
