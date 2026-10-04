@@ -2,6 +2,29 @@
 
 # Surface stress on WC25 wave-averaged decaying turbulence — campaign report (2026-10-03 03:55 UTC)
 
+> **Main-figure resolution update (2026-10-04).** The main surface-stress figures now use **256³**, the highest grid completed for
+> these cases: deep waves at u*/u′_rms,0 = 0, 0.03 (to t = 1000) and 0.1 (to t = 400), from the 256³-draw seed-1 field
+> (`figures/wc25_surface_stress/main256_*.png`). 256³ values: R_fl onset (> 1.3 at t > 5) at t = 270 for r = 0.03
+> (u*/u′_rms = 0.66) and t = 156 for r = 0.1 (1.06), none by t = 400 at r = 0; K/K₀ at the end 1.4e−3 / 1.2e−2 / 8.9e−2 and
+> K_jet/K_rel 0.13 / 0.92 / 0.75 (r = 0 / 0.03 / 0.1); x–z exact-zonal fraction at t = 400 0.23 / 0.70 / 0.83. The 128³ sweep
+> below is the only data for r = 0.01, 0.3, 1 and the wave-free and medium-wave controls; it is kept as a labelled coverage
+> comparison and is a different random realization from the 256³ runs. 512³ runs at r = 0, 0.03, 0.1 are in progress and will
+> replace the 256³ figures; a full 512³ sweep (rough estimate ≈ 420 GPU-h) cannot fit the 60 GPU-h ceiling, so budget coverage stays incomplete. PROVISIONAL — VERY LOW RESOLUTION (256³).
+>
+> **Classifier audit at 256³ (2026-10-04 review; exact values from the saved profiles/statistics, `figures/wc25_surface_stress/main256_classifiers.txt`).**
+> R_fl = fluctuation ⟨ω′ₓ²⟩/⟨ω′ᵧ²⟩ with (∂zV)², (∂zU)² removed, depth mean over all N + 1 faces (the onset classifier); R_layer = the same over
+> z > 0.75; R_raw = ⟨ω_x²⟩_V/⟨ω_y²⟩_V of the total vorticity (includes the mean shear; not a roll classifier). The main256 regime and anisotropy
+> panels plot R_fl (axes now labelled so); their printed onsets (270, 156) are the R_fl onsets.
+>
+> | 256³ deep | t | R_fl | R_layer | R_raw | onset R_fl / R_layer / R_raw |
+> |---|---|---|---|---|---|
+> | r = 0 | 400 | 0.976 | 0.945 | 0.937 | none / none / none |
+> | r = 0.03 | 200 | 1.152 | 1.499 | 0.993 | 270 / 167 / 514 |
+> | r = 0.03 | 400 | 1.658 | 2.404 | 1.175 | |
+> | r = 0.03 | 1000 | 2.643 | 3.051 | 1.592 | |
+> | r = 0.1 | 200 | 1.308 | 1.378 | 0.824 | 156 / 75 / never |
+> | r = 0.1 | 400 | 1.239 | 1.296 | 0.775 | |
+
 Notation: u′_rms(t) = √⟨|𝐮′_L(t)|²⟩ is the total rms velocity fluctuation; u′_rms,0 is its initial value. q is reserved for potential vorticity. Historical code/configuration keys are unchanged.
 
 **Question.** Does a constant along-wave surface stress turn the depth-alternating jets / cross-wave vortices of
