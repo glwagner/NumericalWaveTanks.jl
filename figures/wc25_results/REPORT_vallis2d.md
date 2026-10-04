@@ -2,6 +2,25 @@
 
 # Vallis narrow-ring decay in two-dimensional WC25 wave-averaged flow — report
 
+> **Main-figure resolution update (2026-10-04).** The main figures now use **1024²**, the highest grid completed for these
+> cases (files `figures/wc25_vallis2d/main1024_*.png`; provenance and IC check in `main1024_provenance.txt`: same physical
+> parameters and continuous initial coefficients as the 256² runs, every panel time present). The numbers below in §§4–5 were
+> measured at 256² and are kept as the lower-resolution baseline; the 1024² values for the main figures are:
+>
+> | 200 T_e (ring-9, seed 1) | shallow | deep | none |
+> |---|---|---|---|
+> | K/K₀ − 1 | −3.0e−5 | +1.2e−4 | −6.7e−4 |
+> | enstrophy Z/Z₀ | 0.427 | 0.491 | 0.172 |
+> | K_jet/K | 0.045 | 0.447 | 0.145 |
+> | max\|U_L\|/u′_rms,0 | 0.64 | 2.42 | 0.79 |
+> | anisotropy index | 0.69 | 0.52 | −0.04 |
+> | energy centroid (cycles) | 5.18 | 4.32 | 2.70 |
+>
+> k₀ = 12, rb = 2 ensemble at 60 T_e (1024², mean ± seed std): shallow exact-zonal 0.0110 ± 0.0024, anisotropy 0.668 ± 0.024,
+> centroid 10.02; wave-free exact-zonal 0.068 ± 0.034, centroid 5.44. The β-plane comparison and the sensitivity variants
+> exist only at 256² and remain explicit 256² comparisons. Spectra in the main figures carry no Rhines or other estimated
+> boundary. PROVISIONAL — convergence not established (1024²).
+
 Notation: u′_rms(t) = √⟨|𝐮′_L(t)|²⟩ is the total rms velocity fluctuation; u′_rms,0 is its initial value. q is reserved for potential vorticity. Historical code/configuration keys are unchanged.
 
 *Status: COMPLETE (2026-10-03 04:30 UTC). Figures: `figures/wc25_vallis2d/final_*.png` (on disk in the worktree; PNGs are gitignored), metrics `final_metrics.txt`. Total cost ≈ 2.1 billed GPU-hours of the 8 allotted. Agent: Claude (Fable 5.1), tmux `wave-agents:vallis-2d`, DeltaAI.*
@@ -50,8 +69,8 @@ shallow (constant-curvature) and deep Stokes profiles, with the wave-free contro
 
 ### 4.1 Shallow waves (β = 1/2): the Vallis Fig. 12.3/12.4 phenomenology is reproduced
 *(figures `pilot_panels_shallow.png`, `pilot_spectra_shallow.png`, `pilot_transfer.png`, `pilot_timeseries.png`)*
-- **Spectrum.** From the isotropic ring at 9 cycles the energy moves to larger scales while avoiding the Rhines
-  dumbbell K² = β|cos θ|/u′_rms(t): at 40 T_e it sits at the dumbbell's poles (|k_x| ≲ 3, k_z ≈ 4–8 cycles), at 200 T_e at
+- **Spectrum.** From the isotropic ring at 9 cycles the energy moves to larger scales around a depleted region on the k_x
+  axis (the global Rhines estimate is not that region's boundary; see REPORT_overlay_audit.md): at 40 T_e it sits near the k_z axis (|k_x| ≲ 3, k_z ≈ 4–8 cycles), at 200 T_e at
   |k_x| ≤ 2, k_z ≈ ±4–5 cycles. The anisotropy index (⟨k_z²⟩−⟨k_x²⟩)/(⟨k_z²⟩+⟨k_x²⟩) rises from 0.00 to 0.50 (40 T_e) and 0.70 (200 T_e);
   the energy centroid falls from 8.97 to 5.1 cycles (k_z-centroid 5.2, k_x-centroid 2.2). This is the VM93/Vallis Fig. 12.3 picture.
 - **Physical space.** ω_y evolves from the isotropic blob pattern to x-elongated streaks and bands (Fig. 12.4, middle and right);
@@ -120,14 +139,14 @@ shallow (constant-curvature) and deep Stokes profiles, with the wave-free contro
 ### 4.5 Ensemble: VM93 Fig. 5 / Vallis Fig. 12.3 analogue (job 3298024; `final_ensemble_spectra_{shallow,none}.png`, `final_ensemble_panels_*`)
 Six shallow realisations with the VM93 parameters (ring k₀ = 12, σ = 1 mode, rb = β/(u′_rms,0K₀²) = 2 ≈ VM93's 1.96), 60 T_e each
 (VM93's panels are at ≈ 0, 17 and 50 turnovers), averaged in spectral space; three wave-free seeds as the isotropic reference.
-- **Shallow ensemble mean.** At 20 T_e the energy has left the ring and avoids the interior of the Rhines dumbbell K² = β|cos θ|/u′_rms,
-  concentrating at the dumbbell's poles (|k_x| ≲ 3, k_z ≈ 5–11 cycles) with a clear hole around the k_x axis; at 60 T_e the pattern is a
+- **Shallow ensemble mean.** At 20 T_e the energy has left the ring and concentrates near the k_z axis (|k_x| ≲ 3, k_z ≈ 5–11 cycles)
+  with a clear hole around the k_x axis, smaller than the global Rhines estimate (not its boundary; REPORT_overlay_audit.md); at 60 T_e the pattern is a
   narrow hourglass along the k_z axis — the VM93 Fig. 5c / Vallis Fig. 12.3 dumbbell. Exact-zonal energy stays small
   (K_jet/K = 0.012 ± 0.003 at 60 T_e, six seeds), as in VM93's observation that the energy within the wave regime stays small while
   the zonal modes build up slowly.
 - **Wave-free ensemble mean.** Isotropic collapse toward small K (no dumbbell, no preferred direction), K_jet/K = 0.06 ± 0.03 from the
   condensate's random projection on the x-mean.
-- The ensemble mean removes most of the single-realisation speckle visible in the k₀ = 9 pilots and makes the dumbbell boundary sharp,
+- The ensemble mean removes most of the single-realisation speckle visible in the k₀ = 9 pilots and makes the edge of the depleted region sharp,
   which is why VM93 averaged six runs; the shape, not the amplitude, is the comparison target (see §5).
 ## 5. Limitations
 - **Not a quantitative reproduction.** VM93's domain/energy conventions are inferred (E = u′_rms,0²/2, Z = ⟨ζ²⟩, 2π box) and their ring width

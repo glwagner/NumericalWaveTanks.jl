@@ -37,6 +37,18 @@ positive (+2.5e−3 after multiplying flux by T_e/K₀ at 256²; REPORT_resoluti
 5. The depleted region in the ensemble mean is visibly smaller than the dashed curves. Any boundary drawn for it would have to be an
    explicitly empirical one; none is drawn. These statements concern these samples and grids, not decaying β-turbulence in general.
 
-## Consequences for figures
-Existing dashed curves remain as labelled reference scales only; no curve has been resized. Future ensemble and resolution figures
-draw no boundary unless a measured quantity supports it.
+## Consequences for figures (updated 2026-10-04)
+**The dashed global Rhines curves have been removed from every main spectrum.** The replacement main figures are regenerated Julia
+plots at 1024² (`figures/wc25_vallis2d/main1024_spectra_{shallow,deep,none}_heatmap.png`, `main1024_ensemble_spectra_{shallow,none}_heatmap.png`,
+`main1024_ic_heatmap.png`; `analysis/wc25_vallis2d/figures.jl overlays=false`) and draw no Rhines, Eq. 12.14 or other theoretical curve.
+No curve was shrunk, rescaled or fitted to the observed depleted region.
+
+Why no curve is drawn:
+- The global velocity-based estimate K² = β|cos θ|/u′_rms(t) uses one bulk speed for the whole field. It is a reference scale, not the
+  observed boundary of the spectral hole: it encloses 16–40 % (k₀ = 9) and 57–66 % (k₀ = 12 ensemble) of the energy in the 256² audit above.
+- The ε-based curve of Vallis Eq. 12.14, K = (β³/ε)^{1/5}|cos θ|^{3/5}, needs a defensible inverse energy-transfer rate. The sampled
+  fluxes show no plateau below the ring, so no ε is justified and that curve is unsupported.
+
+A theoretical curve may appear only in an explicitly labelled overlay-audit figure, never as the boundary of the spectral hole.
+The earlier 256² figures that drew the dashed curves are superseded and are not referenced by the gallery or results document.
+The numbers in this report were measured at 256²; they are kept as the audit record and are not main results.

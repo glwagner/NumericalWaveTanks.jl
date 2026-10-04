@@ -1,0 +1,70 @@
+loaded CaseData(deep_ring_k9_w1_rb1_seed1_N1024: 401 stats, 201 profiles, 81 fields) from /work/hdd/bhcr/glwagner/wc25_resolution_2026-10-03/vallis2d/deep_ring_k9_w1_rb1_seed1_N1024
+loaded CaseData(shallow_ring_k9_w1_rb1_seed1_N1024: 401 stats, 201 profiles, 81 fields) from /work/hdd/bhcr/glwagner/wc25_resolution_2026-10-03/vallis2d/shallow_ring_k9_w1_rb1_seed1_N1024
+loaded CaseData(none_ring_k9_w1_rb1_seed1_N1024: 401 stats, 201 profiles, 81 fields) from /work/hdd/bhcr/glwagner/wc25_resolution_2026-10-03/vallis2d/none_ring_k9_w1_rb1_seed1_N1024
+window full depth                                     ⟨W²⟩ = 1.0000, effective vertical bandwidth (half-power half-width) = 0.50 cycles/box (native spacing 0.5)
+window upper layer, θ = 0.1 (h = 0.288), α = 0.5      ⟨W²⟩ = 0.1979, effective vertical bandwidth (half-power half-width) = 1.00 cycles/box (native spacing 0.5)
+window bottom layer, θ = 0.1 (h = 0.288), α = 0.5     ⟨W²⟩ = 0.1979, effective vertical bandwidth (half-power half-width) = 1.00 cycles/box (native spacing 0.5)
+window upper layer, θ = 0.2 (h = 0.201), α = 0.25     ⟨W²⟩ = 0.1697, effective vertical bandwidth (half-power half-width) = 1.50 cycles/box (native spacing 0.5)
+window upper layer, θ = 0.2 (h = 0.201), α = 0.5      ⟨W²⟩ = 0.1383, effective vertical bandwidth (half-power half-width) = 1.50 cycles/box (native spacing 0.5)
+window upper layer, θ = 0.2 (h = 0.201), α = 1        ⟨W²⟩ = 0.0754, effective vertical bandwidth (half-power half-width) = 2.00 cycles/box (native spacing 0.5)
+window upper layer, θ = 0.1 (h = 0.288), α = 0.25     ⟨W²⟩ = 0.2429, effective vertical bandwidth (half-power half-width) = 1.00 cycles/box (native spacing 0.5)
+window upper layer, θ = 0.1 (h = 0.288), α = 0.5      ⟨W²⟩ = 0.1979, effective vertical bandwidth (half-power half-width) = 1.00 cycles/box (native spacing 0.5)
+window upper layer, θ = 0.1 (h = 0.288), α = 1        ⟨W²⟩ = 0.1079, effective vertical bandwidth (half-power half-width) = 1.50 cycles/box (native spacing 0.5)
+window upper layer, θ = 0.05 (h = 0.374), α = 0.25    ⟨W²⟩ = 0.3160, effective vertical bandwidth (half-power half-width) = 1.00 cycles/box (native spacing 0.5)
+window upper layer, θ = 0.05 (h = 0.374), α = 0.5     ⟨W²⟩ = 0.2574, effective vertical bandwidth (half-power half-width) = 1.00 cycles/box (native spacing 0.5)
+window upper layer, θ = 0.05 (h = 0.374), α = 1       ⟨W²⟩ = 0.1404, effective vertical bandwidth (half-power half-width) = 1.00 cycles/box (native spacing 0.5)
+β_eff/β_eff(1) at the cut: θ = 0.2 → z = 0.799, 0.1 → z = 0.712, 0.05 → z = 0.626 (β_eff(z) = 2e^{8(z−1)} verified in experiments/wc25_vallis2d/common.jl)
+check full-depth equivalence t = 0.0 T_e: max|E_vel − E_ψ|/max E_ψ = 1.57e-09; n = 0 row energy fraction 2.94e-19; Σ E/K(t) = 1.0000000000
+check full-depth equivalence t = 40.0 T_e: max|E_vel − E_ψ|/max E_ψ = 1.63e-09; n = 0 row energy fraction 3.94e-19; Σ E/K(t) = 1.0000000000
+check full-depth equivalence t = 200.0 T_e: max|E_vel − E_ψ|/max E_ψ = 4.73e-10; n = 0 row energy fraction 4.48e-19; Σ E/K(t) = 0.9999999999
+LEAKAGE / WINDOW BIAS on the initial field (deep IC = shared IC; full depth is the reference):
+  full depth                                     eddy anisotropy +0.004, polar 0.296, equatorial 0.279 (band 1–8 holds 0.140 of eddy energy), energy outside 6–12 cycles 0.002, layer KE/K₀ 1.000
+  upper layer, θ = 0.1 (h = 0.288), α = 0.5      eddy anisotropy +0.113, polar 0.279, equatorial 0.192 (band 1–8 holds 0.182 of eddy energy), energy outside 6–12 cycles 0.021, layer KE/K₀ 1.229
+  bottom layer, θ = 0.1 (h = 0.288), α = 0.5     eddy anisotropy +0.074, polar 0.307, equatorial 0.084 (band 1–8 holds 0.147 of eddy energy), energy outside 6–12 cycles 0.024, layer KE/K₀ 0.826
+  upper layer, θ = 0.2 (h = 0.201), α = 0.25     eddy anisotropy +0.135, polar 0.247, equatorial 0.204 (band 1–8 holds 0.205 of eddy energy), energy outside 6–12 cycles 0.046, layer KE/K₀ 1.240
+  upper layer, θ = 0.2 (h = 0.201), α = 0.5      eddy anisotropy +0.125, polar 0.258, equatorial 0.213 (band 1–8 holds 0.220 of eddy energy), energy outside 6–12 cycles 0.033, layer KE/K₀ 1.283
+  upper layer, θ = 0.2 (h = 0.201), α = 1        eddy anisotropy +0.183, polar 0.255, equatorial 0.205 (band 1–8 holds 0.257 of eddy energy), energy outside 6–12 cycles 0.030, layer KE/K₀ 1.305
+  upper layer, θ = 0.1 (h = 0.288), α = 0.25     eddy anisotropy +0.105, polar 0.297, equatorial 0.197 (band 1–8 holds 0.167 of eddy energy), energy outside 6–12 cycles 0.028, layer KE/K₀ 1.237
+  upper layer, θ = 0.1 (h = 0.288), α = 0.5      eddy anisotropy +0.113, polar 0.279, equatorial 0.192 (band 1–8 holds 0.182 of eddy energy), energy outside 6–12 cycles 0.021, layer KE/K₀ 1.229
+  upper layer, θ = 0.1 (h = 0.288), α = 1        eddy anisotropy +0.139, polar 0.256, equatorial 0.197 (band 1–8 holds 0.215 of eddy energy), energy outside 6–12 cycles 0.012, layer KE/K₀ 1.280
+  upper layer, θ = 0.05 (h = 0.374), α = 0.25    eddy anisotropy +0.074, polar 0.333, equatorial 0.224 (band 1–8 holds 0.153 of eddy energy), energy outside 6–12 cycles 0.015, layer KE/K₀ 1.237
+  upper layer, θ = 0.05 (h = 0.374), α = 0.5     eddy anisotropy +0.086, polar 0.323, equatorial 0.183 (band 1–8 holds 0.154 of eddy energy), energy outside 6–12 cycles 0.009, layer KE/K₀ 1.237
+  upper layer, θ = 0.05 (h = 0.374), α = 1       eddy anisotropy +0.118, polar 0.269, equatorial 0.190 (band 1–8 holds 0.186 of eddy energy), energy outside 6–12 cycles 0.006, layer KE/K₀ 1.261
+none    full   t =   0.0 T_e: layer KE/K₀ 1.0000, exact-zonal 0.000, eddy anisotropy +0.004, polar 0.296, equatorial 0.279
+none    full   t =  40.0 T_e: layer KE/K₀ 0.9997, exact-zonal 0.025, eddy anisotropy -0.037, polar 0.202, equatorial 0.320
+none    full   t = 200.0 T_e: layer KE/K₀ 0.9993, exact-zonal 0.145, eddy anisotropy -0.086, polar 0.162, equatorial 0.457
+none    upper  t =   0.0 T_e: layer KE/K₀ 1.2290, exact-zonal 0.000, eddy anisotropy +0.113, polar 0.279, equatorial 0.192
+none    upper  t =  40.0 T_e: layer KE/K₀ 1.2503, exact-zonal 0.022, eddy anisotropy +0.066, polar 0.339, equatorial 0.210
+none    upper  t = 200.0 T_e: layer KE/K₀ 0.9695, exact-zonal 0.063, eddy anisotropy -0.073, polar 0.254, equatorial 0.295
+none    bottom t =   0.0 T_e: layer KE/K₀ 0.8261, exact-zonal 0.000, eddy anisotropy +0.074, polar 0.307, equatorial 0.084
+none    bottom t =  40.0 T_e: layer KE/K₀ 0.7273, exact-zonal 0.013, eddy anisotropy -0.060, polar 0.226, equatorial 0.375
+none    bottom t = 200.0 T_e: layer KE/K₀ 0.7501, exact-zonal 0.085, eddy anisotropy -0.042, polar 0.175, equatorial 0.402
+deep    full   t =   0.0 T_e: layer KE/K₀ 1.0000, exact-zonal 0.000, eddy anisotropy +0.004, polar 0.296, equatorial 0.279
+deep    full   t =  40.0 T_e: layer KE/K₀ 0.9999, exact-zonal 0.105, eddy anisotropy +0.240, polar 0.410, equatorial 0.239
+deep    full   t = 200.0 T_e: layer KE/K₀ 1.0001, exact-zonal 0.447, eddy anisotropy +0.397, polar 0.339, equatorial 0.371
+deep    upper  t =   0.0 T_e: layer KE/K₀ 1.2290, exact-zonal 0.000, eddy anisotropy +0.113, polar 0.279, equatorial 0.192
+deep    upper  t =  40.0 T_e: layer KE/K₀ 1.3227, exact-zonal 0.076, eddy anisotropy +0.396, polar 0.462, equatorial 0.200
+deep    upper  t = 200.0 T_e: layer KE/K₀ 2.6683, exact-zonal 0.482, eddy anisotropy +0.484, polar 0.522, equatorial 0.246
+deep    bottom t =   0.0 T_e: layer KE/K₀ 0.8261, exact-zonal 0.000, eddy anisotropy +0.074, polar 0.307, equatorial 0.084
+deep    bottom t =  40.0 T_e: layer KE/K₀ 0.8269, exact-zonal 0.153, eddy anisotropy -0.039, polar 0.206, equatorial 0.400
+deep    bottom t = 200.0 T_e: layer KE/K₀ 0.9115, exact-zonal 0.490, eddy anisotropy +0.049, polar 0.114, equatorial 0.268
+shallow full   t =   0.0 T_e: layer KE/K₀ 1.0000, exact-zonal 0.000, eddy anisotropy +0.004, polar 0.296, equatorial 0.279
+shallow full   t =  40.0 T_e: layer KE/K₀ 1.0000, exact-zonal 0.033, eddy anisotropy +0.452, polar 0.678, equatorial 0.118
+shallow full   t = 200.0 T_e: layer KE/K₀ 1.0000, exact-zonal 0.045, eddy anisotropy +0.664, polar 0.810, equatorial 0.041
+shallow upper  t =   0.0 T_e: layer KE/K₀ 1.2290, exact-zonal 0.000, eddy anisotropy +0.113, polar 0.279, equatorial 0.192
+shallow upper  t =  40.0 T_e: layer KE/K₀ 0.8592, exact-zonal 0.061, eddy anisotropy +0.391, polar 0.559, equatorial 0.134
+shallow upper  t = 200.0 T_e: layer KE/K₀ 0.5098, exact-zonal 0.145, eddy anisotropy +0.499, polar 0.496, equatorial 0.082
+shallow bottom t =   0.0 T_e: layer KE/K₀ 0.8261, exact-zonal 0.000, eddy anisotropy +0.074, polar 0.307, equatorial 0.084
+shallow bottom t =  40.0 T_e: layer KE/K₀ 1.3852, exact-zonal 0.035, eddy anisotropy +0.603, polar 0.813, equatorial 0.088
+shallow bottom t = 200.0 T_e: layer KE/K₀ 1.1818, exact-zonal 0.026, eddy anisotropy +0.761, polar 0.882, equatorial 0.020
+shared log10 limits: eddy -4.70…-0.70, total -4.43…-0.43 (all families, windows, times)
+sensitivity deep t = 200: upper layer, θ = 0.2 (h = 0.201), α = 0.25     eddy anisotropy +0.503, polar 0.569, equatorial 0.212, zonal 0.500 (IC baseline: aniso +0.135, polar 0.247)
+sensitivity deep t = 200: upper layer, θ = 0.2 (h = 0.201), α = 0.5      eddy anisotropy +0.508, polar 0.644, equatorial 0.171, zonal 0.528 (IC baseline: aniso +0.125, polar 0.258)
+sensitivity deep t = 200: upper layer, θ = 0.2 (h = 0.201), α = 1        eddy anisotropy +0.514, polar 0.723, equatorial 0.107, zonal 0.519 (IC baseline: aniso +0.183, polar 0.255)
+sensitivity deep t = 200: upper layer, θ = 0.1 (h = 0.288), α = 0.25     eddy anisotropy +0.479, polar 0.485, equatorial 0.271, zonal 0.461 (IC baseline: aniso +0.105, polar 0.297)
+sensitivity deep t = 200: upper layer, θ = 0.1 (h = 0.288), α = 0.5      eddy anisotropy +0.484, polar 0.522, equatorial 0.246, zonal 0.482 (IC baseline: aniso +0.113, polar 0.279)
+sensitivity deep t = 200: upper layer, θ = 0.1 (h = 0.288), α = 1        eddy anisotropy +0.502, polar 0.653, equatorial 0.161, zonal 0.520 (IC baseline: aniso +0.139, polar 0.256)
+sensitivity deep t = 200: upper layer, θ = 0.05 (h = 0.374), α = 0.25    eddy anisotropy +0.479, polar 0.461, equatorial 0.318, zonal 0.437 (IC baseline: aniso +0.074, polar 0.333)
+sensitivity deep t = 200: upper layer, θ = 0.05 (h = 0.374), α = 0.5     eddy anisotropy +0.477, polar 0.478, equatorial 0.292, zonal 0.454 (IC baseline: aniso +0.086, polar 0.323)
+sensitivity deep t = 200: upper layer, θ = 0.05 (h = 0.374), α = 1       eddy anisotropy +0.494, polar 0.588, equatorial 0.209, zonal 0.505 (IC baseline: aniso +0.118, polar 0.269)
+LAYER CHECKS PASS: Parseval for every window/time, full-depth equivalence with the ψ spectrum
