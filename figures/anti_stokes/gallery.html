@@ -209,11 +209,12 @@ a { color: var(--accent); }
   <p>From the isotropic ring at 9 cycles/box, ω_y (top, ±0.02) becomes x-elongated streaks by 40 T_e and bands by 200 T_e; ψ (bottom) organises into x-elongated cells with 4–5 alternations over the depth. Energy conserved to +0.03%, enstrophy to 39%. Exact-zonal energy stays at 5%: zonally elongated structures rather than finite-amplitude jets at rb = β/(u′<sub>rms,0</sub>K₀²) = 1.</p>
 </section>
 
+<p class="small"><b>Overlay audit (2026-10-04).</b> The dashed curves use K = √(β|cos θ|/u′<sub>rms</sub>) with the correct conversion K/(2π) to cycles/box. They are bulk-velocity scale estimates, not fitted boundaries of the observed spectral holes. Vallis Eq. 12.14 instead uses K = (β³/ε)<sup>1/5</sup>|cos θ|<sup>3/5</sup>, requiring a defensible inverse energy transfer rate ε. A flux-based audit is pending; no curve has been resized to fit the data.</p>
 <section class="movie">
-  <h2>B · Fig. 12.3 analogue: the spectrum avoids the dumbbell <span class="grid">shallow waves, E(k_x, k_z), 0 / 40 / 200 turnover times</span></h2>
+  <h2>B · Fig. 12.3 analogue: anisotropic spectral redistribution <span class="grid">shallow waves, E(k_x, k_z), 0 / 40 / 200 turnover times</span></h2>
   <img src="../wc25_vallis2d/final_spectra_shallow_heatmap.png" alt="Shallow waves: two-dimensional energy spectral density heatmaps" style="width:100%;border:1px solid var(--rule)">
   <p class="small">Heatmaps show spectral density per (cycle/box)² normalized by K₀, one cell per mode, log₁₀ colour with limits shared across panels and a grey floor four decades below the maximum (earlier filled-contour versions are kept in the repository).</p>
-  <p>Energy leaves the ring, avoids the interior of the dashed Rhines-estimate dumbbell K² = β|cos θ|/u′<sub>rms</sub>(t) (a velocity-based estimate, not the textbook ε-based Eq. 12.14 contour) and collects at its poles near the k_z axis. Anisotropy index 0.00 → 0.50 → 0.70. A source-matched qualitative comparison, not an exact reproduction.</p>
+  <p>Energy leaves the initial ring and becomes concentrated near the k_z axis. The dashed global Rhines estimate K² = β|cos θ|/u′<sub>rms</sub>(t) is larger than the observed depleted region; it does not trace its boundary. Its maximum radius stays near 9 cycles/box because total rms speed changes little. It is not the transfer-rate-based boundary of Vallis Eq. 12.14. Anisotropy index 0.00 → 0.50 → 0.70. A source-matched qualitative comparison, not an exact reproduction.</p>
 </section>
 
 <section class="movie" id="deep-wave-spectra">
@@ -242,7 +243,7 @@ a { color: var(--accent); }
 
 <section class="key">
   <div><b>A · Thresholds are observations</b><p>Rolls were seen for u*/u′<sub>rms</sub>(t) ≳ 0.7–1 with La ≲ 0.3 in a sweep with one seed at most ratios and two grids at three ratios; no universal or eventual transition is asserted.</p></div>
-  <div><b>B · rb decides</b><p>Jets strengthen as rb = β/(u′<sub>rms,0</sub>K₀²) falls below 1; at rb ≥ 1 the energy stays in zonally elongated waves at the Rhines-estimate dumbbell poles.</p></div>
+  <div><b>B · rb decides</b><p>Jets strengthen as rb = β/(u′<sub>rms,0</sub>K₀²) falls below 1; at rb ≥ 1 the energy is concentrated in zonally elongated waves near the k_z axis.</p></div>
   <div><b>Deep waves differ in both</b><p>A: the counter-wave surface jet and the anti-Stokes Eulerian mean persist at zero stress. B: β dynamics in the upper third only, plus a seed-sensitive x-mean jet; small resolution-dependent energy drift.</p></div>
   <div><b>Documents</b><p><a href="../wc25_results/index.html">Results document</a> (printable) · <a href="../wc25_results/REPORT_surface_stress.md">surface-stress report</a> · <a href="../wc25_results/REPORT_vallis2d.md">Vallis-2D report</a> · <a href="../wc25_results/job_ledger.md">job ledger</a></p></div>
 </section>
