@@ -180,62 +180,63 @@ a { color: var(--accent); }
   <div><b>Links</b><p><a href="https://github.com/glwagner/NumericalWaveTanks.jl/pull/7">Pull request #7</a> · <a href="https://github.com/glwagner/NumericalWaveTanks.jl/tree/glw/anti-stokes/experiments/anti_stokes">experiment code</a></p></div>
 </section>
 <header id="wc25-results">
+<p style="padding:12px;border:2px solid #a65b00;background:#fff5df"><strong>Resolution status: all 256² and 256³ simulations are PROVISIONAL — VERY LOW RESOLUTION. Coarser runs are provisional as well. Higher-resolution runs are checks, not evidence of convergence by themselves; physical conclusions remain provisional until supported by resolution comparisons.</strong></p>
   <div class="eyebrow">WC25 campaigns · Wagner &amp; Constantinou (2025) extensions · DeltaAI, 2–3 October 2026 · NumericalWaveTanks.jl</div>
   <h1>Surface stress and the narrow-ring β-plane analogue</h1>
   <p>Two autonomous campaigns on the WC25 wave-averaged configuration (unit domain, free-slip walls, WENO(9) implicit LES, Lagrangian-mean velocity, Stokes drift from the printed equations). Campaign A applies a constant along-wave surface stress to decaying Lagrangian-shear-free turbulence beneath deep waves and asks when the WC25 depth-alternating jets give way to Langmuir rolls. Campaign B starts the two-dimensional x–z WC25 dynamics from the Vallis &amp; Maltrud (1993) spectral ring, where Dω_y/Dt = (∂zz uˢ) w makes shallow waves an exact β-plane with β = ½. The full write-up with case tables, resource use, caveats and editorial corrections is the <a href="../wc25_results/index.html">results document</a>; the unedited campaign reports are bundled with it. Figures below are static PNGs from the campaign analysis scripts (Julia/CairoMakie), referenced by relative path; 12.94 GPU-hours in total.</p>
 </header>
 
-<section class="movie">
+<section class="movie"><p><strong>PROVISIONAL — VERY LOW RESOLUTION (256² / 256³ and coarser).</strong></p>
   <h2>A · Regime diagram in the instantaneous stress ratio <span class="grid">deep waves, 128³, seed 1, t ≤ 1000</span></h2><p><b>Velocity notation:</b> u′<sub>rms</sub>(t) = √⟨|𝐮′<sub>L</sub>(t)|²⟩ denotes the total rms velocity fluctuation, not one component; u′<sub>rms,0</sub> is its initial value. The stress ratio is u*/u′<sub>rms,0</sub>. We reserve q for potential vorticity. Archived figure versions may retain q₀ or q′ for these rms speeds; current figures use the updated notation.</p>
   <img src="../wc25_surface_stress/final_regime.png" alt="Surface-stress regime diagram" style="width:100%;border:1px solid var(--rule)">
   <p>u*/u′<sub>rms</sub>(t) for every stressed case (left), the along/cross fluctuation-enstrophy ratio against that ratio (middle) and the Stokes-layer vertical anisotropy (right). In the cases run, the roll signature (ratio &gt; 1.3, reaching 1.75 and 3.7) appears only for u*/u′<sub>rms,0</sub> = 0.03 and 0.1 (La 0.17, 0.31) once u*/u′<sub>rms</sub> ≳ 0.7–1; u*/u′<sub>rms,0</sub> = 0.3, 1 and the wave-free controls stay below 1.2. An observation in this sampled sweep, not a universal rule.</p>
 </section>
 
-<section class="movie">
+<section class="movie"><p><strong>PROVISIONAL — VERY LOW RESOLUTION (256² / 256³ and coarser).</strong></p>
   <h2>A · Sections at t = 400 <span class="grid">rows: deep r = 0, 0.01, 0.03, 0.1, 0.3, 1; wave-free r = 0, 0.1, 1</span></h2>
   <img src="../wc25_surface_stress/final_sections_t400.png" alt="Sections at t = 400 for nine cases" style="width:100%;border:1px solid var(--rule)">
   <p>Columns: cross-wave v (x–z), ω_y with the mean shear removed, w (y–z), ω_x, w at z = 0.9. Zero and weak stress: cross-wave (y-elongated) streaks of w and no surface-attached cells (WC25 regime). u*/u′<sub>rms,0</sub> = 0.1: surface-attached counter-rotating cells with downwelling plumes to z ≈ 0.6 and x-elongated w (Langmuir rolls). u*/u′<sub>rms,0</sub> ≥ 0.3: the wind layer fills the column and the structures match the wave-free controls at the same stress.</p>
 </section>
 
-<section class="movie">
+<section class="movie"><p><strong>PROVISIONAL — VERY LOW RESOLUTION (256² / 256³ and coarser).</strong></p>
   <h2>A · Energy budget and mean-flow share <span class="grid">deep and wave-free, 128³, seed 1</span></h2>
   <img src="../wc25_surface_stress/final_energy.png" alt="Surface-stress energy budget" style="width:100%;border:1px solid var(--rule)">
   <p>Without stress the mean-profile share of the relative energy grows from 0.19 (t = 400) to 0.40 (t = 1000) with waves and stays ≤ 0.02 without; the bulk velocity follows τt exactly and the implicit dissipation ε = τ⟨u⟩_top − dK/dt stays positive. Seed 2 and 256³ reproduce the surface jet (−3.5e−3, −3.2e−3 vs −3.2e−3) to 10–20%; two grids agree on the roll-onset ratio (1.02 vs 1.06) while the onset time shifts (82 → 156).</p>
 </section>
 
-<section class="movie">
+<section class="movie"><p><strong>PROVISIONAL — VERY LOW RESOLUTION (256² / 256³ and coarser).</strong></p>
   <h2>B · Vallis Fig. 12.4 analogue: vorticity and streamfunction <span class="grid">shallow waves (β = ½), 256², rb = 1, 0 / 40 / 200 turnover times</span></h2>
   <img src="../wc25_vallis2d/final_panels_shallow.png" alt="Shallow waves: vorticity and streamfunction panels" style="width:100%;border:1px solid var(--rule)">
   <p>From the isotropic ring at 9 cycles/box, ω_y (top, ±0.02) becomes x-elongated streaks by 40 T_e and bands by 200 T_e; ψ (bottom) organises into x-elongated cells with 4–5 alternations over the depth. Energy conserved to +0.03%, enstrophy to 39%. Exact-zonal energy stays at 5%: zonally elongated structures rather than finite-amplitude jets at rb = β/(u′<sub>rms,0</sub>K₀²) = 1.</p>
 </section>
 
 <p class="small"><b>Overlay audit (2026-10-04).</b> The dashed curves use K = √(β|cos θ|/u′<sub>rms</sub>) with the correct conversion K/(2π) to cycles/box. They are bulk-velocity scale estimates, not fitted boundaries of the observed spectral holes. Vallis Eq. 12.14 instead uses K = (β³/ε)<sup>1/5</sup>|cos θ|<sup>3/5</sup>, requiring a defensible inverse energy transfer rate ε. A flux-based audit is pending; no curve has been resized to fit the data.</p>
-<section class="movie">
+<section class="movie"><p><strong>PROVISIONAL — VERY LOW RESOLUTION (256² / 256³ and coarser).</strong></p>
   <h2>B · Fig. 12.3 analogue: anisotropic spectral redistribution <span class="grid">shallow waves, E(k_x, k_z), 0 / 40 / 200 turnover times</span></h2>
   <img src="../wc25_vallis2d/final_spectra_shallow_heatmap.png" alt="Shallow waves: two-dimensional energy spectral density heatmaps" style="width:100%;border:1px solid var(--rule)">
   <p class="small">Heatmaps show spectral density per (cycle/box)² normalized by K₀, one cell per mode, log₁₀ colour with limits shared across panels and a grey floor four decades below the maximum (earlier filled-contour versions are kept in the repository).</p>
   <p>Energy leaves the initial ring and becomes concentrated near the k_z axis. The dashed global Rhines estimate K² = β|cos θ|/u′<sub>rms</sub>(t) is larger than the observed depleted region; it does not trace its boundary. Its maximum radius stays near 9 cycles/box because total rms speed changes little. It is not the transfer-rate-based boundary of Vallis Eq. 12.14. Anisotropy index 0.00 → 0.50 → 0.70. A source-matched qualitative comparison, not an exact reproduction.</p>
 </section>
 
-<section class="movie" id="deep-wave-spectra">
+<section class="movie" id="deep-wave-spectra"><p><strong>PROVISIONAL — VERY LOW RESOLUTION (256² / 256³ and coarser).</strong></p>
   <h2>B · Deep waves: energy goes to the zonal column <span class="grid">deep waves, E(k_x, k_z), 0 / 40 / 200 turnover times, same colour scale</span></h2>
   <img src="../wc25_vallis2d/final_spectra_deep_heatmap.png" alt="Deep waves: two-dimensional energy spectral density heatmaps" style="width:100%;border:1px solid var(--rule)">
   <p>Same ring, same colour scale as the shallow-wave figure above. With the surface-intensified β_eff(z) = 2e^{8(z−1)} there is no single Rhines dumbbell to draw; the energy concentrates in and next to the exact-zonal k_x = 0 column at low |k_z| (exact-zonal fraction 39%, anisotropy 0.62 at 200 T_e, against 5% and 0.70 for shallow waves). The Fourier × sine spectrum covers the whole column between the walls, so each cell mixes all depths; single realization at 256², resolution-sensitive at the 10–20% level (see the results document).</p>
 </section>
 
-<section class="movie">
+<section class="movie"><p><strong>PROVISIONAL — VERY LOW RESOLUTION (256² / 256³ and coarser).</strong></p>
   <h2>B · Same field, three families, 200 turnover times <span class="grid">none · shallow · deep, 256²</span></h2>
   <img src="../wc25_vallis2d/final_comparison_t200.png" alt="Wave-free, shallow and deep after 200 turnover times" style="width:100%;border:1px solid var(--rule)">
   <p>No waves: Fig. 11.8 decay with coherent vortices and merger (centroid 2.6 cycles, enstrophy 14%). Shallow: x-elongated bands (5.1 cycles, 39%). Deep (β(z) = 2e^{8(z−1)}): β dynamics confined to the upper third, 2-D vortices below, and a strong x-mean Lagrangian jet (K_jet/K 0.39, max 2.2 u′<sub>rms,0</sub>) that is realisation-sensitive (seed 2: 0.074 vs ≈ 0.2 at 100 T_e). The deep member's energy drifts +0.6% at 256² and +0.1% at 512² over 200 T_e, a discrete Stokes-term residual that decreases with resolution.</p>
 </section>
 
-<section class="movie">
+<section class="movie"><p><strong>PROVISIONAL — VERY LOW RESOLUTION (256² / 256³ and coarser).</strong></p>
   <h2>B · Six-seed ensemble, VM93-inspired parameters <span class="grid">k₀ = 12, σ = 1, rb = 2, 0 / 20 / 60 turnover times</span></h2>
   <img src="../wc25_vallis2d/final_ensemble_spectra_shallow_heatmap.png" alt="Six-seed ensemble-mean spectra" style="width:100%;border:1px solid var(--rule)">
   <p>Ensemble-mean E(k_x, k_z) for shallow waves with parameters inspired by VM93 Fig. 5: a hole around the k_x axis and energy at the poles by 20 T_e, a narrow hourglass along k_z by 60 T_e. Exact-zonal fraction 0.012 ± 0.003 across the six seeds. The wave-free three-seed mean collapses isotropically (<a href="../wc25_vallis2d/final_ensemble_spectra_none_heatmap.png">figure</a>).</p>
 </section>
 
-<section class="movie">
+<section class="movie"><p><strong>PROVISIONAL — VERY LOW RESOLUTION (256² / 256³ and coarser).</strong></p>
   <h2>B · Sensitivity: the rb bracket and every variant at 100 turnover times <span class="grid">shallow unless coloured otherwise, 256²</span></h2>
   <img src="../wc25_vallis2d/final_variants.png" alt="Vallis-2D sensitivity figure" style="width:100%;border:1px solid var(--rule)">
   <p>Exact-zonal fraction 0.159 (rb = 0.5), ≈ 0.04 (rb = 1), 0.017 (rb = 2) while the anisotropy index runs the other way; ring width 0.5–2 modes, a second grid, a second seed and the λ = 200 rescaling (u′<sub>rms,0</sub> = 0.031, identical physics in the nonlinear WENO regime) sit within the scatter; keeping the k_x = 0 modes adds their 6% almost additively.</p>

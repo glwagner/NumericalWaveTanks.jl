@@ -1,3 +1,5 @@
+> **Resolution status: all 256² and 256³ simulations are PROVISIONAL — VERY LOW RESOLUTION. Coarser runs are provisional as well. Higher-resolution runs are checks, not evidence of convergence by themselves; physical conclusions remain provisional until supported by resolution comparisons.**
+
 # WC25 resolution follow-up — report (INTERIM — 512³ runs and the 256³ r = 0.3 pair are PENDING; their sections will be added after review)
 
 Campaign of 2026-10-03 (assignment `/u/glwagner/wc25_resolution_coordination/assignment.txt`). Notation: u′_rms,0 is the
