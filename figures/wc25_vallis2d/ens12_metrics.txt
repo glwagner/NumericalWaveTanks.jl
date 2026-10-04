@@ -1,0 +1,54 @@
+IC check seed 1 N=256 (reference): energy outside the drawn mode box 0.00e+00
+IC check seed 1 N=512 vs N=256: stored coefficients rel. diff after uniform factor 8.79e-17 (factor 0.997979); grid-ψ sine–Fourier coefficients rel. diff 3.36e-16 (factor 0.997979); energy outside mode box 0.00e+00
+IC check seed 1 N=1024 vs N=256: stored coefficients rel. diff after uniform factor 2.86e-16 (factor 0.997475); grid-ψ sine–Fourier coefficients rel. diff 4.10e-16 (factor 0.997475); energy outside mode box -2.22e-16
+IC check seed 2 N=256 (reference): energy outside the drawn mode box 0.00e+00
+IC check seed 2 N=512 vs N=256: stored coefficients rel. diff after uniform factor 9.86e-17 (factor 0.997998); grid-ψ sine–Fourier coefficients rel. diff 3.00e-16 (factor 0.997998); energy outside mode box 1.11e-16
+IC check seed 2 N=1024 vs N=256: stored coefficients rel. diff after uniform factor 1.44e-16 (factor 0.997498); grid-ψ sine–Fourier coefficients rel. diff 3.17e-16 (factor 0.997498); energy outside mode box 0.00e+00
+IC check seed 3 N=256 (reference): energy outside the drawn mode box 0.00e+00
+IC check seed 3 N=512 vs N=256: stored coefficients rel. diff after uniform factor 1.42e-16 (factor 0.997977); grid-ψ sine–Fourier coefficients rel. diff 3.03e-16 (factor 0.997977); energy outside mode box 0.00e+00
+IC check seed 3 N=1024 vs N=256: stored coefficients rel. diff after uniform factor 1.97e-16 (factor 0.997472); grid-ψ sine–Fourier coefficients rel. diff 3.21e-16 (factor 0.997472); energy outside mode box -2.22e-16
+IC check seed 4 N=256 (reference): energy outside the drawn mode box 0.00e+00
+IC check seed 4 N=512 vs N=256: stored coefficients rel. diff after uniform factor 1.01e-16 (factor 0.997892); grid-ψ sine–Fourier coefficients rel. diff 3.64e-16 (factor 0.997892); energy outside mode box -2.22e-16
+IC check seed 4 N=1024 vs N=256: stored coefficients rel. diff after uniform factor 1.74e-16 (factor 0.997366); grid-ψ sine–Fourier coefficients rel. diff 3.98e-16 (factor 0.997366); energy outside mode box 1.11e-16
+IC check seed 5 N=256 (reference): energy outside the drawn mode box 0.00e+00
+IC check seed 5 N=512 vs N=256: stored coefficients rel. diff after uniform factor 9.30e-17 (factor 0.998094); grid-ψ sine–Fourier coefficients rel. diff 3.77e-16 (factor 0.998094); energy outside mode box 0.00e+00
+IC check seed 5 N=1024 vs N=256: stored coefficients rel. diff after uniform factor 9.63e-17 (factor 0.997618); grid-ψ sine–Fourier coefficients rel. diff 3.89e-16 (factor 0.997618); energy outside mode box 0.00e+00
+IC check seed 6 N=256 (reference): energy outside the drawn mode box 0.00e+00
+IC check seed 6 N=512 vs N=256: stored coefficients rel. diff after uniform factor 3.05e-16 (factor 0.998018); grid-ψ sine–Fourier coefficients rel. diff 3.11e-16 (factor 0.998018); energy outside mode box -2.22e-16
+IC check seed 6 N=1024 vs N=256: stored coefficients rel. diff after uniform factor 1.34e-16 (factor 0.997523); grid-ψ sine–Fourier coefficients rel. diff 3.88e-16 (factor 0.997523); energy outside mode box 0.00e+00
+loaded shallow N=256: 6 members
+loaded shallow N=512: 6 members
+loaded shallow N=1024: 6 members
+loaded none N=256: 3 members
+loaded none N=512: 3 members
+loaded none N=1024: 3 members
+shallow  N= 256 τ=   0 (n=6): zonal 0.00000±0.00000  aniso -0.0141±0.0586  centroid 11.984±0.055  K/K0−1 +0.000e+00±0.0e+00  Z/Z0 1.0000±0.0000  E(K>30)/E 7.94e-14  max −Π 8.644e-04±1.4e-03  ΣT/Σ|T| max 1.2e-13
+shallow  N= 512 τ=   0 (n=6): zonal 0.00000±0.00000  aniso -0.0141±0.0586  centroid 11.985±0.055  K/K0−1 +0.000e+00±0.0e+00  Z/Z0 1.0000±0.0000  E(K>30)/E 1.68e-13  max −Π 8.591e-04±1.4e-03  ΣT/Σ|T| max 3.2e-13
+shallow  N=1024 τ=   0 (n=6): zonal 0.00000±0.00000  aniso -0.0142±0.0586  centroid 11.985±0.055  K/K0−1 +0.000e+00±0.0e+00  Z/Z0 1.0000±0.0000  E(K>30)/E 3.23e-13  max −Π 8.578e-04±1.4e-03  ΣT/Σ|T| max 5.7e-13
+shallow  N= 256 τ=  20 (n=6): zonal 0.01138±0.00364  aniso 0.4153±0.0362  centroid 11.309±0.150  K/K0−1 +1.294e-03±6.2e-04  Z/Z0 0.9727±0.0039  E(K>30)/E 4.61e-03  max −Π 2.036e-02±2.1e-03  ΣT/Σ|T| max 7.0e-05
+shallow  N= 512 τ=  20 (n=6): zonal 0.01136±0.00363  aniso 0.4163±0.0357  centroid 11.342±0.150  K/K0−1 +3.469e-04±1.6e-04  Z/Z0 0.9889±0.0017  E(K>30)/E 5.10e-03  max −Π 2.027e-02±2.4e-03  ΣT/Σ|T| max 5.5e-06
+shallow  N=1024 τ=  20 (n=6): zonal 0.01137±0.00363  aniso 0.4171±0.0354  centroid 11.350±0.150  K/K0−1 +8.843e-05±3.9e-05  Z/Z0 0.9955±0.0008  E(K>30)/E 5.19e-03  max −Π 2.032e-02±2.4e-03  ΣT/Σ|T| max 1.8e-07
+shallow  N= 256 τ=  60 (n=6): zonal 0.01187±0.00259  aniso 0.6920±0.0263  centroid 9.782±0.152  K/K0−1 +4.291e-03±8.1e-04  Z/Z0 0.8103±0.0154  E(K>30)/E 8.34e-03  max −Π 1.030e-02±3.6e-03  ΣT/Σ|T| max 6.5e-05
+shallow  N= 512 τ=  60 (n=6): zonal 0.01132±0.00255  aniso 0.6745±0.0231  centroid 9.959±0.158  K/K0−1 +1.371e-03±2.4e-04  Z/Z0 0.8827±0.0131  E(K>30)/E 1.11e-02  max −Π 1.016e-02±4.0e-03  ΣT/Σ|T| max 3.2e-06
+shallow  N=1024 τ=  60 (n=6): zonal 0.01100±0.00238  aniso 0.6678±0.0243  centroid 10.019±0.158  K/K0−1 +3.834e-04±6.6e-05  Z/Z0 0.9280±0.0101  E(K>30)/E 1.20e-02  max −Π 1.017e-02±3.5e-03  ΣT/Σ|T| max 2.2e-07
+none     N= 256 τ=   0 (n=3): zonal 0.00000±0.00000  aniso -0.0521±0.0564  centroid 11.995±0.061  K/K0−1 +0.000e+00±0.0e+00  Z/Z0 1.0000±0.0000  E(K>30)/E 7.33e-14  max −Π 1.437e-03±1.9e-03  ΣT/Σ|T| max 6.8e-14
+none     N= 512 τ=   0 (n=3): zonal 0.00000±0.00000  aniso -0.0522±0.0564  centroid 11.995±0.062  K/K0−1 +0.000e+00±0.0e+00  Z/Z0 1.0000±0.0000  E(K>30)/E 1.59e-13  max −Π 1.429e-03±1.9e-03  ΣT/Σ|T| max 8.2e-14
+none     N=1024 τ=   0 (n=3): zonal 0.00000±0.00000  aniso -0.0522±0.0564  centroid 11.996±0.062  K/K0−1 +0.000e+00±0.0e+00  Z/Z0 1.0000±0.0000  E(K>30)/E 3.17e-13  max −Π 1.426e-03±1.9e-03  ΣT/Σ|T| max 1.5e-13
+none     N= 256 τ=  20 (n=3): zonal 0.05754±0.01299  aniso 0.0577±0.0423  centroid 8.566±0.049  K/K0−1 -1.999e-03±7.0e-04  Z/Z0 0.7347±0.0038  E(K>30)/E 1.24e-02  max −Π 2.584e-02±2.5e-03  ΣT/Σ|T| max 1.1e-04
+none     N= 512 τ=  20 (n=3): zonal 0.05601±0.01109  aniso 0.0605±0.0425  centroid 8.677±0.034  K/K0−1 -5.205e-04±1.8e-04  Z/Z0 0.8219±0.0035  E(K>30)/E 1.40e-02  max −Π 2.404e-02±2.7e-03  ΣT/Σ|T| max 2.6e-05
+none     N=1024 τ=  20 (n=3): zonal 0.05610±0.01101  aniso 0.0620±0.0400  centroid 8.728±0.028  K/K0−1 -1.161e-04±5.0e-05  Z/Z0 0.8902±0.0042  E(K>30)/E 1.45e-02  max −Π 2.393e-02±2.9e-03  ΣT/Σ|T| max 2.0e-06
+none     N= 256 τ=  60 (n=3): zonal 0.05732±0.03045  aniso 0.0457±0.0623  centroid 5.395±0.227  K/K0−1 -6.959e-03±6.1e-04  Z/Z0 0.3206±0.0115  E(K>30)/E 4.05e-03  max −Π 9.332e-03±8.9e-04  ΣT/Σ|T| max 6.1e-05
+none     N= 512 τ=  60 (n=3): zonal 0.07438±0.02008  aniso 0.0426±0.0152  centroid 5.371±0.081  K/K0−1 -2.166e-03±2.2e-04  Z/Z0 0.3602±0.0104  E(K>30)/E 5.15e-03  max −Π 7.881e-03±5.6e-04  ΣT/Σ|T| max 4.4e-06
+none     N=1024 τ=  60 (n=3): zonal 0.06819±0.03432  aniso 0.0641±0.0103  centroid 5.443±0.063  K/K0−1 -6.713e-04±4.9e-05  Z/Z0 0.4133±0.0111  E(K>30)/E 5.80e-03  max −Π 8.152e-03±3.8e-03  ΣT/Σ|T| max 4.7e-07
+FLUX shallow  N= 256 τ=  20: (a) mean of member peaks 2.0358e-02; (b) peak of ensemble-mean −Π over K<10 1.8996e-02 at K=10; (c) band mean of −⟨Π⟩ over 2≤K≤10 6.7755e-03  [units Π·T_e/K₀]
+FLUX shallow  N= 512 τ=  20: (a) mean of member peaks 2.0266e-02; (b) peak of ensemble-mean −Π over K<10 1.8761e-02 at K=10; (c) band mean of −⟨Π⟩ over 2≤K≤10 6.7349e-03  [units Π·T_e/K₀]
+FLUX shallow  N=1024 τ=  20: (a) mean of member peaks 2.0315e-02; (b) peak of ensemble-mean −Π over K<10 1.8780e-02 at K=10; (c) band mean of −⟨Π⟩ over 2≤K≤10 6.7350e-03  [units Π·T_e/K₀]
+FLUX shallow  N= 256 τ=  60: (a) mean of member peaks 1.0301e-02; (b) peak of ensemble-mean −Π over K<10 7.3213e-03 at K=8; (c) band mean of −⟨Π⟩ over 2≤K≤10 2.5029e-03  [units Π·T_e/K₀]
+FLUX shallow  N= 512 τ=  60: (a) mean of member peaks 1.0162e-02; (b) peak of ensemble-mean −Π over K<10 7.3081e-03 at K=7; (c) band mean of −⟨Π⟩ over 2≤K≤10 2.5648e-03  [units Π·T_e/K₀]
+FLUX shallow  N=1024 τ=  60: (a) mean of member peaks 1.0170e-02; (b) peak of ensemble-mean −Π over K<10 7.4538e-03 at K=8; (c) band mean of −⟨Π⟩ over 2≤K≤10 2.6520e-03  [units Π·T_e/K₀]
+FLUX none     N= 256 τ=  20: (a) mean of member peaks 2.5838e-02; (b) peak of ensemble-mean −Π over K<10 2.1771e-02 at K=6; (c) band mean of −⟨Π⟩ over 2≤K≤10 1.3720e-02  [units Π·T_e/K₀]
+FLUX none     N= 512 τ=  20: (a) mean of member peaks 2.4040e-02; (b) peak of ensemble-mean −Π over K<10 2.1753e-02 at K=8; (c) band mean of −⟨Π⟩ over 2≤K≤10 1.3690e-02  [units Π·T_e/K₀]
+FLUX none     N=1024 τ=  20: (a) mean of member peaks 2.3930e-02; (b) peak of ensemble-mean −Π over K<10 2.1442e-02 at K=8; (c) band mean of −⟨Π⟩ over 2≤K≤10 1.3551e-02  [units Π·T_e/K₀]
+FLUX none     N= 256 τ=  60: (a) mean of member peaks 9.3321e-03; (b) peak of ensemble-mean −Π over K<10 8.7980e-03 at K=3; (c) band mean of −⟨Π⟩ over 2≤K≤10 3.6660e-03  [units Π·T_e/K₀]
+FLUX none     N= 512 τ=  60: (a) mean of member peaks 7.8808e-03; (b) peak of ensemble-mean −Π over K<10 6.6126e-03 at K=3; (c) band mean of −⟨Π⟩ over 2≤K≤10 3.1576e-03  [units Π·T_e/K₀]
+FLUX none     N=1024 τ=  60: (a) mean of member peaks 8.1520e-03; (b) peak of ensemble-mean −Π over K<10 7.5773e-03 at K=3; (c) band mean of −⟨Π⟩ over 2≤K≤10 3.5909e-03  [units Π·T_e/K₀]

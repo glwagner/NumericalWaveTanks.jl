@@ -105,3 +105,47 @@ At 200 T_e:
 
 ## 5. Budget
 See `/u/glwagner/wc25_resolution_status.md` (ledger, billed and reserved GPU-hours).
+
+## 6. Two-dimensional k₀ = 12, rb = 2 ring ensemble at 256², 512², 1024² (completed 2026-10-04; PROVISIONAL: 256² very low resolution; 512²/1024² convergence not established)
+Matched continuous Fourier coefficients per seed (shallow seeds 1–6, wave-free seeds 1–3; 60 T_e; same physical parameters as the
+published 256² ensemble). IC preflight (job 3304355), run after the 1024² throughput pilot (shallow seed 1, job 3304346) and before the ensemble job: stored coefficients agree with the 256² IC to
+≤ 3.1e−16 after one uniform factor, coefficients re-extracted from the grid streamfunction to ≤ 4.1e−16, energy outside the drawn mode
+box zero to round-off; the uniform energy-normalization factor (rescaling to the same measured u′_rms,0 = 4.397621e−05) is
+λ = 0.99791–0.99809 at 512² and 0.99737–0.99762 at 1024² (report `initial_conditions/preflight_k12_rb2_report.txt`). All 18 final cases
+validated COMPLETED at 60.000 T_e before analysis. Figures `figures/wc25_vallis2d/ens12_{spectra_shallow_heatmap,spectra_none_heatmap,
+statistics,flux}.png` (no overlays), numbers `ens12_metrics.txt` (script `analysis/wc25_vallis2d/ensemble_resolution.jl`).
+
+Ensemble mean ± standard deviation over seeds at 60 T_e (shallow, 6 seeds):
+| quantity | 256² | 512² | 1024² |
+|---|---|---|---|
+| anisotropy | 0.692 ± 0.026 | 0.675 ± 0.023 | 0.668 ± 0.024 |
+| exact-zonal fraction | 0.0119 ± 0.0026 | 0.0113 ± 0.0026 | 0.0110 ± 0.0024 |
+| energy centroid (cycles/box) | 9.78 ± 0.15 | 9.96 ± 0.16 | 10.02 ± 0.16 |
+| mean over members of each member's peak inverse flux max_{K<10}(−Π)·T_e/K₀ | 0.0103 ± 0.0036 | 0.0102 ± 0.0040 | 0.0102 ± 0.0035 |
+| energy drift K/K₀ − 1 | +4.29e−3 | +1.37e−3 | +3.83e−4 |
+| enstrophy Z/Z₀ | 0.810 ± 0.015 | 0.883 ± 0.013 | 0.928 ± 0.010 |
+| energy fraction at K > 30 cycles | 8.3e−3 | 1.11e−2 | 1.20e−2 |
+At 20 T_e, for shallow waves, the selected statistics (anisotropy, exact-zonal fraction, energy centroid, member-peak inverse flux) differ between grids by less than one seed standard deviation, while energy drift and enstrophy do not; the high-k fraction rises 4.6e−3 / 5.1e−3 / 5.2e−3. For the wave-free runs the centroid already differs at 20 T_e (8.57 / 8.68 / 8.73 cycles; seed std ≤ 0.05).
+Wave-free (3 seeds) at 60 T_e: centroid 5.40 / 5.37 / 5.44 cycles, exact-zonal fraction 0.057 ± 0.030 / 0.074 ± 0.020 / 0.068 ± 0.034,
+energy drift −6.96e−3 / −2.17e−3 / −6.71e−4, enstrophy 0.32 / 0.36 / 0.41.
+
+Interpretation (provisional, descriptive): anisotropy, exact-zonal fraction and member-peak inverse flux change between grids by less than
+one seed standard deviation, and their 512² → 1024² change is smaller than 256² → 512². The energy centroid shifts 9.78 → 9.96 → 10.02
+cycles, i.e. by more than one seed standard deviation (0.15) over the full range (0.18 then 0.06). The seed standard deviation describes
+the spread of individual members; it is not the uncertainty of the paired resolution difference, and no statistical test is implied.
+These comparisons are consistent with, but do not demonstrate, convergence of the selected statistics. Small-scale quantities are clearly resolution dependent: enstrophy retained at 60 T_e rises
+from 0.81 to 0.93 and the energy drift falls by a factor 3.1 then 3.6 per doubling (improved energy conservation, not proof of converged
+dynamics). The 256² results remain PROVISIONAL — VERY LOW RESOLUTION; 512²/1024² results are provisional, convergence not established. No spectral
+boundary is drawn on these figures.
+
+Flux statistics (stated explicitly; values in units of Π·T_e/K₀): (a) the table's "member-peak" column is the mean over members of each
+member's maximum of −Π(K) for K < 10 cycles; this is the same definition as the overlay audit's ε, and the numbers agree (audit ε at
+60 T_e = 3.303e−14 in model units = 1.030e−2 after multiplying by T_e/K₀ = 301.58/9.6695e−10, the 256² entry here). (b) The peak of the
+ENSEMBLE-MEAN flux profile is smaller (shallow, 60 T_e: 7.3e−3 / 7.3e−3 / 7.5e−3 at K ≈ 7–8 cycles; FLUX lines in ens12_metrics.txt)
+because member peaks sit at different K. (c) The band average of the ensemble-mean −Π over 2 ≤ K ≤ 10 cycles is +2.5e−3 / +2.6e−3 /
++2.7e−3 at 60 T_e (about a quarter of (a)). The audit's "no clear plateau" finding is a statement about the K-dependence (relative spread
+of −Π over the band, computed per member and averaged over members); its 60 T_e entry "mean ≤ 0" means that at least one member had a
+non-positive band mean, which makes the member-averaged spread undefined — not that the ensemble-mean band average is ≤ 0. (a), (b) and
+(c) are different statistics, not a contradiction.
+Cost: pilot 0.071, preflight 0.024, attempt 1 0.070 (MEMBERS truncated by `sbatch --export`; re-ran the pilot case), attempt 2 0.457,
+dry-run test 0.007, analysis 0.041 GPU-h.

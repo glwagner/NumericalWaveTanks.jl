@@ -1,0 +1,20 @@
+IC preflight 2026-10-04 04:35 UTC: tolerances A 1e-12, ψ-coefficients 1e-09, outside-box energy 1e-12, λ consistency 1e-09
+seed 1 N=256 reference: q0 4.397621e-05, K0 9.669534e-10, outside-box energy 0.00e+00
+PASS seed 1 N=512: coeff rel 8.79e-17, ψ-coeff rel 3.36e-16, outside-box 0.00e+00, uniform factor λ = 0.997979297 (λ−1 = -2.021e-03; λ_ψ − λ_A = 1.1e-16); q0 4.397621e-05 (target 4.397621e-05), K0 9.669534e-10
+PASS seed 1 N=1024: coeff rel 2.86e-16, ψ-coeff rel 4.10e-16, outside-box -2.22e-16, uniform factor λ = 0.997474853 (λ−1 = -2.525e-03; λ_ψ − λ_A = 2.1e-17); q0 4.397621e-05 (target 4.397621e-05), K0 9.669534e-10
+seed 2 N=256 reference: q0 4.397621e-05, K0 9.669534e-10, outside-box energy 0.00e+00
+PASS seed 2 N=512: coeff rel 9.86e-17, ψ-coeff rel 3.00e-16, outside-box 1.11e-16, uniform factor λ = 0.997997509 (λ−1 = -2.002e-03; λ_ψ − λ_A = 3.8e-18); q0 4.397621e-05 (target 4.397621e-05), K0 9.669534e-10
+PASS seed 2 N=1024: coeff rel 1.44e-16, ψ-coeff rel 3.17e-16, outside-box 0.00e+00, uniform factor λ = 0.997497616 (λ−1 = -2.502e-03; λ_ψ − λ_A = 3.9e-18); q0 4.397621e-05 (target 4.397621e-05), K0 9.669534e-10
+seed 3 N=256 reference: q0 4.397621e-05, K0 9.669534e-10, outside-box energy 0.00e+00
+PASS seed 3 N=512: coeff rel 1.42e-16, ψ-coeff rel 3.03e-16, outside-box 0.00e+00, uniform factor λ = 0.997977373 (λ−1 = -2.023e-03; λ_ψ − λ_A = 9.9e-18); q0 4.397621e-05 (target 4.397621e-05), K0 9.669534e-10
+PASS seed 3 N=1024: coeff rel 1.97e-16, ψ-coeff rel 3.21e-16, outside-box -2.22e-16, uniform factor λ = 0.997472462 (λ−1 = -2.528e-03; λ_ψ − λ_A = 3.3e-16); q0 4.397621e-05 (target 4.397621e-05), K0 9.669534e-10
+seed 4 N=256 reference: q0 4.397621e-05, K0 9.669534e-10, outside-box energy 0.00e+00
+PASS seed 4 N=512: coeff rel 1.01e-16, ψ-coeff rel 3.64e-16, outside-box -2.22e-16, uniform factor λ = 0.997892428 (λ−1 = -2.108e-03; λ_ψ − λ_A = 2.2e-16); q0 4.397621e-05 (target 4.397621e-05), K0 9.669534e-10
+PASS seed 4 N=1024: coeff rel 1.74e-16, ψ-coeff rel 3.98e-16, outside-box 1.11e-16, uniform factor λ = 0.997366347 (λ−1 = -2.634e-03; λ_ψ − λ_A = 1.1e-16); q0 4.397621e-05 (target 4.397621e-05), K0 9.669534e-10
+seed 5 N=256 reference: q0 4.397621e-05, K0 9.669534e-10, outside-box energy 0.00e+00
+PASS seed 5 N=512: coeff rel 9.30e-17, ψ-coeff rel 3.77e-16, outside-box 0.00e+00, uniform factor λ = 0.998094035 (λ−1 = -1.906e-03; λ_ψ − λ_A = 2.2e-16); q0 4.397621e-05 (target 4.397621e-05), K0 9.669534e-10
+PASS seed 5 N=1024: coeff rel 9.63e-17, ψ-coeff rel 3.89e-16, outside-box 0.00e+00, uniform factor λ = 0.997618204 (λ−1 = -2.382e-03; λ_ψ − λ_A = 3.3e-16); q0 4.397621e-05 (target 4.397621e-05), K0 9.669534e-10
+seed 6 N=256 reference: q0 4.397621e-05, K0 9.669534e-10, outside-box energy 0.00e+00
+PASS seed 6 N=512: coeff rel 3.05e-16, ψ-coeff rel 3.11e-16, outside-box -2.22e-16, uniform factor λ = 0.998017640 (λ−1 = -1.982e-03; λ_ψ − λ_A = 2.2e-16); q0 4.397621e-05 (target 4.397621e-05), K0 9.669534e-10
+PASS seed 6 N=1024: coeff rel 1.34e-16, ψ-coeff rel 3.88e-16, outside-box 0.00e+00, uniform factor λ = 0.997522761 (λ−1 = -2.477e-03; λ_ψ − λ_A = 1.1e-16); q0 4.397621e-05 (target 4.397621e-05), K0 9.669534e-10
+IC PREFLIGHT PASSED

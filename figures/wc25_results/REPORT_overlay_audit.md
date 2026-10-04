@@ -19,13 +19,17 @@ fitted to or measured from the spectra.
 | pilot | 200 | 1.0001 | 9.00 | 30.9 | 4.5e−13 | 1e−6 | 1.50 | 0.402 |
 | ensemble k₀ = 12 (6 seeds) | 5 | 1.0001 | 16.97 | 52.9 | 3.2e−14 | 9e−6 | 1.15 | 0.655 |
 | ensemble | 20 | 1.0006 | 16.97 | 45.6 | 6.5e−14 | 3e−5 | 1.18 | 0.581 |
-| ensemble | 60 | 1.0021 | 16.95 | 52.9 | 3.3e−14 | 1e−5 | mean ≤ 0 (flux changes sign) | 0.570 |
+| ensemble | 60 | 1.0021 | 16.95 | 52.9 | 3.3e−14 | 1e−5 | undefined: ≥ 1 member has band mean of −Π ≤ 0 (see note) | 0.570 |
+
+Note (2026-10-04, clarification): the spread column is computed per member and averaged over members. At 60 T_e at least one member
+has a non-positive band mean of −Π over 2 ≤ K ≤ k₀ − 2, so the member-averaged spread is undefined. The ensemble-mean band average is
+positive (+2.5e−3 after multiplying flux by T_e/K₀ at 256²; REPORT_resolution.md §6).
 
 ## Findings (provisional, for the sampled saved fields only)
 1. The nonlinear spectral transfer passes a necessary consistency check, ΣT/Σ|T| ≤ 3×10⁻⁵ (energy-conserving transfer). This does not
    by itself establish that the flux diagnostic is accurate.
 2. No clear flux plateau is present below the ring at the sampled times: the relative spread of −Π(K) over 2 ≤ K ≤ k₀ − 2 cycles is
-   ≥ 1.0, and the ensemble-mean flux changes sign at 60 T_e. A single transfer rate ε is therefore not justified from these samples,
+   ≥ 1.0, and at 60 T_e at least one member’s band-mean flux is non-positive. A single transfer rate ε is therefore not justified from these samples,
    and no Vallis Eq. 12.14 curve is drawn. (Using the maximum inverse flux anyway gives radii of 22–53 cycles that enclose 88–97 % of
    the energy, so a maximum alone is not a substitute for an inertial-range ε.)
 3. The dashed curves enclose 16–40 % (pilot) and 57–66 % (ensemble) of the energy, so they do not delimit the observed depleted region.
