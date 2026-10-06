@@ -46,7 +46,7 @@ variables).** Standard curl signs, ω_x = ∂y w − ∂z v (along-wave axis), �
 earlier roll onset (⟨ω′ₓ²⟩/⟨ω′ᵧ²⟩ ≈ 1.2 at t = 400 in the raw measure)". The primes are wrong: the 1.2 is R_raw (total
 vorticity including mean shear; 1.175 at 256³ vs 1.003 at 128³ legacy seed 1 at t = 400). With the fluctuation ratio the
 two grids agree: R_fl(400) = 1.658 (256³) and 1.757 (128³ legacy seed 1), onset t = 270 and 277. The apparent
-"disagreement at 256³" was a comparison of R_raw with a fluctuation classifier, not a resolution effect.
+"disagreement at 256³" was a comparison of R_raw with a fluctuation classifier, not a resolution effect. [Update 2026-10-06: at 512³, from the same field as the 256³ run, the R_fl onset is later, t = 343 (273 and 270 at the matched 128³ and 256³), at a similar stress ratio u*/u′_rms = 0.72 (0.71, 0.66); R_fl(400) = 1.387 at 512³. The onset time is resolution dependent and not converged.]
 - The earlier ~30 % change of the zero-stress jet fraction between grids (legacy 128³ seed 1 → 256³: 0.18875 → 0.13376,
   −29.1 %) mixed realization and resolution: on the same field the change is 0.15413 → 0.13376 (−13.2 %), while the 128³
   realizations alone span 0.15413–0.19761 at t = 400 (single times; no ensemble at 256³).

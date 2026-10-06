@@ -2,6 +2,13 @@
 
 # Surface stress on WC25 wave-averaged decaying turbulence — campaign report (2026-10-03 03:55 UTC)
 
+> **Update 2026-10-06 (later): r = 0.03 now at 512³.** deep_r0p03_seed1_N512_d256 COMPLETED to t = 400.02 over three segments (outputs verified
+> continuous, no join gaps or duplicates). Main figures are now `mainmix2_*` (r = 0, 0.03 at 512³; r = 0.1, 0.3 at 256³). r = 0.03 at 512³: R_fl / R_layer /
+> R_raw = 1.096 / 1.295 / 0.968 at t = 200 and 1.387 / 1.779 / 1.079 at t = 400; onset R_fl 343, R_layer 202, R_raw never; K/K₀ = 4.61e−3 and
+> K_jet/K_rel = 0.664 at t = 400. Matched three-grid r = 0.03 (`res3_r0p03_512_resolution_metrics.txt`, 128³ / 256³ / 512³ at t = 400): R_fl 1.766 /
+> 1.658 / 1.387, onset t = 273 / 270 / 343 at u*/u′_rms = 0.71 / 0.66 / 0.72 — the onset ratio stays within 0.66–0.72 but the onset time is not
+> converged. PROVISIONAL: 256³ very low resolution; 512³ convergence not established.
+>
 > **Update 2026-10-06: per-case highest completed grid.** The main surface-stress figures (`figures/wc25_surface_stress/mainmix_*.png`) now
 > show r = 0 at **512³** (deep_r0_seed1_N512_d256, COMPLETED to t = 400 over two segments; statistics, profiles and fields verified continuous
 > from 0 to 400) and r = 0.03, 0.1 and the newly completed **r = 0.3** at 256³. These are mixed-resolution figures with each case labelled by its
@@ -120,7 +127,7 @@ wave-aligned Langmuir structures? Treated as a hypothesis; the stress ratio u*/u
   [Correction 2026-10-03, classifier audit: the 1.2 quoted here is the raw volume ratio ⟨ω_x²⟩_V/⟨ω_y²⟩_V of the total
   vorticity, which includes the mean shear; the primes are wrong. The fluctuation ratio ⟨ω′ₓ²⟩/⟨ω′ᵧ²⟩ (mean shear removed,
   depth mean over all faces) is 1.658 at 256³ and 1.757 at 128³ at t = 400, with onset t = 270 and 277; the onset is slightly
-  earlier at 256³ (270 versus 277). The 128³ and 256³ ICs are different realizations. See REPORT_resolution.md.]
+  earlier at 256³ (270 versus 277). The 128³ and 256³ ICs are different realizations. See REPORT_resolution.md.] [Update 2026-10-06: at 512³, from the same field as the 256³ run, the R_fl onset is later, t = 343 (273 and 270 at the matched 128³ and 256³), at a similar stress ratio u*/u′_rms = 0.72 (0.71, 0.66); R_fl(400) = 1.387 at 512³. The onset time is resolution dependent and not converged.]
 * The jets here are 3–10× weaker than WC25's (which start from a spun-up, larger-scale IC) and the band structure is
   dominated by 2–3 bands in a unit box; a domain-sensitivity run (wider/deeper box) was not done.
 * Only one seed at r = 0.01, 0.1, 0.3; the onset time at r = 0.03 (277) is from one seed.

@@ -37,6 +37,10 @@ window, max|ΔD|/max D < 5e−3; continuous coefficients shared by construction)
 
 ## B. Surface stress 3-D (section A)
 
+**Update 2026-10-06 (later).** 512³ r = 0.03 COMPLETED (t = 400.02, verified). Main figures are now `mainmix2_*`: r = 0 and 0.03 at 512³, r = 0.1
+and 0.3 at 256³ (mixed, each labelled). New matched comparison `res3_r0p03_512_*` (128³ / 256³ / 512³): the r = 0.03 onset time moves from 270–273
+to 343 at 512³ at a similar onset ratio. Still running: 512³ r = 0.1 (t ≈ 150 → 400) and 256³ wave-free r = 0.3.
+
 **Update 2026-10-06.** Completed since: 512³ r = 0 (t = 400, outputs verified) and 256³ deep r = 0.3 (t = 400). Main figures are now the
 per-case highest completed grid (`mainmix_*`: r = 0 at 512³; r = 0.03, 0.1, 0.3 at 256³), each case labelled with its grid; the all-256³ set
 (`main256v2_*`) and the matched 128³/256³/512³ r = 0 comparison (`res3_r0_512_*`) are labelled comparisons. Still running: 512³ r = 0.03 (t ≈ 376 → 400)
