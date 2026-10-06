@@ -2,6 +2,23 @@
 
 # Surface stress on WC25 wave-averaged decaying turbulence — campaign report (2026-10-03 03:55 UTC)
 
+> **Update 2026-10-06: per-case highest completed grid.** The main surface-stress figures (`figures/wc25_surface_stress/mainmix_*.png`) now
+> show r = 0 at **512³** (deep_r0_seed1_N512_d256, COMPLETED to t = 400 over two segments; statistics, profiles and fields verified continuous
+> from 0 to 400) and r = 0.03, 0.1 and the newly completed **r = 0.3** at 256³. These are mixed-resolution figures with each case labelled by its
+> grid, not a 512³ regime diagram; 512³ r = 0.03 and 0.1 are continuing. Exact values (`mainmix_classifiers.txt`):
+>
+> | case (grid) | t | R_fl | R_layer | R_raw | onset R_fl / R_layer / R_raw |
+> |---|---|---|---|---|---|
+> | r = 0 (512³) | 400 | 0.991 | 0.980 | 0.970 | none / none / none |
+> | r = 0.3 (256³) | 200 | 1.085 | 1.079 | 0.688 | none / none / none (max R_fl 1.12) |
+> | r = 0.3 (256³) | 400 | 1.096 | 1.093 | 0.710 | |
+>
+> (r = 0.03 and 0.1 unchanged from the 256³ table below.) End states: r = 0 (512³) K/K₀ = 1.56e−3, K_jet/K_rel = 0.178, 3 interior sign
+> reversals, band scale 0.581; r = 0.3 (256³) K/K₀ = 1.65, K_jet/K_rel = 0.265. Matched three-grid comparison for r = 0 at t = 400
+> (`res3_r0_512_resolution_metrics.txt`, same field at 128³ / 256³ / 512³): K/K₀ = 1.27e−3 / 1.39e−3 / 1.56e−3, K_jet/K_rel = 0.154 / 0.134 / 0.178,
+> R_fl = 0.951 / 0.976 / 0.991, sign reversals 8 / 5 / 3; convergence not established. The all-256³ set is kept as a comparison (`main256v2_*`).
+> PROVISIONAL: 256³ very low resolution; 512³ convergence not established.
+>
 > **Main-figure resolution update (2026-10-04).** The main surface-stress figures now use **256³**, the highest grid completed for
 > these cases: deep waves at u*/u′_rms,0 = 0, 0.03 (to t = 1000) and 0.1 (to t = 400), from the 256³-draw seed-1 field
 > (`figures/wc25_surface_stress/main256_*.png`). 256³ values: R_fl onset (> 1.3 at t > 5) at t = 270 for r = 0.03

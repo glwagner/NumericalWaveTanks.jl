@@ -37,6 +37,12 @@ window, max|ΔD|/max D < 5e−3; continuous coefficients shared by construction)
 
 ## B. Surface stress 3-D (section A)
 
+**Update 2026-10-06.** Completed since: 512³ r = 0 (t = 400, outputs verified) and 256³ deep r = 0.3 (t = 400). Main figures are now the
+per-case highest completed grid (`mainmix_*`: r = 0 at 512³; r = 0.03, 0.1, 0.3 at 256³), each case labelled with its grid; the all-256³ set
+(`main256v2_*`) and the matched 128³/256³/512³ r = 0 comparison (`res3_r0_512_*`) are labelled comparisons. Still running: 512³ r = 0.03 (t ≈ 376 → 400)
+and r = 0.1 (t ≈ 129 → 400); 256³ wave-free r = 0.3 pending. Optional extra 512³ cases deferred by review (storage).
+
+
 Completed grids: 128³ legacy draw (all r, wave-free, medium; t ≤ 1000 for several), 128³ d256 (r = 0, 0.03, 0.1, t = 400;
 matched to the 256³ draw), **256³: deep r = 0, 0.1 (t = 400) and r = 0.03 (t = 1000)**, 256³-draw seed-1 IC.
 No completed 512³ run. No wave-free, r = 0.01, r = 0.3 or r = 1 case above 128³ (256³ r = 0.3 deep + wave-free queued).

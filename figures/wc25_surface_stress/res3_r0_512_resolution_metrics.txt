@@ -1,0 +1,31 @@
+r=0     128³ matched                             t=   50 K/K0=1.562591e-02 Kjet/Krel=0.00909 Rfl=0.99487 Rlayer=0.97987 Rraw=0.98921 u*/u'rms=0.000 u'rms=3.735e-03 Z=2.160e-01 surfUrel=-2.677e-03 rev=8 ext=17 amp=5.99e-04
+r=0     128³ matched                             t=  100 K/K0=6.050177e-03 Kjet/Krel=0.02085 Rfl=0.98157 Rlayer=0.94251 Rraw=0.96612 u*/u'rms=0.000 u'rms=2.308e-03 Z=6.619e-02 surfUrel=-2.753e-03 rev=14 ext=15 amp=6.89e-04
+r=0     128³ matched                             t=  200 K/K0=2.654620e-03 Kjet/Krel=0.06150 Rfl=0.97377 Rlayer=0.91530 Rraw=0.93631 u*/u'rms=0.000 u'rms=1.495e-03 Z=2.293e-02 surfUrel=-2.968e-03 rev=12 ext=2 amp=8.20e-04
+r=0     128³ matched                             t=  400 K/K0=1.273421e-03 Kjet/Krel=0.15413 Rfl=0.95058 Rlayer=0.88918 Rraw=0.86515 u*/u'rms=0.000 u'rms=9.814e-04 Z=8.394e-03 surfUrel=-2.958e-03 rev=8 ext=1 amp=9.56e-04
+BUDGET r=0     128³ matched                             t= 100: ∫P_rel dt/K0 = 0.0000e+00, (K_rel−K_rel0)/K0 = -9.9395e-01, ∫ε dt/K0 = 9.9395e-01
+BUDGET r=0     128³ matched                             t= 400: ∫P_rel dt/K0 = 0.0000e+00, (K_rel−K_rel0)/K0 = -9.9873e-01, ∫ε dt/K0 = 9.9873e-01
+r=0     256³ (matched reference)                 t=   50 K/K0=1.503433e-02 Kjet/Krel=0.00748 Rfl=0.99617 Rlayer=0.98300 Rraw=0.99352 u*/u'rms=0.000 u'rms=3.663e-03 Z=4.605e-01 surfUrel=-2.491e-03 rev=6 ext=19 amp=7.00e-04
+r=0     256³ (matched reference)                 t=  100 K/K0=6.557753e-03 Kjet/Krel=0.01763 Rfl=0.99827 Rlayer=0.98424 Rraw=0.99248 u*/u'rms=0.000 u'rms=2.404e-03 Z=1.604e-01 surfUrel=-2.654e-03 rev=8 ext=16 amp=6.33e-04
+r=0     256³ (matched reference)                 t=  200 K/K0=2.958623e-03 Kjet/Krel=0.05414 Rfl=0.98604 Rlayer=0.95878 Rraw=0.97166 u*/u'rms=0.000 u'rms=1.581e-03 Z=6.028e-02 surfUrel=-3.059e-03 rev=11 ext=6 amp=7.79e-04
+r=0     256³ (matched reference)                 t=  400 K/K0=1.388624e-03 Kjet/Krel=0.13376 Rfl=0.97605 Rlayer=0.94547 Rraw=0.93706 u*/u'rms=0.000 u'rms=1.033e-03 Z=2.237e-02 surfUrel=-3.211e-03 rev=5 ext=1 amp=8.44e-04
+BUDGET r=0     256³ (matched reference)                 t= 100: ∫P_rel dt/K0 = 0.0000e+00, (K_rel−K_rel0)/K0 = -9.9344e-01, ∫ε dt/K0 = 9.9344e-01
+BUDGET r=0     256³ (matched reference)                 t= 400: ∫P_rel dt/K0 = 0.0000e+00, (K_rel−K_rel0)/K0 = -9.9861e-01, ∫ε dt/K0 = 9.9861e-01
+r=0     512³ matched                             t=   50 K/K0=1.761820e-02 Kjet/Krel=0.01311 Rfl=0.99671 Rlayer=0.99531 Rraw=0.99529 u*/u'rms=0.000 u'rms=3.953e-03 Z=1.208e+00 surfUrel=-3.400e-03 rev=8 ext=33 amp=9.14e-04
+r=0     512³ matched                             t=  100 K/K0=7.716900e-03 Kjet/Krel=0.02758 Rfl=0.99653 Rlayer=0.98862 Rraw=0.99347 u*/u'rms=0.000 u'rms=2.594e-03 Z=4.392e-01 surfUrel=-3.520e-03 rev=9 ext=12 amp=8.82e-04
+r=0     512³ matched                             t=  200 K/K0=3.438921e-03 Kjet/Krel=0.07004 Rfl=0.99004 Rlayer=0.98016 Rraw=0.98154 u*/u'rms=0.000 u'rms=1.690e-03 Z=1.653e-01 surfUrel=-3.808e-03 rev=9 ext=12 amp=1.01e-03
+r=0     512³ matched                             t=  400 K/K0=1.555164e-03 Kjet/Krel=0.17796 Rfl=0.99121 Rlayer=0.98013 Rraw=0.96975 u*/u'rms=0.000 u'rms=1.065e-03 Z=6.240e-02 surfUrel=-3.972e-03 rev=3 ext=2 amp=1.02e-03
+BUDGET r=0     512³ matched                             t= 100: ∫P_rel dt/K0 = 0.0000e+00, (K_rel−K_rel0)/K0 = -9.9228e-01, ∫ε dt/K0 = 9.9228e-01
+BUDGET r=0     512³ matched                             t= 400: ∫P_rel dt/K0 = 0.0000e+00, (K_rel−K_rel0)/K0 = -9.9844e-01, ∫ε dt/K0 = 9.9844e-01
+r=0     128³ legacy seed 1 (other realization)   t=   50 K/K0=1.528140e-02 Kjet/Krel=0.01122 Rfl=0.98988 Rlayer=0.96613 Rraw=0.98369 u*/u'rms=0.000 u'rms=3.681e-03 Z=2.150e-01 surfUrel=-3.091e-03 rev=8 ext=20 amp=5.36e-04
+r=0     128³ legacy seed 1 (other realization)   t=  100 K/K0=5.849634e-03 Kjet/Krel=0.03263 Rfl=0.99445 Rlayer=0.97702 Rraw=0.98020 u*/u'rms=0.000 u'rms=2.240e-03 Z=6.579e-02 surfUrel=-3.150e-03 rev=8 ext=11 amp=4.42e-04
+r=0     128³ legacy seed 1 (other realization)   t=  200 K/K0=2.533744e-03 Kjet/Krel=0.08839 Rfl=0.97189 Rlayer=0.92162 Rraw=0.93744 u*/u'rms=0.000 u'rms=1.420e-03 Z=2.188e-02 surfUrel=-3.221e-03 rev=3 ext=18 amp=6.22e-04
+r=0     128³ legacy seed 1 (other realization)   t=  400 K/K0=1.291280e-03 Kjet/Krel=0.18875 Rfl=0.96946 Rlayer=0.92192 Rraw=0.88400 u*/u'rms=0.000 u'rms=9.475e-04 Z=7.907e-03 surfUrel=-3.240e-03 rev=5 ext=8 amp=7.21e-04
+r=0     128³ legacy seed 1 (other realization)   t= 1000 K/K0=6.579672e-04 Kjet/Krel=0.39969 Rfl=0.92761 Rlayer=0.87454 Rraw=0.72170 u*/u'rms=0.000 u'rms=5.753e-04 Z=2.516e-03 surfUrel=-3.189e-03 rev=3 ext=1 amp=8.93e-04
+BUDGET r=0     128³ legacy seed 1 (other realization)   t= 100: ∫P_rel dt/K0 = 0.0000e+00, (K_rel−K_rel0)/K0 = -9.9415e-01, ∫ε dt/K0 = 9.9415e-01
+BUDGET r=0     128³ legacy seed 1 (other realization)   t= 400: ∫P_rel dt/K0 = 0.0000e+00, (K_rel−K_rel0)/K0 = -9.9871e-01, ∫ε dt/K0 = 9.9871e-01
+r=0     128³ legacy seed 2 (other realization)   t=   50 K/K0=1.549700e-02 Kjet/Krel=0.01377 Rfl=0.99011 Rlayer=0.98816 Rraw=0.98503 u*/u'rms=0.000 u'rms=3.705e-03 Z=2.139e-01 surfUrel=-3.306e-03 rev=11 ext=17 amp=6.84e-04
+r=0     128³ legacy seed 2 (other realization)   t=  100 K/K0=6.083730e-03 Kjet/Krel=0.03660 Rfl=0.97557 Rlayer=0.97009 Rraw=0.96147 u*/u'rms=0.000 u'rms=2.288e-03 Z=6.591e-02 surfUrel=-3.370e-03 rev=7 ext=10 amp=7.04e-04
+r=0     128³ legacy seed 2 (other realization)   t=  200 K/K0=2.699691e-03 Kjet/Krel=0.09560 Rfl=0.96621 Rlayer=0.90345 Rraw=0.92404 u*/u'rms=0.000 u'rms=1.470e-03 Z=2.267e-02 surfUrel=-3.504e-03 rev=3 ext=6 amp=8.42e-04
+r=0     128³ legacy seed 2 (other realization)   t=  400 K/K0=1.324744e-03 Kjet/Krel=0.19761 Rfl=0.93073 Rlayer=0.83679 Rraw=0.83751 u*/u'rms=0.000 u'rms=9.622e-04 Z=8.588e-03 surfUrel=-3.476e-03 rev=3 ext=3 amp=8.80e-04
+BUDGET r=0     128³ legacy seed 2 (other realization)   t= 100: ∫P_rel dt/K0 = 0.0000e+00, (K_rel−K_rel0)/K0 = -9.9392e-01, ∫ε dt/K0 = 9.9392e-01
+BUDGET r=0     128³ legacy seed 2 (other realization)   t= 400: ∫P_rel dt/K0 = 0.0000e+00, (K_rel−K_rel0)/K0 = -9.9868e-01, ∫ε dt/K0 = 9.9868e-01
