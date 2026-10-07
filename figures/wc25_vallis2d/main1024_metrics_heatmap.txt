@@ -1,0 +1,21 @@
+figures for ring_k9_w1_rb1_seed1_N1024: cases ["deep", "none", "shallow"]; τ panels = (0.0, 40.0, 200.0); T_e = 113.09733552923254, q0 = 0.00015635985129990398
+density check none_ring_k9_w1_rb1_seed1_N1024 t=0.0 T_e: Σ D·cell = 0.99999999, Σ E(window)/K₀ = 0.99999999, Σ E(all)/K₀ = 1.00000000, K(t)/K₀ = 1.00000000
+density check none_ring_k9_w1_rb1_seed1_N1024 t=40.0 T_e: Σ D·cell = 0.97918680, Σ E(window)/K₀ = 0.97918680, Σ E(all)/K₀ = 0.99973922, K(t)/K₀ = 0.99973923
+density check none_ring_k9_w1_rb1_seed1_N1024 t=200.0 T_e: Σ D·cell = 0.99462871, Σ E(window)/K₀ = 0.99462871, Σ E(all)/K₀ = 0.99932863, K(t)/K₀ = 0.99932863
+density check deep_ring_k9_w1_rb1_seed1_N1024 t=0.0 T_e: Σ D·cell = 0.99999999, Σ E(window)/K₀ = 0.99999999, Σ E(all)/K₀ = 1.00000000, K(t)/K₀ = 1.00000000
+density check deep_ring_k9_w1_rb1_seed1_N1024 t=40.0 T_e: Σ D·cell = 0.96319339, Σ E(window)/K₀ = 0.96319339, Σ E(all)/K₀ = 0.99992203, K(t)/K₀ = 0.99992203
+density check deep_ring_k9_w1_rb1_seed1_N1024 t=200.0 T_e: Σ D·cell = 0.97703475, Σ E(window)/K₀ = 0.97703475, Σ E(all)/K₀ = 1.00012147, K(t)/K₀ = 1.00012147
+density check shallow_ring_k9_w1_rb1_seed1_N1024 t=0.0 T_e: Σ D·cell = 0.99999999, Σ E(window)/K₀ = 0.99999999, Σ E(all)/K₀ = 1.00000000, K(t)/K₀ = 1.00000000
+density check shallow_ring_k9_w1_rb1_seed1_N1024 t=40.0 T_e: Σ D·cell = 0.96727104, Σ E(window)/K₀ = 0.96727104, Σ E(all)/K₀ = 1.00001532, K(t)/K₀ = 1.00001532
+density check shallow_ring_k9_w1_rb1_seed1_N1024 t=200.0 T_e: Σ D·cell = 0.98806411, Σ E(window)/K₀ = 0.98806411, Σ E(all)/K₀ = 0.99997046, K(t)/K₀ = 0.99997046
+heatmap spectra: shared log10 limits (-4.70, -0.70) for families deep,none,shallow, floor 4 decades
+IC: q0 = 1.5636e-04, K = 1.2224e-08, enstrophy = 7.8666e-05, centroid 8.975 cycles, std 0.986, zonal fraction 0.0000, anisotropy 0.004, jet-sector 0.285, wave-sector 0.335
+density check none_ring_k9_w1_rb1_seed1_N1024 t=0.0 T_e: Σ D·cell = 0.99999999, Σ E(window)/K₀ = 0.99999999, Σ E(all)/K₀ = 1.00000000, K(t)/K₀ = 1.00000000
+density check none_ring_k9_w1_rb1_seed1_N1024 t=40.0 T_e: Σ D·cell = 0.97918680, Σ E(window)/K₀ = 0.97918680, Σ E(all)/K₀ = 0.99973922, K(t)/K₀ = 0.99973923
+density check none_ring_k9_w1_rb1_seed1_N1024 t=200.0 T_e: Σ D·cell = 0.99462871, Σ E(window)/K₀ = 0.99462871, Σ E(all)/K₀ = 0.99932863, K(t)/K₀ = 0.99932863
+density check deep_ring_k9_w1_rb1_seed1_N1024 t=0.0 T_e: Σ D·cell = 0.99999999, Σ E(window)/K₀ = 0.99999999, Σ E(all)/K₀ = 1.00000000, K(t)/K₀ = 1.00000000
+density check deep_ring_k9_w1_rb1_seed1_N1024 t=40.0 T_e: Σ D·cell = 0.96319339, Σ E(window)/K₀ = 0.96319339, Σ E(all)/K₀ = 0.99992203, K(t)/K₀ = 0.99992203
+density check deep_ring_k9_w1_rb1_seed1_N1024 t=200.0 T_e: Σ D·cell = 0.97703475, Σ E(window)/K₀ = 0.97703475, Σ E(all)/K₀ = 1.00012147, K(t)/K₀ = 1.00012147
+density check shallow_ring_k9_w1_rb1_seed1_N1024 t=0.0 T_e: Σ D·cell = 0.99999999, Σ E(window)/K₀ = 0.99999999, Σ E(all)/K₀ = 1.00000000, K(t)/K₀ = 1.00000000
+density check shallow_ring_k9_w1_rb1_seed1_N1024 t=40.0 T_e: Σ D·cell = 0.96727104, Σ E(window)/K₀ = 0.96727104, Σ E(all)/K₀ = 1.00001532, K(t)/K₀ = 1.00001532
+density check shallow_ring_k9_w1_rb1_seed1_N1024 t=200.0 T_e: Σ D·cell = 0.98806411, Σ E(window)/K₀ = 0.98806411, Σ E(all)/K₀ = 0.99997046, K(t)/K₀ = 0.99997046

@@ -1,0 +1,33 @@
+#!/bin/bash
+#SBATCH --job-name=as-wind
+#SBATCH --output=logs/anti_stokes_wind-%A_%a.log
+#SBATCH --account=bhcr-dtai-gh
+#SBATCH --partition=ghx4
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=120G
+#SBATCH --gres=gpu:1
+#SBATCH --time=02:30:00
+#SBATCH --array=1,11-14
+
+# Fourth case: steady wave train + 1.D turbulence + initial current α Uˢ₀ e^{2kz} + constant surface
+# momentum flux u*² along the waves (the sustained source of aligned shear), run to STOP s.
+#    1  wind_sheared_null with 1e-4 m/s noise (laminar reference)
+#   11–1n  seed n: wind_sheared_control (shear + wind, no waves) + wind_sheared_turbulence (+ steady waves)
+# Environment: STRESS (u*² in m²/s², default 2e-5 → u* = 4.5 mm/s, La_t ≈ 0.3), TAG (ustar4.5), STOP (60),
+#              LEVEL (M2), CASE (1.D), SHEAR (1.0)
+source batch/env.sh
+
+LEVEL=${LEVEL:-M2}; CASE=${CASE:-1.D}; DT=${DT:-0.02}; NUMERICS=${NUMERICS:-weno}
+SHEAR=${SHEAR:-1.0}; STRESS=${STRESS:-2e-5}; TAG=${TAG:-ustar4.5}; STOP=${STOP:-60}
+RUN="julia --project=. experiments/anti_stokes/run_moving_packet.jl case=$CASE level=$LEVEL numerics=$NUMERICS dt=$DT x_topology=periodic shear=$SHEAR wind_stress=$STRESS tag=$TAG stop_time=$STOP"
+ID=$SLURM_ARRAY_TASK_ID
+case $ID in
+    1)  $RUN member=wind_sheared_null noise=1e-4 animation=true ;;
+    1[1-9])
+        SEED=$((ID - 10)); ANIM=$([ "$SEED" -eq 1 ] && echo true || echo false)
+        $RUN member=wind_sheared_control seed=$SEED animation=$ANIM
+        $RUN member=wind_sheared_turbulence seed=$SEED animation=$ANIM ;;
+    *)  echo "No task defined for array index $ID"; exit 1 ;;
+esac

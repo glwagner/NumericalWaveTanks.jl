@@ -1,0 +1,159 @@
+> **Resolution status: all 256² and 256³ simulations are PROVISIONAL — VERY LOW RESOLUTION. Coarser runs are provisional as well. Higher-resolution runs are checks, not evidence of convergence by themselves; physical conclusions remain provisional until supported by resolution comparisons.**
+
+# Surface stress on WC25 wave-averaged decaying turbulence — campaign report (2026-10-03 03:55 UTC)
+
+> **Update 2026-10-07: matched wave-free control at r = 0.3 (256³).** none_r0p3_seed1_N256 COMPLETED to t = 400 over two segments (jobs 3301757,
+> 3321266; statistics and profiles continuous 0–400 with no join gaps or duplicates; 3-D fields at 0, 5, 10, 20, 50, 100, 150, 200, 300, 400). It uses the
+> same initial-condition file (seed_0001_draw256_N256_q0.030_m10.jld2), seed and stress as deep_r0p3_seed1_N256. Neither run reaches the R_fl onset
+> threshold by t = 400: maximum R_fl 1.12 (deep) and 1.16 (no waves); at t = 400 R_fl / R_layer / R_raw = 1.096 / 1.093 / 0.710 (deep) and
+> 1.150 / 1.144 / 0.764 (no waves). At t = 400: K/K₀ = 1.65 / 2.51, K_jet/K_rel = 0.265 / 0.828, exact-zonal x–z fraction 0.68 / 0.89,
+> vertical spectral centroid m = 9.07 / 4.48 (deep / no waves). Figures `ctrl256_r0p3_*` (job 3325962); exact values in
+> `ctrl256_r0p3_classifiers.txt` and `ctrl256_r0p3_xz_spectra_heatmap.txt`. This is a matched control, not a main-panel case. 512³ r = 0.1 is still
+> running and is not included anywhere until it reaches t = 400 and is verified. PROVISIONAL — VERY LOW RESOLUTION (256³).
+>
+> **Update 2026-10-06 (later): r = 0.03 now at 512³.** deep_r0p03_seed1_N512_d256 COMPLETED to t = 400.02 over three segments (outputs verified
+> continuous, no join gaps or duplicates). Main figures are now `mainmix2_*` (r = 0, 0.03 at 512³; r = 0.1, 0.3 at 256³). r = 0.03 at 512³: R_fl / R_layer /
+> R_raw = 1.096 / 1.295 / 0.968 at t = 200 and 1.387 / 1.779 / 1.079 at t = 400; onset R_fl 343, R_layer 202, R_raw never; K/K₀ = 4.61e−3 and
+> K_jet/K_rel = 0.664 at t = 400. Matched three-grid r = 0.03 (`res3_r0p03_512_resolution_metrics.txt`, 128³ / 256³ / 512³ at t = 400): R_fl 1.766 /
+> 1.658 / 1.387, onset t = 273 / 270 / 343 at u*/u′_rms = 0.71 / 0.66 / 0.72 — the onset ratio stays within 0.66–0.72 but the onset time is not
+> converged. PROVISIONAL: 256³ very low resolution; 512³ convergence not established.
+>
+> **Update 2026-10-06: per-case highest completed grid.** The main surface-stress figures (`figures/wc25_surface_stress/mainmix_*.png`) now
+> show r = 0 at **512³** (deep_r0_seed1_N512_d256, COMPLETED to t = 400 over two segments; statistics, profiles and fields verified continuous
+> from 0 to 400) and r = 0.03, 0.1 and the newly completed **r = 0.3** at 256³. These are mixed-resolution figures with each case labelled by its
+> grid, not a 512³ regime diagram; 512³ r = 0.03 and 0.1 are continuing. Exact values (`mainmix_classifiers.txt`):
+>
+> | case (grid) | t | R_fl | R_layer | R_raw | onset R_fl / R_layer / R_raw |
+> |---|---|---|---|---|---|
+> | r = 0 (512³) | 400 | 0.991 | 0.980 | 0.970 | none / none / none |
+> | r = 0.3 (256³) | 200 | 1.085 | 1.079 | 0.688 | none / none / none (max R_fl 1.12) |
+> | r = 0.3 (256³) | 400 | 1.096 | 1.093 | 0.710 | |
+>
+> (r = 0.03 and 0.1 unchanged from the 256³ table below.) End states: r = 0 (512³) K/K₀ = 1.56e−3, K_jet/K_rel = 0.178, 3 interior sign
+> reversals, band scale 0.581; r = 0.3 (256³) K/K₀ = 1.65, K_jet/K_rel = 0.265. Matched three-grid comparison for r = 0 at t = 400
+> (`res3_r0_512_resolution_metrics.txt`, same field at 128³ / 256³ / 512³): K/K₀ = 1.27e−3 / 1.39e−3 / 1.56e−3, K_jet/K_rel = 0.154 / 0.134 / 0.178,
+> R_fl = 0.951 / 0.976 / 0.991, sign reversals 8 / 5 / 3; convergence not established. The all-256³ set is kept as a comparison (`main256v2_*`).
+> PROVISIONAL: 256³ very low resolution; 512³ convergence not established.
+>
+> **Main-figure resolution update (2026-10-04).** The main surface-stress figures now use **256³**, the highest grid completed for
+> these cases: deep waves at u*/u′_rms,0 = 0, 0.03 (to t = 1000) and 0.1 (to t = 400), from the 256³-draw seed-1 field
+> (`figures/wc25_surface_stress/main256_*.png`). 256³ values: R_fl onset (> 1.3 at t > 5) at t = 270 for r = 0.03
+> (u*/u′_rms = 0.66) and t = 156 for r = 0.1 (1.06), none by t = 400 at r = 0; K/K₀ at the end 1.4e−3 / 1.2e−2 / 8.9e−2 and
+> K_jet/K_rel 0.13 / 0.92 / 0.75 (r = 0 / 0.03 / 0.1); x–z exact-zonal fraction at t = 400 0.23 / 0.70 / 0.83. The 128³ sweep
+> below is the only data for r = 0.01, 0.3, 1 and the wave-free and medium-wave controls; it is kept as a labelled coverage
+> comparison and is a different random realization from the 256³ runs. 512³ runs at r = 0, 0.03, 0.1 are in progress and will
+> replace the 256³ figures; a full 512³ sweep (rough estimate ≈ 420 GPU-h) cannot fit the 60 GPU-h ceiling, so budget coverage stays incomplete. PROVISIONAL — VERY LOW RESOLUTION (256³).
+>
+> **Classifier audit at 256³ (2026-10-04 review; exact values from the saved profiles/statistics, `figures/wc25_surface_stress/main256_classifiers.txt`).**
+> R_fl = fluctuation ⟨ω′ₓ²⟩/⟨ω′ᵧ²⟩ with (∂zV)², (∂zU)² removed, depth mean over all N + 1 faces (the onset classifier); R_layer = the same over
+> z > 0.75; R_raw = ⟨ω_x²⟩_V/⟨ω_y²⟩_V of the total vorticity (includes the mean shear; not a roll classifier). The main256 regime and anisotropy
+> panels plot R_fl (axes now labelled so); their printed onsets (270, 156) are the R_fl onsets.
+>
+> | 256³ deep | t | R_fl | R_layer | R_raw | onset R_fl / R_layer / R_raw |
+> |---|---|---|---|---|---|
+> | r = 0 | 400 | 0.976 | 0.945 | 0.937 | none / none / none |
+> | r = 0.03 | 200 | 1.152 | 1.499 | 0.993 | 270 / 167 / 514 |
+> | r = 0.03 | 400 | 1.658 | 2.404 | 1.175 | |
+> | r = 0.03 | 1000 | 2.643 | 3.051 | 1.592 | |
+> | r = 0.1 | 200 | 1.308 | 1.378 | 0.824 | 156 / 75 / never |
+> | r = 0.1 | 400 | 1.239 | 1.296 | 0.775 | |
+
+Notation: u′_rms(t) = √⟨|𝐮′_L(t)|²⟩ is the total rms velocity fluctuation; u′_rms,0 is its initial value. q is reserved for potential vorticity. Historical code/configuration keys are unchanged.
+
+**Question.** Does a constant along-wave surface stress turn the depth-alternating jets / cross-wave vortices of
+initially Lagrangian-shear-free wave-averaged turbulence (Wagner & Constantinou 2025, "WC25") into
+wave-aligned Langmuir structures? Treated as a hypothesis; the stress ratio u*/u′_rms,0 is the only varied parameter.
+
+## Setup (what was actually run)
+* WC25 configuration: unit cube, periodic x–y, impermeable free-slip top (z = 1) and bottom, WENO(9) implicit LES, RK3,
+  CFL 0.5, Float64, Oceananigans 0.107 on GH200 GPUs. Deep-wave Stokes drift from the printed eq. (2.7),
+  ∂z uˢ = (1/4)e^{8(z−1)} (primitive uˢ = (1/32)e^{8(z−1)}, uˢ(1) = 1/32); companion "medium" family ∂z uˢ = z/2.
+  The repository driver's `DeepStokesShear(2, 8)` (2 sinh(8(z−1))/sinh(8)) is **not** eq. (2.7) (wrong amplitude, sign and
+  vertical structure); it was not used.
+* Initial condition: seeded, divergence-free, reflection-symmetrized random **Lagrangian** field with zero horizontal-mean
+  profiles (uˢ not added, so the Eulerian mean is −uˢ); spectrum ∝ (k/k_e)⁴e^{−2(k/k_e)²}, k_e = 2π·10 (horizontal peak at
+  mode 9, L₁₁ = 0.038), total rms u′_rms,0 = 0.03, K₀ = 4.5e−4, ω_rms = 2.1, Ps_deep(z) = 10 (surface) … 70 (z = 0.75). WC25's
+  1000→10 vorticity spin-up was skipped by design; u′_rms,0 and k_e are pilot choices, not a WC25 match (WC25 saved data were
+  not available locally).
+* Stress τ = u*² as a flux boundary condition on u at z = 1 (+x, along the waves), u*/u′_rms,0 ∈ {0, 0.01, 0.03, 0.1, 0.3, 1},
+  i.e. u* ∈ {0, 3e−4, 9e−4, 3e−3, 9e−3, 3e−2}, La = √(u*/uˢ(1)) ∈ {∞, 0.098, 0.17, 0.31, 0.54, 0.98}. The column's uniform
+  acceleration τt is retained; the bulk velocity is removed only in diagnostics. Controls: wave-free runs from the
+  **same Lagrangian field** at u*/u′_rms,0 = 0, 0.1, 1 (note: not Eulerian-matched).
+* Runs: 128³ to t = 400 for all six stresses and three controls (seed 1); extensions by checkpoint pickup to t = 1000 for
+  deep r ≤ 0.3 and the r = 0 control (r = 1 to t ≈ 1000, finishing); second seed at r = 0, 0.03, 1 and control 0;
+  256³ at r = 0, 0.03 and 0.1; medium family r = 0, 0.1. Total cost ≈ 11 GPU-h (surface-stress campaign). Outputs: scalar statistics every 0.5, horizontal-mean
+  profiles every 1, slices (x–z, y–z, x–y at three depths) at 67 times, 3-D fields at 10 times, checkpoints every 50.
+* Validation (all passed): divergence-free IC with w = 0 at the walls and zero mean profiles; volume-mean momentum
+  conserved to 1e−19 without stress; d⟨U⟩/dt = τ/H exactly with the +x sign; wave-only quiescent state exactly at rest;
+  kinetic energy monotone under steady Stokes drift (no spurious injection); K − K₀ − ∫τ⟨u⟩_top dt ≤ 0 (implicit
+  dissipation only removes energy); bitwise restart equivalence with fixed Δt.
+
+## What the stress sequence shows
+1. **Zero stress reproduces WC25 phenomenology qualitatively.** A counter-wave surface jet (U_L − ⟨U_L⟩ ≈ −3.2e−3 at
+   z = 1, forming by t ≈ 20–50) and depth-alternating interior bands (amplitude 7e−4 at t = 400 → 9e−4 at t = 1000,
+   wavelength ≈ 0.75 at t = 1000, 3 interior sign reversals) develop; their share of the relative energy grows,
+   K_jet/K_rel = 0.19 (t = 400) → 0.40 (t = 1000), while the same ratio stays ≤ 0.02 in the wave-free control whose
+   bands (2e−4) sit below its fluctuation rms. The Lagrangian mean stays nearly shear-free (U_E ≈ −uˢ persists, the
+   anti-Stokes profile), w at z = 0.9 is organized into cross-wave (y-elongated) streaks, the Stokes-layer vertical
+   anisotropy ⟨w²⟩/⟨u′²⟩ falls to 0.45 (control 0.7), and the along/cross fluctuation-enstrophy ratio stays ≈ 0.95.
+   Energy decays more slowly with waves (K/K₀ = 1.3e−3 vs 0.9e−3 at t = 400). Seed 2 and 256³ reproduce the surface
+   jet (−3.5e−3, −3.2e−3) and interior amplitude (8.8e−4, 8.4e−4) to 10–20 %; the mean-flow energy share at 256³ is
+   ≈ 30 % lower. The local Rhines estimate 2π√(U/|∂zz uˢ|) with U = 7e−4 gives 0.18 at z = 0.9 and 0.32 at z = 0.75,
+   the same order as the observed band spacing but not a quantitative match (the bands sit mostly where |∂zz uˢ| is small).
+2. **u*/u′_rms,0 = 0.01 (La 0.10) is indistinguishable from zero stress to t = 1000**: same jets (K_jet/K_rel 0.30, 3 reversals,
+   wavelength 0.77). The instantaneous ratio u*/u′_rms(t) reaches only 0.3 by t = 1000.
+3. **u*/u′_rms,0 = 0.03 (La 0.17) is the transition case, and the transition is time-dependent.** It evolves like the
+   zero-stress case until t ≈ 150; the along/cross enstrophy ratio exceeds 1.3 at t = 277, when u*/u′_rms(t) = 0.74, and
+   reaches 1.75 by t = 400 and stays there; w skewness turns negative; by t = 1000 the Lagrangian mean is a monotone
+   wind profile (no interior reversals) with U_E homogenized through the Stokes layer — the Langmuir state.
+4. **u*/u′_rms,0 = 0.1 (La 0.31): Langmuir rolls from t ≈ 80** (onset when u*/u′_rms = 1.0): surface-attached y–z cells with
+   narrow downwelling plumes reaching z ≈ 0.6, x-elongated w streaks, roll ratio 1.6–1.8, ⟨w²⟩/⟨u′²⟩ 1.3, w skewness −1,
+   U_E uniform in the Stokes layer while U_L carries the Stokes shear, fluctuation enstrophy sustained by the wind work.
+5. **u*/u′_rms,0 = 0.3 and 1 (La 0.54, 0.98): shear-dominated.** The wind layer fills the column by t ≈ 300 / 100; roll
+   anisotropy never exceeds 1.2 — the same as the wave-free controls at the same stress (1.17, 1.24) — and
+   ⟨w²⟩/⟨u′²⟩ ≈ 0.5 for r = 1; column-scale alternating bands appear in U_L after the layer fills but they are
+   wind-layer turbulence structures, not WC25 jets. Surface velocities reach O(1) (33 u′_rms,0), where implicit WENO
+   dissipation becomes velocity-dependent (Galilean-invariance caveat for these two cases). [Update 2026-10-07: the 128³
+   wave-free controls were at r = 0.1 and 1; a matched wave-free r = 0.3 control now exists at 256³ (same field as the 256³ deep run):
+   maximum R_fl 1.16 without waves versus 1.12 with deep waves, neither reaching onset by t = 400 (`ctrl256_r0p3_classifiers.txt`).]
+6. **Regime rule.** Wave-aligned rolls require u*/u′_rms(t) ≳ 0.7–1 **and** La ≲ 0.3; WC25 cross-wave jets persist (and
+   strengthen) while u*/u′_rms ≲ 0.3; for La ≳ 0.5 the stress produces shear turbulence with little wave organization
+   whatever u*/u′_rms (r = 1 to t = 1000: roll ratio ≤ 1.18, same as its wave-free control). Because u′_rms decays while τ is
+   constant, every finite stress eventually crosses the first threshold; the time of crossing is the time at which the
+   decaying turbulence weakens to u′_rms ≈ u*. **Resolution test of the rule:** at 256³ the onset of rolls at r = 0.1 occurs at
+   t = 156 instead of 82 (the finer run keeps more fluctuation energy early), yet the instantaneous ratio at onset is the
+   same, u*/u′_rms = 1.06 vs 1.02; at r = 0.03 both resolutions give t ≈ 270–277 and u*/u′_rms = 0.66–0.74. The onset time is
+   resolution-dependent, the onset ratio is not.
+7. **Medium-wave companion (∂z uˢ = z/2, La defined with uˢ(1) = 1/4):** at zero stress the jets are stronger
+   (surface jet 6.5e−3, interior amplitude 2.4e−3 > u′_rms 1.9e−3, K_jet/K_rel 0.34, wavelength 0.84 at t = 400; K/K₀ 5.8e−3
+   vs 1.3e−3 deep), confirming that the geometry rather than the implementation controls the jet strength; at u*/u′_rms,0 = 0.1
+   (La 0.11) rolls set in at t = 80 (u*/u′_rms = 0.83), the same time as for deep waves (t = 82), and the Lagrangian mean is a
+   wind profile by t = 400 (surface 0.061). (Figures `medium_*.png`.)
+
+## What remains inconclusive / caveats
+* Resolution: 128³ with an energy-containing mode of 10 is strongly dissipative (K/K₀ = 2.7e−3 by t = 190). 256³ confirms
+  the zero-stress mean flow (surface jet −3.21e−3 vs −3.24e−3) though K_jet/K_rel is 30 % lower; the transition case r = 0.03
+  at 256³ has a 20 % stronger wind layer (surface 1.33e−2 vs 1.11e−2) and a slightly earlier roll onset (⟨ω′ₓ²⟩/⟨ω′ᵧ²⟩ ≈ 1.2 at
+  t = 400 in the raw measure); the Langmuir case r = 0.1 at 256³ matches 128³ to within 10 % in u′_rms, u′, surface mean and K.
+  [Correction 2026-10-03, classifier audit: the 1.2 quoted here is the raw volume ratio ⟨ω_x²⟩_V/⟨ω_y²⟩_V of the total
+  vorticity, which includes the mean shear; the primes are wrong. The fluctuation ratio ⟨ω′ₓ²⟩/⟨ω′ᵧ²⟩ (mean shear removed,
+  depth mean over all faces) is 1.658 at 256³ and 1.757 at 128³ at t = 400, with onset t = 270 and 277; the onset is slightly
+  earlier at 256³ (270 versus 277). The 128³ and 256³ ICs are different realizations. See REPORT_resolution.md.] [Update 2026-10-06: at 512³, from the same field as the 256³ run, the R_fl onset is later, t = 343 (273 and 270 at the matched 128³ and 256³), at a similar stress ratio u*/u′_rms = 0.72 (0.71, 0.66); R_fl(400) = 1.387 at 512³. The onset time is resolution dependent and not converged.]
+* The jets here are 3–10× weaker than WC25's (which start from a spun-up, larger-scale IC) and the band structure is
+  dominated by 2–3 bands in a unit box; a domain-sensitivity run (wider/deeper box) was not done.
+* Only one seed at r = 0.01, 0.1, 0.3; the onset time at r = 0.03 (277) is from one seed.
+* La ≥ 0.5 cases exceed CFL-safe velocities for the implicit LES to be velocity-independent; a Galilean-shifted
+  check was not run.
+* The energy budget uses the discrete kinetic energy with wind work τ⟨u⟩_top; the budget residual is the implicit
+  dissipation, consistent in sign at all times, but no spectral transfer was computed, so no claim about inverse-cascade
+  direction is made.
+
+## Next most informative runs
+1. 512³ (or 256³ to t = 1000) at u*/u′_rms,0 = 0.03 to pin the onset time; the 256³ runs done here support the 128³ picture.
+2. A second seed at r = 0.01 and 0.1, and r = 0.02/0.05 to tighten the threshold u*/u′_rms ≈ 0.7–1 and La ≈ 0.3.
+3. A larger IC scale (mode 6) or a WC25-style spun-up IC at 256³ to test whether the jet strength and Rhines scaling
+   approach WC25's, and a 2×2×1 domain to test box-scale confinement of the bands.
+4. A Galilean-frame check for r ≥ 0.3.
+
+Figures: `figures/wc25_surface_stress/{pilot1,sweep1,sweep2,robust,medium}_*.png`; data root
+`/work/hdd/bhcr/glwagner/wc25_surface_stress_2026-10-02`; job/cost table `wc25_surface_stress_coordination/ledger/case_table.md`.

@@ -1,0 +1,9 @@
+deep_r0_seed1_N256           t =    0.0: Σ E = 4.505728e-04, ½⟨|u′|²⟩ = 4.505728e-04 (ratio 1.000000), window fraction 1.0000, k_x = 0 fraction 0.029, centroid k_x 5.43, m 10.59; high-k (k > N/4) fraction 5.161e-16
+deep_r0_seed1_N256           t =  100.0: Σ E = 2.954745e-06, ½⟨|u′|²⟩ = 2.954745e-06 (ratio 1.000000), window fraction 0.8875, k_x = 0 fraction 0.099, centroid k_x 8.87, m 19.00; high-k (k > N/4) fraction 2.988e-02
+deep_r0_seed1_N256           t =  400.0: Σ E = 6.256761e-07, ½⟨|u′|²⟩ = 6.256761e-07 (ratio 1.000000), window fraction 0.9242, k_x = 0 fraction 0.230, centroid k_x 6.06, m 15.63; high-k (k > N/4) fraction 2.047e-02
+deep_r0p03_seed1_N256        t =    0.0: Σ E = 4.505728e-04, ½⟨|u′|²⟩ = 4.505728e-04 (ratio 1.000000), window fraction 1.0000, k_x = 0 fraction 0.029, centroid k_x 5.43, m 10.59; high-k (k > N/4) fraction 5.161e-16
+deep_r0p03_seed1_N256        t =  100.0: Σ E = 3.029205e-06, ½⟨|u′|²⟩ = 3.029205e-06 (ratio 1.000000), window fraction 0.8853, k_x = 0 fraction 0.112, centroid k_x 8.76, m 19.12; high-k (k > N/4) fraction 3.133e-02
+deep_r0p03_seed1_N256        t =  400.0: Σ E = 1.979144e-06, ½⟨|u′|²⟩ = 1.979144e-06 (ratio 1.000000), window fraction 0.9584, k_x = 0 fraction 0.705, centroid k_x 2.53, m 11.94; high-k (k > N/4) fraction 1.215e-02
+deep_r0p1_seed1_N256         t =    0.0: Σ E = 4.505728e-04, ½⟨|u′|²⟩ = 4.505728e-04 (ratio 1.000000), window fraction 1.0000, k_x = 0 fraction 0.029, centroid k_x 5.43, m 10.59; high-k (k > N/4) fraction 5.161e-16
+deep_r0p1_seed1_N256         t =  100.0: Σ E = 1.026391e-05, ½⟨|u′|²⟩ = 1.026391e-05 (ratio 1.000000), window fraction 0.9181, k_x = 0 fraction 0.625, centroid k_x 4.23, m 16.14; high-k (k > N/4) fraction 2.502e-02
+deep_r0p1_seed1_N256         t =  400.0: Σ E = 3.353652e-05, ½⟨|u′|²⟩ = 3.353652e-05 (ratio 1.000000), window fraction 0.9726, k_x = 0 fraction 0.828, centroid k_x 1.55, m 6.95; high-k (k > N/4) fraction 7.697e-03

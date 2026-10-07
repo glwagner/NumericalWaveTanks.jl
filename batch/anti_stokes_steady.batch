@@ -1,0 +1,41 @@
+#!/bin/bash
+#SBATCH --job-name=as-steady
+#SBATCH --output=logs/anti_stokes_steady-%A_%a.log
+#SBATCH --account=bhcr-dtai-gh
+#SBATCH --partition=ghx4
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=120G
+#SBATCH --gres=gpu:1
+#SBATCH --time=02:00:00
+#SBATCH --array=0,1,11-14
+
+# Steady, horizontally uniform wave train (uˢ = Uˢ₀ e^{2kz} from t = 0) in the 1.D packet tank, and
+# the Langmuir variant with the initial Eulerian current α Uˢ₀ e^{2kz}; same checkpoints, duration and
+# controls (turbulence_control, sheared_control) as the travelling-packet campaign. One GPU per task:
+#    0  steady_waves_null              1  steady_sheared_null with 1e-4 m/s noise (laminar CL2 growth)
+#   11–1n  seed n: steady_waves_turbulence + steady_sheared_turbulence (animation slices for seed 1)
+# Environment: LEVEL (M2), CASE (1.D), DT (0.02), NUMERICS (weno), SHEAR (1.0), STOKES_FACTOR (1.0), TAG
+source batch/env.sh
+
+LEVEL=${LEVEL:-M2}
+CASE=${CASE:-1.D}
+DT=${DT:-0.02}
+NUMERICS=${NUMERICS:-weno}
+SHEAR=${SHEAR:-1.0}
+SF=${STOKES_FACTOR:-1.0}
+TAG=${TAG:-}
+RUN="julia --project=. experiments/anti_stokes/run_moving_packet.jl case=$CASE level=$LEVEL numerics=$NUMERICS dt=$DT x_topology=periodic shear=$SHEAR stokes_factor=$SF tag=$TAG"
+ID=$SLURM_ARRAY_TASK_ID
+
+case $ID in
+    0)  $RUN member=steady_waves_null animation=true ;;
+    1)  $RUN member=steady_sheared_null noise=1e-4 animation=true ;;
+    1[1-9])
+        SEED=$((ID - 10))
+        ANIM=$([ "$SEED" -eq 1 ] && echo true || echo false)
+        $RUN member=steady_waves_turbulence seed=$SEED animation=$ANIM
+        $RUN member=steady_sheared_turbulence seed=$SEED animation=$ANIM ;;
+    *)  echo "No task defined for array index $ID"; exit 1 ;;
+esac

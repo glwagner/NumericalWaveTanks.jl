@@ -1,0 +1,197 @@
+Main-figure provenance, generated 2026-10-04T09:41:25.259 UTC-ish on gh140.hsn.cm.delta.internal.ncsa.edu
+== shallow_ring_k9_w1_rb1_seed1: main N = 1024²  ← /work/hdd/bhcr/glwagner/wc25_resolution_2026-10-03/vallis2d/shallow_ring_k9_w1_rb1_seed1_N1024
+   comparison baseline N = 256²  ← /work/hdd/bhcr/glwagner/wc25_vallis2d_2026-10-02/shallow_ring_k9_w1_rb1_seed1_N256
+   COMPLETED: segment 1 time 22619.467106 turnovers 200.000 iterations 26438 wall 223.3 s
+   waves          main "shallow"                    baseline "shallow"                    same
+   β              main 0.5                          baseline 0.5                          same
+   k0             main 9.0                          baseline 9.0                          same
+   width          main 1.0                          baseline 1.0                          same
+   rb             main 1.0                          baseline 1.0                          same
+   seed           main 1                            baseline 1                            same
+   q0             main 0.00015635985129990398       baseline 0.00015635985129990398       same
+   turnover_time  main 113.09733552923254           baseline 113.09733552923254           same
+   IC: t = 0 spectral density on |k| ≤ 14 cycles: max|ΔD|/max D = 6.283e-04  (same coefficients)
+   panel τ =    0.0 T_e → plotted field at    0.000 T_e (iteration-time snapshot 1 of 81) 
+   panel τ =   20.0 T_e → plotted field at   20.000 T_e (iteration-time snapshot 31 of 81) 
+   panel τ =   40.0 T_e → plotted field at   40.000 T_e (iteration-time snapshot 45 of 81) 
+   panel τ =  200.0 T_e → plotted field at  200.000 T_e (iteration-time snapshot 81 of 81) 
+   end of run: 200.000 T_e (stats), 200.000 T_e (last field)
+== deep_ring_k9_w1_rb1_seed1: main N = 1024²  ← /work/hdd/bhcr/glwagner/wc25_resolution_2026-10-03/vallis2d/deep_ring_k9_w1_rb1_seed1_N1024
+   comparison baseline N = 256²  ← /work/hdd/bhcr/glwagner/wc25_vallis2d_2026-10-02/deep_ring_k9_w1_rb1_seed1_N256
+   COMPLETED: segment 1 time 22619.467106 turnovers 200.000 iterations 35020 wall 250.4 s
+   waves          main "deep"                       baseline "deep"                       same
+   β              main 0.5                          baseline 0.5                          same
+   k0             main 9.0                          baseline 9.0                          same
+   width          main 1.0                          baseline 1.0                          same
+   rb             main 1.0                          baseline 1.0                          same
+   seed           main 1                            baseline 1                            same
+   q0             main 0.00015635985129990398       baseline 0.00015635985129990398       same
+   turnover_time  main 113.09733552923254           baseline 113.09733552923254           same
+   IC: t = 0 spectral density on |k| ≤ 14 cycles: max|ΔD|/max D = 6.283e-04  (same coefficients)
+   panel τ =    0.0 T_e → plotted field at    0.000 T_e (iteration-time snapshot 1 of 81) 
+   panel τ =   20.0 T_e → plotted field at   20.000 T_e (iteration-time snapshot 31 of 81) 
+   panel τ =   40.0 T_e → plotted field at   40.000 T_e (iteration-time snapshot 45 of 81) 
+   panel τ =  200.0 T_e → plotted field at  200.000 T_e (iteration-time snapshot 81 of 81) 
+   end of run: 200.000 T_e (stats), 200.000 T_e (last field)
+== none_ring_k9_w1_rb1_seed1: main N = 1024²  ← /work/hdd/bhcr/glwagner/wc25_resolution_2026-10-03/vallis2d/none_ring_k9_w1_rb1_seed1_N1024
+   comparison baseline N = 256²  ← /work/hdd/bhcr/glwagner/wc25_vallis2d_2026-10-02/none_ring_k9_w1_rb1_seed1_N256
+   COMPLETED: segment 1 time 22619.467106 turnovers 200.000 iterations 27921 wall 205.7 s
+   waves          main "none"                       baseline "none"                       same
+   β              main 0.5                          baseline 0.5                          same
+   k0             main 9.0                          baseline 9.0                          same
+   width          main 1.0                          baseline 1.0                          same
+   rb             main 1.0                          baseline 1.0                          same
+   seed           main 1                            baseline 1                            same
+   q0             main 0.00015635985129990398       baseline 0.00015635985129990398       same
+   turnover_time  main 113.09733552923254           baseline 113.09733552923254           same
+   IC: t = 0 spectral density on |k| ≤ 14 cycles: max|ΔD|/max D = 6.283e-04  (same coefficients)
+   panel τ =    0.0 T_e → plotted field at    0.000 T_e (iteration-time snapshot 1 of 81) 
+   panel τ =   20.0 T_e → plotted field at   20.000 T_e (iteration-time snapshot 31 of 81) 
+   panel τ =   40.0 T_e → plotted field at   40.000 T_e (iteration-time snapshot 45 of 81) 
+   panel τ =  200.0 T_e → plotted field at  200.000 T_e (iteration-time snapshot 81 of 81) 
+   end of run: 200.000 T_e (stats), 200.000 T_e (last field)
+== shallow_ring_k12_w1_rb2_seed1: main N = 1024²  ← /work/hdd/bhcr/glwagner/wc25_resolution_2026-10-03/vallis2d/shallow_ring_k12_w1_rb2_seed1_N1024
+   comparison baseline N = 256²  ← /work/hdd/bhcr/glwagner/wc25_vallis2d_2026-10-02/shallow_ring_k12_w1_rb2_seed1_N256
+   COMPLETED: segment 1 time 18095.573685 turnovers 60.000 iterations 18122 wall 158.5 s
+   waves          main "shallow"                    baseline "shallow"                    same
+   β              main 0.5                          baseline 0.5                          same
+   k0             main 12.0                         baseline 12.0                         same
+   width          main 1.0                          baseline 1.0                          same
+   rb             main 2.0                          baseline 2.0                          same
+   seed           main 1                            baseline 1                            same
+   q0             main 4.397620817809799e-5         baseline 4.397620817809799e-5         same
+   turnover_time  main 301.5928947446202            baseline 301.5928947446202            same
+   IC: t = 0 spectral density on |k| ≤ 18 cycles: max|ΔD|/max D = 1.836e-03  (same coefficients)
+   panel τ =    0.0 T_e → plotted field at    0.000 T_e (iteration-time snapshot 1 of 53) 
+   panel τ =   20.0 T_e → plotted field at   20.000 T_e (iteration-time snapshot 31 of 53) 
+   panel τ =   60.0 T_e → plotted field at   60.000 T_e (iteration-time snapshot 53 of 53) 
+   end of run: 60.000 T_e (stats), 60.000 T_e (last field)
+== shallow_ring_k12_w1_rb2_seed2: main N = 1024²  ← /work/hdd/bhcr/glwagner/wc25_resolution_2026-10-03/vallis2d/shallow_ring_k12_w1_rb2_seed2_N1024
+   comparison baseline N = 256²  ← /work/hdd/bhcr/glwagner/wc25_vallis2d_2026-10-02/shallow_ring_k12_w1_rb2_seed2_N256
+   COMPLETED: segment 1 time 18095.573685 turnovers 60.000 iterations 18122 wall 155.5 s
+   waves          main "shallow"                    baseline "shallow"                    same
+   β              main 0.5                          baseline 0.5                          same
+   k0             main 12.0                         baseline 12.0                         same
+   width          main 1.0                          baseline 1.0                          same
+   rb             main 2.0                          baseline 2.0                          same
+   seed           main 2                            baseline 2                            same
+   q0             main 4.397620817809799e-5         baseline 4.397620817809799e-5         same
+   turnover_time  main 301.5928947446202            baseline 301.5928947446202            same
+   IC: t = 0 spectral density on |k| ≤ 18 cycles: max|ΔD|/max D = 1.689e-03  (same coefficients)
+   panel τ =    0.0 T_e → plotted field at    0.000 T_e (iteration-time snapshot 1 of 53) 
+   panel τ =   20.0 T_e → plotted field at   20.000 T_e (iteration-time snapshot 31 of 53) 
+   panel τ =   60.0 T_e → plotted field at   60.000 T_e (iteration-time snapshot 53 of 53) 
+   end of run: 60.000 T_e (stats), 60.000 T_e (last field)
+== shallow_ring_k12_w1_rb2_seed3: main N = 1024²  ← /work/hdd/bhcr/glwagner/wc25_resolution_2026-10-03/vallis2d/shallow_ring_k12_w1_rb2_seed3_N1024
+   comparison baseline N = 256²  ← /work/hdd/bhcr/glwagner/wc25_vallis2d_2026-10-02/shallow_ring_k12_w1_rb2_seed3_N256
+   COMPLETED: segment 1 time 18095.573685 turnovers 60.000 iterations 18122 wall 109.2 s
+   waves          main "shallow"                    baseline "shallow"                    same
+   β              main 0.5                          baseline 0.5                          same
+   k0             main 12.0                         baseline 12.0                         same
+   width          main 1.0                          baseline 1.0                          same
+   rb             main 2.0                          baseline 2.0                          same
+   seed           main 3                            baseline 3                            same
+   q0             main 4.397620817809799e-5         baseline 4.397620817809799e-5         same
+   turnover_time  main 301.5928947446202            baseline 301.5928947446202            same
+   IC: t = 0 spectral density on |k| ≤ 18 cycles: max|ΔD|/max D = 1.297e-03  (same coefficients)
+   panel τ =    0.0 T_e → plotted field at    0.000 T_e (iteration-time snapshot 1 of 53) 
+   panel τ =   20.0 T_e → plotted field at   20.000 T_e (iteration-time snapshot 31 of 53) 
+   panel τ =   60.0 T_e → plotted field at   60.000 T_e (iteration-time snapshot 53 of 53) 
+   end of run: 60.000 T_e (stats), 60.000 T_e (last field)
+== shallow_ring_k12_w1_rb2_seed4: main N = 1024²  ← /work/hdd/bhcr/glwagner/wc25_resolution_2026-10-03/vallis2d/shallow_ring_k12_w1_rb2_seed4_N1024
+   comparison baseline N = 256²  ← /work/hdd/bhcr/glwagner/wc25_vallis2d_2026-10-02/shallow_ring_k12_w1_rb2_seed4_N256
+   COMPLETED: segment 1 time 18095.573685 turnovers 60.000 iterations 18121 wall 111.1 s
+   waves          main "shallow"                    baseline "shallow"                    same
+   β              main 0.5                          baseline 0.5                          same
+   k0             main 12.0                         baseline 12.0                         same
+   width          main 1.0                          baseline 1.0                          same
+   rb             main 2.0                          baseline 2.0                          same
+   seed           main 4                            baseline 4                            same
+   q0             main 4.397620817809799e-5         baseline 4.397620817809799e-5         same
+   turnover_time  main 301.5928947446202            baseline 301.5928947446202            same
+   IC: t = 0 spectral density on |k| ≤ 18 cycles: max|ΔD|/max D = 1.462e-03  (same coefficients)
+   panel τ =    0.0 T_e → plotted field at    0.000 T_e (iteration-time snapshot 1 of 53) 
+   panel τ =   20.0 T_e → plotted field at   20.000 T_e (iteration-time snapshot 31 of 53) 
+   panel τ =   60.0 T_e → plotted field at   60.000 T_e (iteration-time snapshot 53 of 53) 
+   end of run: 60.000 T_e (stats), 60.000 T_e (last field)
+== shallow_ring_k12_w1_rb2_seed5: main N = 1024²  ← /work/hdd/bhcr/glwagner/wc25_resolution_2026-10-03/vallis2d/shallow_ring_k12_w1_rb2_seed5_N1024
+   comparison baseline N = 256²  ← /work/hdd/bhcr/glwagner/wc25_vallis2d_2026-10-02/shallow_ring_k12_w1_rb2_seed5_N256
+   COMPLETED: segment 1 time 18095.573685 turnovers 60.000 iterations 18124 wall 91.4 s
+   waves          main "shallow"                    baseline "shallow"                    same
+   β              main 0.5                          baseline 0.5                          same
+   k0             main 12.0                         baseline 12.0                         same
+   width          main 1.0                          baseline 1.0                          same
+   rb             main 2.0                          baseline 2.0                          same
+   seed           main 5                            baseline 5                            same
+   q0             main 4.397620817809799e-5         baseline 4.397620817809799e-5         same
+   turnover_time  main 301.5928947446202            baseline 301.5928947446202            same
+   IC: t = 0 spectral density on |k| ≤ 18 cycles: max|ΔD|/max D = 1.433e-03  (same coefficients)
+   panel τ =    0.0 T_e → plotted field at    0.000 T_e (iteration-time snapshot 1 of 53) 
+   panel τ =   20.0 T_e → plotted field at   20.000 T_e (iteration-time snapshot 31 of 53) 
+   panel τ =   60.0 T_e → plotted field at   60.000 T_e (iteration-time snapshot 53 of 53) 
+   end of run: 60.000 T_e (stats), 60.000 T_e (last field)
+== shallow_ring_k12_w1_rb2_seed6: main N = 1024²  ← /work/hdd/bhcr/glwagner/wc25_resolution_2026-10-03/vallis2d/shallow_ring_k12_w1_rb2_seed6_N1024
+   comparison baseline N = 256²  ← /work/hdd/bhcr/glwagner/wc25_vallis2d_2026-10-02/shallow_ring_k12_w1_rb2_seed6_N256
+   COMPLETED: segment 1 time 18095.573685 turnovers 60.000 iterations 18121 wall 89.1 s
+   waves          main "shallow"                    baseline "shallow"                    same
+   β              main 0.5                          baseline 0.5                          same
+   k0             main 12.0                         baseline 12.0                         same
+   width          main 1.0                          baseline 1.0                          same
+   rb             main 2.0                          baseline 2.0                          same
+   seed           main 6                            baseline 6                            same
+   q0             main 4.397620817809799e-5         baseline 4.397620817809799e-5         same
+   turnover_time  main 301.5928947446202            baseline 301.5928947446202            same
+   IC: t = 0 spectral density on |k| ≤ 18 cycles: max|ΔD|/max D = 2.022e-03  (same coefficients)
+   panel τ =    0.0 T_e → plotted field at    0.000 T_e (iteration-time snapshot 1 of 53) 
+   panel τ =   20.0 T_e → plotted field at   20.000 T_e (iteration-time snapshot 31 of 53) 
+   panel τ =   60.0 T_e → plotted field at   60.000 T_e (iteration-time snapshot 53 of 53) 
+   end of run: 60.000 T_e (stats), 60.000 T_e (last field)
+== none_ring_k12_w1_rb2_seed1: main N = 1024²  ← /work/hdd/bhcr/glwagner/wc25_resolution_2026-10-03/vallis2d/none_ring_k12_w1_rb2_seed1_N1024
+   comparison baseline N = 256²  ← /work/hdd/bhcr/glwagner/wc25_vallis2d_2026-10-02/none_ring_k12_w1_rb2_seed1_N256
+   COMPLETED: segment 1 time 18095.573685 turnovers 60.000 iterations 18122 wall 131.9 s
+   waves          main "none"                       baseline "none"                       same
+   β              main 0.5                          baseline 0.5                          same
+   k0             main 12.0                         baseline 12.0                         same
+   width          main 1.0                          baseline 1.0                          same
+   rb             main 2.0                          baseline 2.0                          same
+   seed           main 1                            baseline 1                            same
+   q0             main 4.397620817809799e-5         baseline 4.397620817809799e-5         same
+   turnover_time  main 301.5928947446202            baseline 301.5928947446202            same
+   IC: t = 0 spectral density on |k| ≤ 18 cycles: max|ΔD|/max D = 1.836e-03  (same coefficients)
+   panel τ =    0.0 T_e → plotted field at    0.000 T_e (iteration-time snapshot 1 of 53) 
+   panel τ =   20.0 T_e → plotted field at   20.000 T_e (iteration-time snapshot 31 of 53) 
+   panel τ =   60.0 T_e → plotted field at   60.000 T_e (iteration-time snapshot 53 of 53) 
+   end of run: 60.000 T_e (stats), 60.000 T_e (last field)
+== none_ring_k12_w1_rb2_seed2: main N = 1024²  ← /work/hdd/bhcr/glwagner/wc25_resolution_2026-10-03/vallis2d/none_ring_k12_w1_rb2_seed2_N1024
+   comparison baseline N = 256²  ← /work/hdd/bhcr/glwagner/wc25_vallis2d_2026-10-02/none_ring_k12_w1_rb2_seed2_N256
+   COMPLETED: segment 1 time 18095.573685 turnovers 60.000 iterations 18122 wall 106.5 s
+   waves          main "none"                       baseline "none"                       same
+   β              main 0.5                          baseline 0.5                          same
+   k0             main 12.0                         baseline 12.0                         same
+   width          main 1.0                          baseline 1.0                          same
+   rb             main 2.0                          baseline 2.0                          same
+   seed           main 2                            baseline 2                            same
+   q0             main 4.397620817809799e-5         baseline 4.397620817809799e-5         same
+   turnover_time  main 301.5928947446202            baseline 301.5928947446202            same
+   IC: t = 0 spectral density on |k| ≤ 18 cycles: max|ΔD|/max D = 1.689e-03  (same coefficients)
+   panel τ =    0.0 T_e → plotted field at    0.000 T_e (iteration-time snapshot 1 of 53) 
+   panel τ =   20.0 T_e → plotted field at   20.000 T_e (iteration-time snapshot 31 of 53) 
+   panel τ =   60.0 T_e → plotted field at   60.000 T_e (iteration-time snapshot 53 of 53) 
+   end of run: 60.000 T_e (stats), 60.000 T_e (last field)
+== none_ring_k12_w1_rb2_seed3: main N = 1024²  ← /work/hdd/bhcr/glwagner/wc25_resolution_2026-10-03/vallis2d/none_ring_k12_w1_rb2_seed3_N1024
+   comparison baseline N = 256²  ← /work/hdd/bhcr/glwagner/wc25_vallis2d_2026-10-02/none_ring_k12_w1_rb2_seed3_N256
+   COMPLETED: segment 1 time 18095.573685 turnovers 60.000 iterations 18122 wall 106.8 s
+   waves          main "none"                       baseline "none"                       same
+   β              main 0.5                          baseline 0.5                          same
+   k0             main 12.0                         baseline 12.0                         same
+   width          main 1.0                          baseline 1.0                          same
+   rb             main 2.0                          baseline 2.0                          same
+   seed           main 3                            baseline 3                            same
+   q0             main 4.397620817809799e-5         baseline 4.397620817809799e-5         same
+   turnover_time  main 301.5928947446202            baseline 301.5928947446202            same
+   IC: t = 0 spectral density on |k| ≤ 18 cycles: max|ΔD|/max D = 1.297e-03  (same coefficients)
+   panel τ =    0.0 T_e → plotted field at    0.000 T_e (iteration-time snapshot 1 of 53) 
+   panel τ =   20.0 T_e → plotted field at   20.000 T_e (iteration-time snapshot 31 of 53) 
+   panel τ =   60.0 T_e → plotted field at   60.000 T_e (iteration-time snapshot 53 of 53) 
+   end of run: 60.000 T_e (stats), 60.000 T_e (last field)
+PROVENANCE PASS: all main cases complete, matched physics, same IC, full panel time coverage

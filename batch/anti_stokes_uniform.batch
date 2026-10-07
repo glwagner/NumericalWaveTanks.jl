@@ -1,0 +1,40 @@
+#!/bin/bash
+#SBATCH --job-name=as-uniform
+#SBATCH --output=logs/anti_stokes_uniform-%A_%a.log
+#SBATCH --account=bhcr-dtai-gh
+#SBATCH --partition=ghx4
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=120G
+#SBATCH --gres=gpu:1
+#SBATCH --time=02:00:00
+#SBATCH --array=0,1,11-14
+
+# Horizontally uniform wave group (temporal Gaussian envelope) and the Langmuir-shear variant,
+# same periodic tank, checkpoints and duration as the travelling-packet runs, one GPU per task:
+#    0  uniform_packet_null           1  sheared_packet_null (laminar CL2 problem)
+#   11–1n  seed n: uniform_packet_turbulence + sheared_control + sheared_packet_turbulence
+#          (turbulence_control from the travelling-packet campaign is reused as the control)
+# Environment: LEVEL (M2), CASE (1.D), DT (0.02), NUMERICS (weno), SHEAR (1.0)
+source batch/env.sh
+
+LEVEL=${LEVEL:-M2}
+CASE=${CASE:-1.D}
+DT=${DT:-0.02}
+NUMERICS=${NUMERICS:-weno}
+SHEAR=${SHEAR:-1.0}
+RUN="julia --project=. experiments/anti_stokes/run_moving_packet.jl case=$CASE level=$LEVEL numerics=$NUMERICS dt=$DT x_topology=periodic shear=$SHEAR"
+ID=$SLURM_ARRAY_TASK_ID
+
+case $ID in
+    0)  $RUN member=uniform_packet_null animation=true ;;
+    1)  $RUN member=sheared_packet_null animation=true ;;
+    1[1-9])
+        SEED=$((ID - 10))
+        ANIM=$([ "$SEED" -eq 1 ] && echo true || echo false)
+        $RUN member=uniform_packet_turbulence seed=$SEED animation=$ANIM
+        $RUN member=sheared_control seed=$SEED animation=$ANIM
+        $RUN member=sheared_packet_turbulence seed=$SEED animation=$ANIM ;;
+    *)  echo "No task defined for array index $ID"; exit 1 ;;
+esac

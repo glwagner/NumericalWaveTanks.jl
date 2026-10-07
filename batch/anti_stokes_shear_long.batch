@@ -1,0 +1,31 @@
+#!/bin/bash
+#SBATCH --job-name=as-shear-long
+#SBATCH --output=logs/anti_stokes_shear_long-%A_%a.log
+#SBATCH --account=bhcr-dtai-gh
+#SBATCH --partition=ghx4
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=120G
+#SBATCH --gres=gpu:1
+#SBATCH --time=02:30:00
+#SBATCH --array=0,11,12
+
+# Free-shear Langmuir case run long: steady waves + turbulence + initial current α Uˢ₀ e^{2kz}, STOP s,
+# with the matching sheared control (no waves) and dense 3D snapshots (every SNAP s).
+#    0    steady_sheared_null with 1e-4 m/s noise (laminar reference)
+#   1n    seed n: sheared_control + steady_sheared_turbulence (animation slices for seed 1)
+# Environment: SHEAR (α), TAG, STOP (60), SNAP (5), LEVEL (M2), CASE (1.D)
+source batch/env.sh
+LEVEL=${LEVEL:-M2}; CASE=${CASE:-1.D}; SHEAR=${SHEAR:-1.0}; TAG=${TAG:-long}; STOP=${STOP:-60}; SNAP=${SNAP:-5}
+OFF=$(python3 -c "print(','.join(f'{(t-11.2)/2.8:.4f}' for t in range($SNAP, $STOP+1, $SNAP)))")
+RUN="julia --project=. experiments/anti_stokes/run_moving_packet.jl case=$CASE level=$LEVEL x_topology=periodic shear=$SHEAR tag=$TAG stop_time=$STOP snapshot_offsets=$OFF"
+ID=$SLURM_ARRAY_TASK_ID
+case $ID in
+    0)  $RUN member=steady_sheared_null noise=1e-4 animation=true ;;
+    1[1-9])
+        SEED=$((ID - 10)); ANIM=$([ "$SEED" -eq 1 ] && echo true || echo false)
+        $RUN member=sheared_control seed=$SEED animation=$ANIM
+        $RUN member=steady_sheared_turbulence seed=$SEED animation=$ANIM ;;
+    *)  echo "No task defined for array index $ID"; exit 1 ;;
+esac

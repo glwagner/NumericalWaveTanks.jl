@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Packet Wake Movies</title>
+<!-- WC25 campaign sections (surface stress, Vallis-2D) appended 2026-10-03; original packet-wake content unchanged -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root { --bg: #F5F7F8; --ink: #17232E; --muted: #6A7A88; --accent: #1F5FA8; --rule: #D7DEE4; }
+@media (prefers-color-scheme: dark) { :root { --bg: #0E1620; --ink: #E6EDF3; --muted: #97A6B4; --accent: #6EA8E8; --rule: #26323F; } }
+body { background: var(--bg); color: var(--ink); font-family: "Source Sans 3", "Helvetica Neue", Arial, sans-serif; font-size: 17px; line-height: 1.5; margin: 0; }
+main { max-width: 1120px; margin: 0 auto; padding: 40px 24px 64px; display: grid; gap: 36px; }
+header { display: grid; gap: 8px; }
+h1 { font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 40px; line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 26px; margin: 0 0 10px; }
+.grid { font-family: "IBM Plex Mono", Menlo, monospace; font-size: 13px; color: var(--muted); margin-left: 12px; letter-spacing: 0.04em; }
+.eyebrow { font-family: "IBM Plex Mono", Menlo, monospace; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+header p, .movie p { margin: 0; max-width: 72ch; }
+.movie p { color: var(--muted); font-size: 15px; margin-top: 8px; }
+video { width: 100%; height: auto; display: block; border: 1px solid var(--rule); background: #000; }
+.key { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+.key div { border-top: 2px solid var(--accent); padding-top: 10px; }
+.key b { display: block; font-weight: 600; margin-bottom: 4px; }
+.key p { margin: 0; color: var(--muted); font-size: 15px; }
+a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="eyebrow">Ellingsen et al. (2026), Experiment 1 · numerical reproduction · NumericalWaveTanks.jl</div>
+  <h1>Wave packets crossing turbulent tanks</h1>
+  <p><a href="#wc25-results">New: WC25 surface-stress and Vallis 2D results</a> · <a href="../wc25_results/WC25-results.pdf">PDF report</a></p>
+  <p>The first six movies each follow one Stokes-drift packet moving left to right at its group speed through decaying grid turbulence in the 12 m × 0.8 m × 0.4 m tank (periodic in x except where noted). The red dashed line is the observation plane at x = 6 m; the black line follows the packet centre. Panels: prescribed surface Stokes drift; surface vertical velocity w in the packet run; w in the matched no-wave control from the same turbulence; their difference, the packet-induced perturbation; and the x–z slice of the Eulerian streamwise perturbation uᴱ − u_control with the Stokes drift already subtracted, where the anti-Stokes shear layer forms within the Stokes depth (dotted line).</p>
+</header>
+
+<section class="movie">
+  <h2>Case 1.D <span class="grid">M0, 768 × 64 × 64, seed 1</span></h2>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/packet_turbulence_animation_case_1D_M0_seed1_small.mp4"></video>
+  <p>k₀ = 9.3 m⁻¹, τ₀ = 2.8 s, ϵ = 0.22, Uˢ₀ = 50 mm/s; turbulence rms (17, 17, 13) mm/s, L = 0.20 m. Composite residual −11.5 mm/s at M2 (eight seeds).</p>
+</section>
+<section class="movie">
+  <h2>Case 1.D, bounded tank <span class="grid">M2, 1536 × 128 × 128, seed 1, 46 s</span></h2>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/packet_turbulence_animation_case_1D_M2_boundedx_seed1_small.mp4"></video>
+  <p>Impenetrable end walls (uᴸ = 0). The packet starts 4σ₀ outside the tank, enters through the west wall near t ≈ 10 s, crosses the observation plane at 22.9 s and leaves through the east wall near t ≈ 35 s. Composite residual −10.1 mm/s.</p>
+</section>
+<section class="movie">
+  <h2>Case 1.A <span class="grid">M2, 1536 × 128 × 128, seed 1</span></h2>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/packet_turbulence_animation_case_1A_M2_seed1_small.mp4"></video>
+  <p>k₀ = 9.5 m⁻¹, τ₀ = 2.4 s, ϵ = 0.20, Uˢ₀ = 41 mm/s; the weakest, smallest-scale turbulence (7.1, 6.8, 5.8) mm/s, L = 0.05 m. Composite residual −4.4 mm/s, confined to a thin layer.</p>
+</section>
+<section class="movie">
+  <h2>Case 1.B <span class="grid">M2, 1536 × 128 × 128, seed 1</span></h2>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/packet_turbulence_animation_case_1B_M2_seed1_small.mp4"></video>
+  <p>k₀ = 9.2 m⁻¹, τ₀ = 2.6 s, ϵ = 0.20, Uˢ₀ = 41 mm/s; turbulence (11, 10, 7.3) mm/s, L = 0.26 m. Composite residual −6.9 mm/s.</p>
+</section>
+<section class="movie">
+  <h2>Case 1.C.1 <span class="grid">M2, 1536 × 128 × 128, seed 1</span></h2>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/packet_turbulence_animation_case_1C1_M2_seed1_small.mp4"></video>
+  <p>k₀ = 8.9 m⁻¹, τ₀ = 2.9 s, ϵ = 0.15, Uˢ₀ = 24 mm/s; turbulence (16, 12, 9.2) mm/s, L = 0.32 m. The gentler member of the steepness pair; composite residual −8.3 mm/s.</p>
+</section>
+<section class="movie">
+  <h2>Case 1.C.2 <span class="grid">M2, 1536 × 128 × 128, seed 1</span></h2>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/packet_turbulence_animation_case_1C2_M2_seed1_small.mp4"></video>
+  <p>Same turbulence and seed as 1.C.1 with ϵ = 0.22, Uˢ₀ = 51 mm/s. Composite residual −13.7 mm/s: a ratio of 1.65 to 1.C.1 against 2.15 for ϵ².</p>
+</section>
+<section class="movie">
+  <h2>Uniform group, y–z plane <span class="grid">M2, 1536 × 128 × 128, seed 1</span></h2>
+  <p>The same Gaussian Stokes envelope applied everywhere at once (no propagation, no return flow). Top: vertical velocity w in the y–z plane at x = 6 m; middle: Eulerian streamwise velocity uᴱ = u − uˢ(z, t); bottom: w in the matched no-wave control. The anti-Stokes response is identical to the travelling packet's: −10.5 against −10.8 mm/s at the surface.</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/yz_plane_uniform_packet_turbulence_case_1D_M2_seed1_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Langmuir-shear variant, y–z plane <span class="grid">M2, seed 1, initial current Uˢ₀e^(2kz)</span></h2>
+  <p>Same group over the same turbulence, but the initial Eulerian current has the shape of the Stokes drift, so the Eulerian and Stokes shears are aligned (the Craik–Leibovich CL2 condition). Compared with the sheared control (bottom), the group drives stronger vertical exchange in the Stokes layer and decelerates the surface about 50 % more than without shear.</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/yz_plane_sheared_packet_turbulence_case_1D_M2_seed1_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Figure 3(a) of Ellingsen et al. (2026), reproduced <span class="grid">case 1.D, periodic tank, 8 seeds</span></h2>
+  <p>(a) The paper's U₁ (before the group) and U₃ (after) for case 1.D, digitized from the vector figure. (b) The LES with the same intervals (−4.5τ to −3.3τ and 2.0τ to 3.2τ about the group peak) applied to every fluid column. (c) ΔU = U₃ − U₁, experiment against LES: −10.8 ± 0.5 against −12.3 mm/s at the surface. (d) With the mean over the PIV window removed from both, the profiles coincide; the residual is a depth-uniform offset of 1.7 mm/s that a closed, momentum-conserving tank cannot produce (fixed flume discharge, maintained turbulence, or a 0.5 % drift of U₀ between the intervals are the candidates).</p>
+  <img src="https://raw.githubusercontent.com/glwagner/NumericalWaveTanks.jl/glw/anti-stokes/figures/anti_stokes/figure3a_reproduction_1D_M2_periodic.png" alt="Figure 3(a) reproduction" style="width:100%;border:1px solid var(--rule)">
+</section>
+
+<section class="movie">
+  <h2>Uniform group vs travelling packet, and the Langmuir-shear response <span class="grid">case 1.D, M2, 4 seeds</span></h2>
+  <p>Panels: (1) ΔU profiles over ages 2–3.2τ₀, uniform group against the travelling packet's wake-age composite; (2) surface response against group age; (3) the sheared case's Eulerian current with and without the group; (4) the group-induced change of the sheared current against the unsheared response; (5) vertical-velocity rms; (6) spanwise spectra of w at the Stokes depth.</p>
+  <img src="https://raw.githubusercontent.com/glwagner/NumericalWaveTanks.jl/glw/anti-stokes/figures/anti_stokes/uniform_packet_1D_M2_weno.png" alt="Uniform group and Langmuir shear" style="width:100%;border:1px solid var(--rule)">
+</section>
+
+<section class="movie">
+  <h2>Steady wave train + Langmuir shear, y–z plane <span class="grid">M2, seed 1, uˢ = Uˢ₀e^(2kz) from t = 0</span></h2>
+  <p>An infinite wave train with the packet-core Stokes drift switched on at t = 0 over the 1.D turbulence and the initial Eulerian current Uˢ₀e^(2kz). Streamwise Langmuir rolls organize the near-surface vertical velocity during the first few seconds and raise w rms in the Stokes layer by 60 %, then consume the aligned shear that feeds them: by 20 s the surface current has reversed and the field is back to ordinary turbulence. Bottom: the sheared control without waves.</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/yz_plane_steady_sheared_turbulence_case_1D_M2_seed1_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Laminar Craik–Leibovich instability <span class="grid">M2, no turbulence, 10⁻⁴ m/s noise</span></h2>
+  <p>The same steady waves and shear current without turbulence, seeded with white noise: vertical velocity grows at 0.38 s⁻¹ into streamwise rolls that saturate near 2–3 mm/s in the top 5 cm and coarsen in spanwise scale.</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/yz_plane_steady_sheared_null_case_1D_M2_seed0_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Steady wave train in the packet tank: anti-Stokes spin-up and the Langmuir variant <span class="grid">case 1.D, M2, 4 seeds</span></h2>
+  <p>Panels: (1) anti-Stokes ΔU profiles since onset without shear; (2) surface velocities against time, including the wave effect on the sheared current; (3) sheared current profiles with and without waves; (4) w rms; (5) spanwise w spectra; (6) growth of the laminar seeded instability.</p>
+  <img src="https://raw.githubusercontent.com/glwagner/NumericalWaveTanks.jl/glw/anti-stokes/figures/anti_stokes/steady_waves_channel_1D_M2_weno.png" alt="Steady wave train and Langmuir shear" style="width:100%;border:1px solid var(--rule)">
+</section>
+
+<section class="movie">
+  <h2>Top-down view of the four main cases <span class="grid">M2, seed 1, x ∈ [3, 8] m, 0–22 s</span></h2>
+  <p>Rows: the travelling packet, the steady wave train, steady waves with the initial shear current, and steady waves with shear and a wind stress (u* = 4.5 mm/s). Left: vertical velocity one cell below the surface; right: the streamwise velocity anomaly u′ = u − ⟨u⟩_y in the top cell. Streamwise streaks appear in the sheared case for a few seconds and persist in the wind case.</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/surface_view_4cases_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Wind cases over 60 s <span class="grid">M2, seed 1, u* = 4.5 and 10 mm/s, with and without waves</span></h2>
+  <p>Rows: shear + wind (u* = 4.5 mm/s), the same with waves, shear + wind (u* = 10 mm/s), the same with waves. The stronger stress fills the top cell with fine streaks of its own shear turbulence; the wave effect is clearest at La_t ≈ 0.3 and, for both stresses, a few centimetres below the surface.</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/surface_view_wind_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Steady waves + shear + wind, y–z plane <span class="grid">M2, seed 1, u* = 4.5 mm/s</span></h2>
+  <p>With the surface stress maintaining the aligned shear, a counter-rotating cell pair fills the tank width by 14 s with 40 mm/s downwelling, and the streamwise organization persists to the end of the run instead of decaying with the initial current. Bottom: the wind-only control.</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/yz_plane_wind_sheared_turbulence_case_1D_M2_seed1_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Horizontal slices at 3 cm depth <span class="grid">t = 14 s, five cases</span></h2>
+  <p>Below the wind-drift layer the cells are easier to see: the sheared and wind cases carry streamwise bands of vertical velocity 40–50 % stronger than the packet and plain steady-wave cases.</p>
+  <img src="https://raw.githubusercontent.com/glwagner/NumericalWaveTanks.jl/glw/anti-stokes/figures/anti_stokes/depth_slice_5cases_z3cm_t14s.png" alt="Depth slices, five cases" style="width:100%;border:1px solid var(--rule)">
+</section>
+
+<section class="movie">
+  <h2>Wind case analysis <span class="grid">u* = 4.5 mm/s, four seeds</span></h2>
+  <p>Eulerian current with and without waves, the wave-induced change, vertical-velocity rms, the surface anisotropy of w against time (Langmuir cells → high elongated fraction), and the laminar seeded reference.</p>
+  <img src="https://raw.githubusercontent.com/glwagner/NumericalWaveTanks.jl/glw/anti-stokes/figures/anti_stokes/wind_channel_1D_M2_weno_ustar4.5.png" alt="Wind case analysis" style="width:100%;border:1px solid var(--rule)">
+</section>
+
+<section class="movie">
+  <h2>Stronger free shear (α = 2), y–z plane <span class="grid">M2, seed 1, 60 s, steady waves, initial current 2Uˢ₀e^(2kz)</span></h2>
+  <p>The textbook Langmuir cross-section at 10 s: a counter-rotating cell pair with 50 mm/s downwelling columns carrying high-momentum surface fluid down and low-momentum fluid rising between them. The response peaks at 5–10 s and relaxes by 20–30 s as the aligned shear is consumed. Bottom: the sheared control without waves.</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/yz_plane_steady_sheared_turbulence_case_1D_M2_seed1_shear2_long_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Free shear at α = 1 and 2, top-down <span class="grid">M2, seed 1, 60 s, with and without waves</span></h2>
+  <p>Rows: shear α = 1, waves + shear α = 1, shear α = 2, waves + shear α = 2. Streamwise streaks of vertical velocity appear only with waves and are strongest for the stronger shear.</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/surface_view_shear_long_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Signatures of Langmuir turbulence, free-shear runs <span class="grid">60 s, seed 1</span></h2>
+  <p>Rows: horizontal-mean Lagrangian (solid) and Eulerian (dashed) velocity profiles in time; the anisotropy ⟨w′²⟩/⟨u′²⟩, which inverts above 1 only with waves; Stokes against mean-shear TKE production; skewness of w; and, for all runs, the streamwise elongation of w at 3 cm and the Stokes-layer vertical variance against time.</p>
+  <img src="https://raw.githubusercontent.com/glwagner/NumericalWaveTanks.jl/glw/anti-stokes/figures/anti_stokes/langmuir_signatures_shear_long.png" alt="Langmuir signatures, free shear" style="width:100%;border:1px solid var(--rule)">
+</section>
+
+<section class="movie">
+  <h2>Wind-sustained Langmuir cells, 180 s, y–z plane <span class="grid">M2, seed 1, u* = 4.5 mm/s, steady waves, initial shear</span></h2>
+  <p>With the surface stress feeding the aligned shear, the cells never die: three minutes after onset the vertical velocity a few centimetres down is still organized in depth-filling columns, at nearly twice the amplitude of the wind-only control (bottom).</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/yz_plane_wind_sheared_turbulence_case_1D_M2_seed1_ustar4.5_long_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Wind-sustained Langmuir cells, 180 s, top-down <span class="grid">M2, seed 1, x ∈ [3, 8] m</span></h2>
+  <p>Top row: shear + wind without waves; bottom row: with waves. The wave case keeps streamwise bands of vertical velocity 10–15 cm wide running the length of the window for the whole run; the control shows only the fine streaks of the wind-drift layer.</p>
+  <video preload="metadata" loop muted playsinline controls src="https://cdn.jsdelivr.net/gh/glwagner/NumericalWaveTanks.jl@glw/anti-stokes/figures/anti_stokes/surface_view_wind_long_small.mp4"></video>
+</section>
+
+<section class="movie">
+  <h2>Wind case at 180 s, 3 cm depth <span class="grid">seed 1</span></h2>
+  <img src="https://raw.githubusercontent.com/glwagner/NumericalWaveTanks.jl/glw/anti-stokes/figures/anti_stokes/depth_slice_wind_long_z3cm_t180s.png" alt="Wind case at 180 s, 3 cm depth" style="width:100%;border:1px solid var(--rule)">
+</section>
+
+<section class="key">
+  <div><b>What to watch for</b><p>The difference panel stays blank ahead of the packet and fills behind it: the perturbation is a wake, not a precursor.</p></div>
+  <div><b>Weak vs strong turbulence</b><p>1.A and 1.B (7–11 mm/s rms) produce a slower, weaker response than 1.D and 1.C.2 (13–17 mm/s); the anti-Stokes current scales with turbulence intensity.</p></div>
+  <div><b>Steepness</b><p>1.C.2 (ϵ = 0.22) and its twin 1.C.1 (ϵ = 0.15, same turbulence) give −13.7 and −8.3 mm/s: a ratio of 1.65 against 2.15 for ϵ².</p></div>
+  <div><b>Turbulence scale</b><p>1.A (L = 5 cm) confines the anti-Stokes jet to the upper third of the Stokes layer; 1.C (L = 32 cm) spreads the compensating return down to k₀z ≈ −3.</p></div>
+  <div><b>Links</b><p><a href="https://github.com/glwagner/NumericalWaveTanks.jl/pull/7">Pull request #7</a> · <a href="https://github.com/glwagner/NumericalWaveTanks.jl/tree/glw/anti-stokes/experiments/anti_stokes">experiment code</a></p></div>
+</section>
+<header id="wc25-results">
+<p style="padding:12px;border:2px solid #a65b00;background:#fff5df"><strong>Resolution status: all 256² and 256³ simulations are PROVISIONAL — VERY LOW RESOLUTION. Coarser runs are provisional as well. Higher-resolution runs are checks, not evidence of convergence by themselves; physical conclusions remain provisional until supported by resolution comparisons.</strong></p>
+  <div class="eyebrow">WC25 campaigns · Wagner &amp; Constantinou (2025) extensions · DeltaAI, 2–3 October 2026 · NumericalWaveTanks.jl</div>
+  <h1>Surface stress and the narrow-ring β-plane analogue</h1>
+  <p>Two autonomous campaigns on the WC25 wave-averaged configuration (unit domain, free-slip walls, WENO(9) implicit LES, Lagrangian-mean velocity, Stokes drift from the printed equations). Campaign A applies a constant along-wave surface stress to decaying Lagrangian-shear-free turbulence beneath deep waves and asks when the WC25 depth-alternating jets give way to Langmuir rolls. Campaign B starts the two-dimensional x–z WC25 dynamics from the Vallis &amp; Maltrud (1993) spectral ring, where Dω_y/Dt = (∂zz uˢ) w makes shallow waves an exact β-plane with β = ½. The full write-up with case tables, resource use, caveats and editorial corrections is the <a href="../wc25_results/index.html">results document</a>; the unedited campaign reports are bundled with it. Figures below are static PNGs from the campaign analysis scripts (Julia/CairoMakie), referenced by relative path; 12.94 GPU-hours for the initial campaigns; follow-up usage is tracked separately.</p>
+</header>
+
+<p><strong>3-D upgrade pending:</strong> the figures directly below use the highest grid completed for each case: r = 0 and r = 0.03 at 512³ (completed), r = 0.1 and 0.3 at 256³ (deep waves). They are mixed-resolution figures with each case labelled by its grid, not a 512³ regime diagram. The 512³ run at r = 0.1 is still continuing; the matched 256³ and 128³ results appear only as labelled comparisons, and the 128³ plots further down are retained as provisional legacy results and as the only coverage of the other cases. A full 512³ sweep (rough estimate ≈ 420 GPU-h) does not fit the 60 GPU-h ceiling, so budget coverage remains incomplete.</p>
+
+<section class="movie"><p><strong>PROVISIONAL: 256³ very low resolution; 512³ convergence not established (r = 0, 0.03 at 512³; r = 0.1, 0.3 at 256³).</strong></p>
+  <h2>A · Regime diagram, per-case highest completed grid <span class="grid">deep waves; r = 0.03 at 512³, r = 0.1, 0.3 at 256³ (r = 0 at 512³ has no stress ratio)</span></h2>
+  <img src="../wc25_surface_stress/mainmix2_regime.png" alt="Surface-stress regime diagram, per-case highest grid" style="width:100%;border:1px solid var(--rule)">
+  <p>u*/u′<sub>rms</sub>(t), the roll classifier R_fl (mean shear removed, depth mean) and the Stokes-layer vertical anisotropy. R_fl first exceeds 1.3 at t = 343 for r = 0.03 (512³; 270 at 256³ and 273 at 128³ from the same field, at similar stress ratios 0.66–0.72) and t = 156 for r = 0.1; it stays below the threshold for r = 0.3 (maximum 1.12) and for r = 0 (0.991 at t = 400, 512³). Exact R_fl / R_layer / R_raw: <a href="../wc25_surface_stress/mainmix2_classifiers.png">classifiers</a> (<a href="../wc25_surface_stress/mainmix2_classifiers.txt">values</a>). <i>Per-case highest completed grid, each labelled; all from the same 256³-draw seed-1 field (a different realization from the 128³ legacy sweep below). Not a 512³ regime diagram; 512³ r = 0.1 is continuing.</i></p>
+</section>
+
+<section class="movie"><p><strong>PROVISIONAL: 256³ very low resolution; 512³ convergence not established (r = 0, 0.03 at 512³; r = 0.1, 0.3 at 256³).</strong></p>
+  <h2>A · Sections at t = 400 <span class="grid">rows: r = 0, 0.03 (512³), 0.1, 0.3 (256³)</span></h2>
+  <img src="../wc25_surface_stress/mainmix2_sections_t400.png" alt="Sections at t = 400, per-case highest grid" style="width:100%;border:1px solid var(--rule)">
+  <p>r = 0 and 0.03: cross-wave streaks of w at z = 0.9, with a thin along-wave vorticity layer forming at r = 0.03 after its onset. r = 0.1: along-wave w bands under a vorticity-filled surface layer (rolls). r = 0.3: the wind-driven layer fills most of the column, with no R_fl onset. <i>Per-case highest completed grid, each labelled; all from the same 256³-draw seed-1 field (a different realization from the 128³ legacy sweep below). Not a 512³ regime diagram; 512³ r = 0.1 is continuing.</i></p>
+</section>
+
+<section class="movie"><p><strong>PROVISIONAL: 256³ very low resolution; 512³ convergence not established (r = 0, 0.03 at 512³; r = 0.1, 0.3 at 256³).</strong></p>
+  <h2>A · Energy budget <span class="grid">r = 0, 0.03 (512³), r = 0.1, 0.3 (256³)</span></h2>
+  <img src="../wc25_surface_stress/mainmix2_energy.png" alt="Energy budget, per-case highest grid" style="width:100%;border:1px solid var(--rule)">
+  <p>K/K₀ at t = 400: 1.56e−3 (r = 0, 512³), 4.61e−3 (r = 0.03, 512³), 8.88e−2 (r = 0.1), 1.65 (r = 0.3); K_jet/K_rel = 0.178, 0.664, 0.753, 0.265. Matched three-grid comparisons: <a href="../wc25_surface_stress/res3_r0_512_resolution.png">r = 0</a>, <a href="../wc25_surface_stress/res3_r0p03_512_resolution.png">r = 0.03</a> (128³ / 256³ / 512³). <i>Per-case highest completed grid, each labelled; all from the same 256³-draw seed-1 field (a different realization from the 128³ legacy sweep below). Not a 512³ regime diagram; 512³ r = 0.1 is continuing.</i></p>
+</section>
+
+<section class="movie"><p><strong>PROVISIONAL — VERY LOW RESOLUTION (256³); matched control, not a main-panel case.</strong></p>
+  <h2>A · Matched wave-free control at r = 0.3 <span class="grid">deep waves vs no waves, both 256³, seed 1, same initial-condition file, t = 400</span></h2>
+  <img src="../wc25_surface_stress/ctrl256_r0p3_sections_t400.png" alt="Sections at t = 400, deep waves (top) and no waves (bottom), r = 0.3, 256³" style="width:100%;border:1px solid var(--rule)">
+  <p>Top row deep waves, bottom row no waves; columns as in the sections above. Neither run reaches the R_fl onset threshold by t = 400 (maximum 1.12 with deep waves, 1.16 without; <a href="../wc25_surface_stress/ctrl256_r0p3_classifiers.png">classifiers</a>). At t = 400: K_jet/K_rel = 0.265 versus 0.828, exact-zonal x–z fraction 0.68 versus 0.89 (<a href="../wc25_surface_stress/ctrl256_r0p3_xz_spectra_heatmap.png">spectra</a>, <a href="../wc25_surface_stress/ctrl256_r0p3_energy.png">energy</a>). In these t = 400 sections the turbulence fills the column with deep waves but stays in the upper part of the column without them. <i>256³ is the highest grid either run has completed; the wave-free member exists only at this stress and grid.</i></p>
+</section>
+
+<section class="movie"><p><strong>PROVISIONAL — VERY LOW RESOLUTION (256² / 256³ and coarser).</strong></p>
+  <h2>A · Legacy comparison — Regime diagram in the instantaneous stress ratio <span class="grid">deep waves, 128³, seed 1, t ≤ 1000</span></h2><p><b>Velocity notation:</b> u′<sub>rms</sub>(t) = √⟨|𝐮′<sub>L</sub>(t)|²⟩ denotes the total rms velocity fluctuation, not one component; u′<sub>rms,0</sub> is its initial value. The stress ratio is u*/u′<sub>rms,0</sub>. We reserve q for potential vorticity. Archived figure versions may retain q₀ or q′ for these rms speeds; current figures use the updated notation.</p>
+  <img src="../wc25_surface_stress/final_regime.png" alt="Surface-stress regime diagram" style="width:100%;border:1px solid var(--rule)">
+  <p>u*/u′<sub>rms</sub>(t) for every stressed case (left), the along/cross fluctuation-enstrophy ratio against that ratio (middle) and the Stokes-layer vertical anisotropy (right). In the cases run, the roll signature (ratio &gt; 1.3, reaching 1.75 and 3.7) appears only for u*/u′<sub>rms,0</sub> = 0.03 and 0.1 (La 0.17, 0.31) once u*/u′<sub>rms</sub> ≳ 0.7–1; u*/u′<sub>rms,0</sub> = 0.3, 1 and the wave-free controls stay below 1.2. An observation in this sampled sweep, not a universal rule.</p>
+</section>
+
+<section class="movie"><p><strong>PROVISIONAL — VERY LOW RESOLUTION (256² / 256³ and coarser).</strong></p>
+  <h2>A · Legacy comparison — Sections at t = 400 <span class="grid">rows: deep r = 0, 0.01, 0.03, 0.1, 0.3, 1; wave-free r = 0, 0.1, 1</span></h2>
+  <img src="../wc25_surface_stress/final_sections_t400.png" alt="Sections at t = 400 for nine cases" style="width:100%;border:1px solid var(--rule)">
+  <p>Columns: cross-wave v (x–z), ω_y with the mean shear removed, w (y–z), ω_x, w at z = 0.9. Zero and weak stress: cross-wave (y-elongated) streaks of w and no surface-attached cells (WC25 regime). u*/u′<sub>rms,0</sub> = 0.1: surface-attached counter-rotating cells with downwelling plumes to z ≈ 0.6 and x-elongated w (Langmuir rolls). u*/u′<sub>rms,0</sub> ≥ 0.3: the wind layer fills the column and the structures match the wave-free controls at the same stress.</p>
+</section>
+
+<section class="movie"><p><strong>PROVISIONAL — VERY LOW RESOLUTION (256² / 256³ and coarser).</strong></p>
+  <h2>A · Legacy comparison — Energy budget and mean-flow share <span class="grid">deep and wave-free, 128³, seed 1</span></h2>
+  <img src="../wc25_surface_stress/final_energy.png" alt="Surface-stress energy budget" style="width:100%;border:1px solid var(--rule)">
+  <p>Without stress the mean-profile share of the relative energy grows from 0.19 (t = 400) to 0.40 (t = 1000) with waves and stays ≤ 0.02 without; the bulk velocity follows τt exactly and the implicit dissipation ε = τ⟨u⟩_top − dK/dt stays positive. Seed 2 and 256³ reproduce the surface jet (−3.5e−3, −3.2e−3 vs −3.2e−3) to 10–20%; two grids agree on the roll-onset ratio (1.02 vs 1.06) while the onset time shifts (82 → 156).</p>
+</section>
+
+<section class="movie"><p><strong>PROVISIONAL — convergence not established (1024²).</strong></p>
+  <h2>B · Vallis Fig. 12.4 analogue: vorticity and streamfunction <span class="grid">shallow waves (β = ½), 1024², rb = 1, 0 / 40 / 200 turnover times</span></h2>
+  <img src="../wc25_vallis2d/main1024_panels_shallow.png" alt="Shallow waves at 1024²: vorticity and streamfunction panels" style="width:100%;border:1px solid var(--rule)">
+  <p>From the isotropic ring at 9 cycles/box, ω_y (top, ±0.022) becomes x-elongated streaks by 40 T_e and bands by 200 T_e; ψ (bottom) organises into x-elongated cells with 4–5 alternations over the depth. Energy changes by −0.003%, enstrophy decays to 43%. Exact-zonal energy stays at 5%: zonally elongated structures rather than finite-amplitude jets at rb = β/(u′<sub>rms,0</sub>K₀²) = 1. <i>1024² run, same physics and initial coefficients as the earlier 256² run (<a href="../wc25_vallis2d/main1024_provenance.txt">provenance</a>); lower grids only in the <a href="../wc25_vallis2d/res3v2_spectra_shallow_heatmap.png">three-grid comparison</a>.</i></p>
+</section>
+
+<p class="small"><b>Overlay audit (2026-10-04).</b> No main spectrum in this section draws a Rhines, Vallis Eq. 12.14 or any other theoretical curve; the replacement figures are regenerated at 1024² without overlays, and no curve was shrunk or fitted to the observed hole. A global velocity-scale estimate K² = β|cos θ|/u′<sub>rms</sub>(t) is a reference scale, not the observed boundary of the depleted region, and the ε-based Eq. 12.14 curve is unsupported because the sampled fluxes give no defensible inverse transfer rate. The numeric audit (measured at 256²) is in <a href="../wc25_results/REPORT_overlay_audit.md">REPORT_overlay_audit.md</a>.</p>
+<section class="movie"><p><strong>PROVISIONAL — convergence not established (1024²).</strong></p>
+  <h2>B · Fig. 12.3 analogue: anisotropic spectral redistribution <span class="grid">shallow waves, 1024², E(k_x, k_z), 0 / 40 / 200 turnover times</span></h2>
+  <img src="../wc25_vallis2d/main1024_spectra_shallow_heatmap.png" alt="Shallow waves at 1024²: two-dimensional energy spectral density heatmaps, no overlays" style="width:100%;border:1px solid var(--rule)">
+  <p class="small">Heatmaps show spectral density per (cycle/box)² normalized by K₀ (sum = K(t)/K₀ to 1e−8), one cell per mode, log₁₀ colour with limits shared across panels and families (−4.70 to −0.70) and a grey floor four decades below the maximum; no overlays.</p>
+  <p>Energy leaves the initial ring and concentrates off the k_x = 0 axis near the k_z axis, leaving a depleted region around the k_x axis. Anisotropy index 0.00 → 0.47 → 0.69; exact-zonal fraction 0 → 3% → 5%. No Rhines or other estimated boundary is drawn (overlay audit above). A source-matched qualitative comparison, not an exact reproduction. <i>1024² run, same physics and initial coefficients as the earlier 256² run (<a href="../wc25_vallis2d/main1024_provenance.txt">provenance</a>); lower grids only in the <a href="../wc25_vallis2d/res3v2_spectra_shallow_heatmap.png">three-grid comparison</a>.</i></p>
+</section>
+
+<section class="movie" id="deep-wave-spectra"><p><strong>PROVISIONAL — convergence not established (1024²).</strong></p>
+  <h2>B · Deep waves: energy goes to the zonal column <span class="grid">deep waves, 1024², E(k_x, k_z), 0 / 40 / 200 turnover times, same colour scale</span></h2>
+  <img src="../wc25_vallis2d/main1024_spectra_deep_heatmap.png" alt="Deep waves at 1024²: two-dimensional energy spectral density heatmaps" style="width:100%;border:1px solid var(--rule)">
+  <p>Same ring, same colour scale as the shallow-wave figure above. With the surface-intensified β_eff(z) = 2e^{8(z−1)} no constant-β estimate applies; the energy concentrates in and next to the exact-zonal k_x = 0 column at low |k_z| (exact-zonal fraction 45%, anisotropy 0.52 at 200 T_e, against 5% and 0.69 for shallow waves). The Fourier × sine spectrum covers the whole column between the walls, so each cell mixes all depths. Single realization; the zonal fraction differs between grids (0.39 / 0.38 / 0.45 at 256² / 512² / 1024²), so convergence is not established. <a href="../wc25_vallis2d/main1024_spectra_none_heatmap.png">Wave-free spectra</a>. <i>1024² run, same physics and initial coefficients as the earlier 256² run (<a href="../wc25_vallis2d/main1024_provenance.txt">provenance</a>); lower grids only in the <a href="../wc25_vallis2d/res3v2_spectra_deep_heatmap.png">three-grid comparison</a>.</i></p>
+</section>
+
+<section class="movie" id="deep-wave-layer-spectra"><p><strong>PROVISIONAL — convergence not established (1024²).</strong></p>
+  <h2>B · Deep waves, partial depth: testing for a hidden dumbbell <span class="grid">1024², eddy spectra, full depth / upper layer 1 − z &lt; 0.288 / bottom control, 0 / 40 / 200 turnover times</span></h2>
+  <img src="../wc25_vallis2d/layer1024_deep_eddy.png" alt="Deep waves at 1024²: eddy spectra over the full depth, the upper layer and a bottom control" style="width:100%;border:1px solid var(--rule)">
+  <p>The upper layer is where β_eff ≥ 0.1 of its surface value, chosen beforehand; velocities are tapered smoothly to zero at the cut and transformed on the full domain, so the units match the main spectra. The thin window smears k_z by about ±1 cycle/box. <b>Outcome: partial and ambiguous.</b> The upper-layer eddy spectrum is more anisotropic than the full-depth average and concentrates in lobes near the k_z axis (|k_x| ≲ 3, k_z ≈ ±4–6), robustly across cutoffs and tapers and not in the bottom control or the wave-free run; but a depleted region around the k_x axis is not clearly present (25% of band energy within 30° of the k_x axis, against 8% for shallow waves under the same window), and β_eff varies tenfold inside the layer. No theoretical curve is drawn. <a href="../wc25_vallis2d/layer1024_compare_t200.png">Families compared</a> · <a href="../wc25_vallis2d/layer1024_diagnostics.png">diagnostics</a> · <a href="../wc25_vallis2d/layer1024_sensitivity_deep_t200.png">sensitivity</a> · <a href="../wc25_results/REPORT_layer_spectra.md">REPORT_layer_spectra.md</a>.</p>
+</section>
+
+<section class="movie"><p><strong>PROVISIONAL — convergence not established (1024²).</strong></p>
+  <h2>B · Same field, three families, 200 turnover times <span class="grid">none · shallow · deep, 1024²</span></h2>
+  <img src="../wc25_vallis2d/main1024_comparison_t200.png" alt="Wave-free, shallow and deep at 1024² after 200 turnover times" style="width:100%;border:1px solid var(--rule)">
+  <p>No waves: Fig. 11.8 decay with coherent vortices and merger (centroid 2.7 cycles, enstrophy 17%). Shallow: x-elongated bands (5.2 cycles, 43%). Deep (β(z) = 2e^{8(z−1)}): β dynamics in the upper part of the column, 2-D vortices below, and a strong x-mean Lagrangian jet (K_jet/K 0.45, max 2.4 u′<sub>rms,0</sub>) that is realisation-sensitive (a second seed, run only at 256², gave a much weaker jet). The deep member's energy drifts +0.6% at 256², +0.1% at 512² and +0.012% at 1024² over 200 T_e, a discrete Stokes-term residual that decreases with resolution. <i>1024² run, same physics and initial coefficients as the earlier 256² run (<a href="../wc25_vallis2d/main1024_provenance.txt">provenance</a>); lower grids only in the <a href="../wc25_vallis2d/res3v2_spectra_shallow_heatmap.png">three-grid comparison</a>.</i></p>
+</section>
+
+<section class="movie"><p><strong>PROVISIONAL — convergence not established (1024²).</strong></p>
+  <h2>B · Six-seed ensemble, VM93-inspired parameters <span class="grid">k₀ = 12, σ = 1, rb = 2, 1024², 0 / 20 / 60 turnover times</span></h2>
+  <img src="../wc25_vallis2d/main1024_ensemble_spectra_shallow_heatmap.png" alt="Six-seed ensemble-mean spectra at 1024², no overlays" style="width:100%;border:1px solid var(--rule)">
+  <p>Ensemble-mean E(k_x, k_z) for shallow waves with parameters inspired by VM93 Fig. 5: a hole around the k_x axis and energy at the poles by 20 T_e, a narrow hourglass along k_z by 60 T_e; no overlays. Exact-zonal fraction 0.0110 ± 0.0024 across the six seeds at 60 T_e. The wave-free three-seed mean collapses isotropically (<a href="../wc25_vallis2d/main1024_ensemble_spectra_none_heatmap.png">figure</a>). <i>1024² members, initial coefficients identical to the 256²/512² members; lower grids only in the three-grid comparison below.</i></p>
+</section>
+
+<section class="movie" id="ensemble-resolution"><p><strong>PROVISIONAL: 256² very low resolution; 512²/1024² convergence not established.</strong></p>
+  <h2>B · Ensemble at three grids <span class="grid">k₀ = 12, rb = 2, shallow, 256² / 512² / 1024², 0 / 20 / 60 turnover times</span></h2>
+  <img src="../wc25_vallis2d/ens12_spectra_shallow_heatmap.png" alt="Six-seed ensemble-mean spectra at three grids" style="width:100%;border:1px solid var(--rule)">
+  <p>Same seeds and continuous Fourier coefficients at every grid (verified before the ensemble ran), one shared colour scale, no overlays. Anisotropy, exact-zonal fraction and member-peak inverse flux change between grids by less than one seed standard deviation; the energy centroid (9.78 → 10.02 cycles), enstrophy and energy drift are resolution dependent. Descriptive comparison; convergence not established. Also: <a href="../wc25_vallis2d/ens12_spectra_none_heatmap.png">wave-free spectra</a>, <a href="../wc25_vallis2d/ens12_statistics.png">statistics</a>, <a href="../wc25_vallis2d/ens12_flux.png">energy flux</a>; details in <a href="../wc25_results/REPORT_resolution.md">REPORT_resolution.md</a> §6.</p>
+</section>
+
+<section class="movie"><p><strong>PROVISIONAL — VERY LOW RESOLUTION (256²); explicit comparison, not a main result.</strong></p>
+  <h2>B · Sensitivity: the rb bracket and every variant at 100 turnover times <span class="grid">shallow unless coloured otherwise, 256²</span></h2>
+  <img src="../wc25_vallis2d/final_variants.png" alt="Vallis-2D sensitivity figure" style="width:100%;border:1px solid var(--rule)">
+  <p>Exact-zonal fraction 0.159 (rb = 0.5), ≈ 0.04 (rb = 1), 0.017 (rb = 2) while the anisotropy index runs the other way; ring width 0.5–2 modes, a second grid, a second seed and the λ = 200 rescaling (u′<sub>rms,0</sub> = 0.031, identical physics in the nonlinear WENO regime) sit within the scatter; keeping the k_x = 0 modes adds their 6% almost additively. <i>Kept at 256² because the variants were run only at 256²; the 1024² base case is shown above.</i></p>
+</section>
+
+<section class="key">
+  <div><b>A · Thresholds are observations</b><p>Rolls were seen for u*/u′<sub>rms</sub>(t) ≳ 0.7–1 with La ≲ 0.3 in a sweep with one seed at most ratios and two grids at three ratios; no universal or eventual transition is asserted.</p></div>
+  <div><b>B · rb decides</b><p>Jets strengthen as rb = β/(u′<sub>rms,0</sub>K₀²) falls below 1; at rb ≥ 1 the energy is concentrated in zonally elongated waves near the k_z axis.</p></div>
+  <div><b>Deep waves differ in both</b><p>A: the counter-wave surface jet and the anti-Stokes Eulerian mean persist at zero stress. B: β dynamics in the upper third only, plus a seed-sensitive x-mean jet; small resolution-dependent energy drift.</p></div>
+  <div><b>Documents</b><p><a href="../wc25_results/index.html">Results document</a> (printable) · <a href="../wc25_results/REPORT_surface_stress.md">surface-stress report</a> · <a href="../wc25_results/REPORT_vallis2d.md">Vallis-2D report</a> · <a href="../wc25_results/job_ledger.md">job ledger</a></p></div>
+</section>
+</main>
+</body>
+</html>
