@@ -2,6 +2,15 @@
 
 # Surface stress on WC25 wave-averaged decaying turbulence — campaign report (2026-10-03 03:55 UTC)
 
+> **Update 2026-10-07: matched wave-free control at r = 0.3 (256³).** none_r0p3_seed1_N256 COMPLETED to t = 400 over two segments (jobs 3301757,
+> 3321266; statistics and profiles continuous 0–400 with no join gaps or duplicates; 3-D fields at 0, 5, 10, 20, 50, 100, 150, 200, 300, 400). It uses the
+> same initial-condition file (seed_0001_draw256_N256_q0.030_m10.jld2), seed and stress as deep_r0p3_seed1_N256. Neither run reaches the R_fl onset
+> threshold by t = 400: maximum R_fl 1.12 (deep) and 1.16 (no waves); at t = 400 R_fl / R_layer / R_raw = 1.096 / 1.093 / 0.710 (deep) and
+> 1.150 / 1.144 / 0.764 (no waves). At t = 400: K/K₀ = 1.65 / 2.51, K_jet/K_rel = 0.265 / 0.828, exact-zonal x–z fraction 0.68 / 0.89,
+> vertical spectral centroid m = 9.07 / 4.48 (deep / no waves). Figures `ctrl256_r0p3_*` (job 3325962); exact values in
+> `ctrl256_r0p3_classifiers.txt` and `ctrl256_r0p3_xz_spectra_heatmap.txt`. This is a matched control, not a main-panel case. 512³ r = 0.1 is still
+> running and is not included anywhere until it reaches t = 400 and is verified. PROVISIONAL — VERY LOW RESOLUTION (256³).
+>
 > **Update 2026-10-06 (later): r = 0.03 now at 512³.** deep_r0p03_seed1_N512_d256 COMPLETED to t = 400.02 over three segments (outputs verified
 > continuous, no join gaps or duplicates). Main figures are now `mainmix2_*` (r = 0, 0.03 at 512³; r = 0.1, 0.3 at 256³). r = 0.03 at 512³: R_fl / R_layer /
 > R_raw = 1.096 / 1.295 / 0.968 at t = 200 and 1.387 / 1.779 / 1.079 at t = 400; onset R_fl 343, R_layer 202, R_raw never; K/K₀ = 4.61e−3 and
@@ -104,7 +113,9 @@ wave-aligned Langmuir structures? Treated as a hypothesis; the stress ratio u*/u
    anisotropy never exceeds 1.2 — the same as the wave-free controls at the same stress (1.17, 1.24) — and
    ⟨w²⟩/⟨u′²⟩ ≈ 0.5 for r = 1; column-scale alternating bands appear in U_L after the layer fills but they are
    wind-layer turbulence structures, not WC25 jets. Surface velocities reach O(1) (33 u′_rms,0), where implicit WENO
-   dissipation becomes velocity-dependent (Galilean-invariance caveat for these two cases).
+   dissipation becomes velocity-dependent (Galilean-invariance caveat for these two cases). [Update 2026-10-07: the 128³
+   wave-free controls were at r = 0.1 and 1; a matched wave-free r = 0.3 control now exists at 256³ (same field as the 256³ deep run):
+   maximum R_fl 1.16 without waves versus 1.12 with deep waves, neither reaching onset by t = 400 (`ctrl256_r0p3_classifiers.txt`).]
 6. **Regime rule.** Wave-aligned rolls require u*/u′_rms(t) ≳ 0.7–1 **and** La ≲ 0.3; WC25 cross-wave jets persist (and
    strengthen) while u*/u′_rms ≲ 0.3; for La ≳ 0.5 the stress produces shear turbulence with little wave organization
    whatever u*/u′_rms (r = 1 to t = 1000: roll ratio ≤ 1.18, same as its wave-free control). Because u′_rms decays while τ is
